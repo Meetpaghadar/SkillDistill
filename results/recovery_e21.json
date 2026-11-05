@@ -1,0 +1,168 @@
+[
+  {
+    "db_id": "battle_death",
+    "question": "What is the ship id and name that caused most total injuries?",
+    "initial_sql": "SELECT id ,  name FROM death GROUP BY id ORDER BY killed DESC LIMIT 1",
+    "initial_error": "no such column: name",
+    "corrected_sql": "SELECT id ,  ship FROM death GROUP BY id ORDER BY ship DESC LIMIT 1",
+    "actual": null,
+    "passed": false,
+    "error": "no such column: ship"
+  },
+  {
+    "db_id": "battle_death",
+    "question": "What are the death and injury situations caused by the ship with tonnage 't'?",
+    "initial_sql": "SELECT note ,  killed FROM death WHERE caused_by_ship_id  =  TOSTERNUM",
+    "initial_error": "no such column: TOSTERNUM",
+    "corrected_sql": "SELECT note ,  killed FROM death WHERE caused_by_ship_id  =  TOSTERNUM",
+    "actual": null,
+    "passed": false,
+    "error": "no such column: TOSTERNUM"
+  },
+  {
+    "db_id": "battle_death",
+    "question": "Show names, results and bulgarian commanders of the battles with no ships lost in the 'English Channel'.",
+    "initial_sql": "SELECT name ,  result ,  bulgarian_commander FROM battle WHERE lost_in_battle  =  0",
+    "initial_error": "no such column: lost_in_battle",
+    "corrected_sql": "SELECT name ,  result ,  bulgarian_commander FROM battle WHERE lost_in_battle  =  0",
+    "actual": null,
+    "passed": false,
+    "error": "no such column: lost_in_battle"
+  },
+  {
+    "db_id": "car_1",
+    "question": "What is the name of the country with the most car makers?",
+    "initial_sql": "SELECT T2.Country FROM car_makers AS T1 JOIN countries AS T2 ON T1.Country  =  T2.Countryid GROUP BY T2.Country ORDER BY count(*) DESC LIMIT 1",
+    "initial_error": "no such column: T2.Country",
+    "corrected_sql": "SELECT T1.Country FROM car_makers AS T1 JOIN countries AS T2 ON T1.Country  =  T2.Countryid GROUP BY T1.Country ORDER BY count(*) DESC LIMIT 1",
+    "actual": [
+      [
+        "4"
+      ]
+    ],
+    "passed": false,
+    "error": null
+  },
+  {
+    "db_id": "car_1",
+    "question": "What is the maker of the carr produced in the earliest year and what year was it?",
+    "initial_sql": "SELECT maker ,  year FROM cars_data WHERE year  =  (SELECT min(year) FROM cars_data)",
+    "initial_error": "no such column: maker",
+    "corrected_sql": "SELECT maker ,  year FROM cars_data WHERE maker  =  (SELECT min(maker) FROM cars_data)",
+    "actual": null,
+    "passed": false,
+    "error": "no such column: maker"
+  },
+  {
+    "db_id": "concert_singer",
+    "question": "Show the stadium name and the number of concerts in each stadium.",
+    "initial_sql": "SELECT T1.Name ,  COUNT(*) FROM concert AS T1 JOIN stadium AS T2 ON T1.stadium_id  =  T2.stadium_id GROUP BY T1.Name",
+    "initial_error": "no such column: T1.Name",
+    "corrected_sql": "SELECT stadium_name ,  COUNT(*) FROM concert GROUP BY stadium_id",
+    "actual": null,
+    "passed": false,
+    "error": "no such column: stadium_name"
+  },
+  {
+    "db_id": "course_teach",
+    "question": "What is the name of each teacher and what course they teach?",
+    "initial_sql": "SELECT T2.Name ,  T1.Course FROM course AS T1 JOIN course_arrange AS T2 ON T1.Course_ID  =  T2.Course_ID JOIN teacher AS T3 ON T2.Teacher_ID  =  T3.Teacher_ID",
+    "initial_error": "no such column: T2.Name",
+    "corrected_sql": "SELECT T3.Name ,  T1.Course FROM course AS T1 JOIN course_arrange AS T2 ON T1.Course_ID  =  T2.Course_ID JOIN teacher AS T3 ON T2.Teacher_ID  =  T3.Teacher_ID",
+    "actual": [
+      [
+        "Kearsley Brown",
+        "Math"
+      ],
+      [
+        "Vicente Carretero",
+        "Math"
+      ],
+      [
+        "Gustaaf Deloor",
+        "Science"
+      ],
+      [
+        "Anne Walker",
+        "History"
+      ],
+      [
+        "Anne Walker",
+        "Bible"
+      ],
+      [
+        "Lucy Wong",
+        "Music"
+      ]
+    ],
+    "passed": true,
+    "error": null
+  },
+  {
+    "db_id": "course_teach",
+    "question": "Show names of teachers and the courses they are arranged to teach.",
+    "initial_sql": "SELECT T1.Name ,  T2.Course FROM course AS T1 JOIN course_arrange AS T2 ON T1.Course_ID  =  T2.Course_ID JOIN teacher AS T2 ON T2.Teacher_ID  =  T1.Teacher_ID",
+    "initial_error": "no such column: T1.Name",
+    "corrected_sql": "SELECT T1.Name ,  T2.Course FROM course AS T1 JOIN course_arrange AS T2 ON T1.Course_ID  =  T2.Course_ID JOIN teacher AS T2 ON T2.Teacher_ID  =  T1.Teacher_ID",
+    "actual": null,
+    "passed": false,
+    "error": "no such column: T1.Name"
+  },
+  {
+    "db_id": "cre_Doc_Template_Mgt",
+    "question": "Return the version numbers and template type codes of templates with a version number greater than 5.",
+    "initial_sql": "SELECT T2.version_number ,  T1.template_type_code FROM Templates AS T1 JOIN Ref_Template_Types AS T2 ON T1.template_type_code  =  T2.template_type_code WHERE T1.version_number  >  5",
+    "initial_error": "no such column: T2.version_number",
+    "corrected_sql": "SELECT T1.version_number ,  T2.template_type_code FROM Templates AS T1 JOIN Ref_Template_Types AS T2 ON T1.template_type_code  =  T2.template_type_code WHERE T1.version_number  >  5",
+    "actual": [
+      [
+        9,
+        "PP"
+      ],
+      [
+        8,
+        "PPT"
+      ],
+      [
+        6,
+        "BK"
+      ],
+      [
+        7,
+        "AD"
+      ],
+      [
+        9,
+        "CV"
+      ],
+      [
+        7,
+        "AD"
+      ],
+      [
+        6,
+        "BK"
+      ],
+      [
+        9,
+        "AD"
+      ],
+      [
+        8,
+        "PP"
+      ]
+    ],
+    "passed": true,
+    "error": null
+  },
+  {
+    "db_id": "cre_Doc_Template_Mgt",
+    "question": "Return the names and template ids for documents that contain the letter w in their description.",
+    "initial_sql": "SELECT T1.Document_Name ,  T2.Template_ID FROM Documents AS T1 JOIN Templates AS T2 ON T1.Template_ID  =  T2.Template_ID WHERE T2.Template_Type_CODE  =  T1.Template_Type_CODE AND T1.Document_DESCRIPTION  LIKE '%w%'",
+    "initial_error": "no such column: T1.Template_Type_CODE",
+    "corrected_sql": "SELECT T1.Document_Name ,  T2.Template_ID FROM Documents AS T1 JOIN Templates AS T2 ON T1.Template_ID  =  T2.Template_ID WHERE T2.Template_Type_CODE  =  T1.Template_Type_CODE AND T1.Document_DESCRIPTION  LIKE '%w%'",
+    "actual": null,
+    "passed": false,
+    "error": "no such column: T1.Template_Type_CODE"
+  }
+]

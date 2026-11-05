@@ -1,0 +1,402 @@
+[
+  {
+    "db_id": "aircraft",
+    "question": "What is the number of aircraft?",
+    "sql": "SELECT count(*) FROM aircraft"
+  },
+  {
+    "db_id": "aircraft",
+    "question": "List names of all pilot aged 30 or younger in descending alphabetical order.",
+    "sql": "SELECT Name FROM pilot WHERE Age  <=  30 ORDER BY Name DESC"
+  },
+  {
+    "db_id": "aircraft",
+    "question": "What are the names of all pilots listed by descending age?",
+    "sql": "SELECT Name FROM pilot ORDER BY Age DESC"
+  },
+  {
+    "db_id": "aircraft",
+    "question": "what is the name and age of the youngest winning pilot?",
+    "sql": "SELECT t1.name ,  t1.age FROM pilot AS t1 JOIN MATCH AS t2 ON t1.pilot_id  =  t2.winning_pilot ORDER BY t1.age LIMIT 1"
+  },
+  {
+    "db_id": "aircraft",
+    "question": "How many aircrafts are there?",
+    "sql": "SELECT count(*) FROM aircraft"
+  },
+  {
+    "db_id": "aircraft",
+    "question": "What are the names of all aicrafts that have never won any match?",
+    "sql": "SELECT Aircraft FROM aircraft WHERE Aircraft_ID NOT IN (SELECT Winning_Aircraft FROM MATCH)"
+  },
+  {
+    "db_id": "aircraft",
+    "question": "What are the names of all pilots 30 years old or young in descending alphabetical order?",
+    "sql": "SELECT Name FROM pilot WHERE Age  <=  30 ORDER BY Name DESC"
+  },
+  {
+    "db_id": "aircraft",
+    "question": "List the description of all aircrafts.",
+    "sql": "SELECT Description FROM aircraft"
+  },
+  {
+    "db_id": "candidate_poll",
+    "question": "What is the id of the candidate with the lowest oppose rate?",
+    "sql": "SELECT Candidate_ID FROM candidate ORDER BY oppose_rate LIMIT 1"
+  },
+  {
+    "db_id": "candidate_poll",
+    "question": "list all female (sex is F) candidate names in the alphabetical order.",
+    "sql": "SELECT t1.name FROM people AS t1 JOIN candidate AS t2 ON t1.people_id  =  t2.people_id WHERE t1.sex  =  'F' ORDER BY t1.name"
+  },
+  {
+    "db_id": "candidate_poll",
+    "question": "Find the average and minimum weight for each gender.",
+    "sql": "SELECT avg(weight) ,  min(weight) ,  sex FROM people GROUP BY sex"
+  },
+  {
+    "db_id": "candidate_poll",
+    "question": "find the highest support percentage, lowest consider rate and oppose rate of all candidates.",
+    "sql": "SELECT max(support_rate) ,  min(consider_rate) ,  min(oppose_rate) FROM candidate"
+  },
+  {
+    "db_id": "candidate_poll",
+    "question": "Find the id of the candidate who got the lowest oppose rate.",
+    "sql": "SELECT Candidate_ID FROM candidate ORDER BY oppose_rate LIMIT 1"
+  },
+  {
+    "db_id": "candidate_poll",
+    "question": "What are the average and minimum weights for people of each sex?",
+    "sql": "SELECT avg(weight) ,  min(weight) ,  sex FROM people GROUP BY sex"
+  },
+  {
+    "db_id": "candidate_poll",
+    "question": "Find the name of the candidates whose oppose percentage is the lowest for each sex.",
+    "sql": "SELECT t1.name ,  t1.sex ,  min(oppose_rate) FROM people AS t1 JOIN candidate AS t2 ON t1.people_id  =  t2.people_id GROUP BY t1.sex"
+  },
+  {
+    "db_id": "candidate_poll",
+    "question": "List all info about all people.",
+    "sql": "SELECT * FROM people"
+  },
+  {
+    "db_id": "decoration_competition",
+    "question": "Show the names of members that have a rank in round higher than 3.",
+    "sql": "SELECT T1.Name FROM member AS T1 JOIN round AS T2 ON T1.Member_ID  =  T2.Member_ID WHERE T2.Rank_in_Round  >  3"
+  },
+  {
+    "db_id": "decoration_competition",
+    "question": "What are the names and countries of members?",
+    "sql": "SELECT Name ,  Country FROM member"
+  },
+  {
+    "db_id": "decoration_competition",
+    "question": "Which countries have more than two members?",
+    "sql": "SELECT Country FROM member GROUP BY Country HAVING COUNT(*)  >  2"
+  },
+  {
+    "db_id": "decoration_competition",
+    "question": "List the names of members who did not participate in any round.",
+    "sql": "SELECT Name FROM member WHERE Member_ID NOT IN (SELECT Member_ID FROM round)"
+  },
+  {
+    "db_id": "decoration_competition",
+    "question": "Show the names of members and the decoration themes they have.",
+    "sql": "SELECT T1.Name ,  T2.Decoration_Theme FROM member AS T1 JOIN round AS T2 ON T1.Member_ID  =  T2.Member_ID"
+  },
+  {
+    "db_id": "decoration_competition",
+    "question": "Show the names of members and names of colleges they go to.",
+    "sql": "SELECT T2.Name ,  T1.Name FROM college AS T1 JOIN member AS T2 ON T1.College_ID  =  T2.College_ID"
+  },
+  {
+    "db_id": "decoration_competition",
+    "question": "Show the distinct leader names of colleges associated with members from country \"Canada\".",
+    "sql": "SELECT DISTINCT T1.Leader_Name FROM college AS T1 JOIN member AS T2 ON T1.College_ID  =  T2.College_ID WHERE T2.Country  =  \"Canada\""
+  },
+  {
+    "db_id": "decoration_competition",
+    "question": "Show the names of members and the locations of colleges they go to in ascending alphabetical order of member names.",
+    "sql": "SELECT T2.Name ,  T1.College_Location FROM college AS T1 JOIN member AS T2 ON T1.College_ID  =  T2.College_ID ORDER BY T2.Name ASC"
+  },
+  {
+    "db_id": "movie_1",
+    "question": "What is the reviewer id of Daniel Lewis?",
+    "sql": "SELECT rID FROM Reviewer WHERE name  =  \"Daniel Lewis\""
+  },
+  {
+    "db_id": "movie_1",
+    "question": "What are the names of movies that get 3 star and 4 star?",
+    "sql": "SELECT T2.title FROM Rating AS T1 JOIN Movie AS T2 ON T1.mID  =  T2.mID WHERE T1.stars  =  3 INTERSECT SELECT T2.title FROM Rating AS T1 JOIN Movie AS T2 ON T1.mID  =  T2.mID WHERE T1.stars  =  4"
+  },
+  {
+    "db_id": "movie_1",
+    "question": "What are the titles of all movies that have not been rated?",
+    "sql": "SELECT title FROM Movie WHERE mID NOT IN (SELECT mID FROM Rating)"
+  },
+  {
+    "db_id": "movie_1",
+    "question": "What are the names of directors who directed movies with 5 star rating? Also return the title of these movies.",
+    "sql": "SELECT T1.director ,  T1.title FROM Movie AS T1 JOIN Rating AS T2 ON T1.mID  =  T2.mID WHERE T2.stars  =  5"
+  },
+  {
+    "db_id": "movie_1",
+    "question": "Find the average rating star for each movie that are not reviewed by Brittany Harris.",
+    "sql": "SELECT mID ,  avg(stars) FROM Rating WHERE mID NOT IN (SELECT T1.mID FROM Rating AS T1 JOIN Reviewer AS T2 ON T1.rID  =  T2.rID WHERE T2.name  =  \"Brittany Harris\") GROUP BY mID"
+  },
+  {
+    "db_id": "movie_1",
+    "question": "Find the titles of all movies that have no ratings.",
+    "sql": "SELECT title FROM Movie WHERE mID NOT IN (SELECT mID FROM Rating)"
+  },
+  {
+    "db_id": "movie_1",
+    "question": "What is the id of the reviewer whose name includes the word \"Mike\"?",
+    "sql": "SELECT rID FROM Reviewer WHERE name LIKE \"%Mike%\""
+  },
+  {
+    "db_id": "movie_1",
+    "question": "What are the names of the directors who made exactly one movie?",
+    "sql": "SELECT director FROM Movie GROUP BY director HAVING count(*)  =  1"
+  },
+  {
+    "db_id": "music_4",
+    "question": "How many artists are there?",
+    "sql": "SELECT count(*) FROM artist"
+  },
+  {
+    "db_id": "music_4",
+    "question": "Show the famous titles of the artists with both volumes that lasted more than 2 weeks on top and volumes that lasted less than 2 weeks on top.",
+    "sql": "SELECT T1.Famous_Title FROM artist AS T1 JOIN volume AS T2 ON T1.Artist_ID  =  T2.Artist_ID WHERE T2.Weeks_on_Top  >  2 INTERSECT SELECT T1.Famous_Title FROM artist AS T1 JOIN volume AS T2 ON T1.Artist_ID  =  T2.Artist_ID WHERE T2.Weeks_on_Top  <  2"
+  },
+  {
+    "db_id": "music_4",
+    "question": "Give the songs included in volumes that have more than 1 week on top.",
+    "sql": "SELECT Song FROM volume WHERE Weeks_on_Top  >  1"
+  },
+  {
+    "db_id": "music_4",
+    "question": "Count the number of artists who have had volumes.",
+    "sql": "SELECT COUNT(DISTINCT Artist_ID) FROM volume"
+  },
+  {
+    "db_id": "music_4",
+    "question": "Give the maximum and minimum weeks on top across all volumes.",
+    "sql": "SELECT max(Weeks_on_Top) ,  min(Weeks_on_Top) FROM volume"
+  },
+  {
+    "db_id": "music_4",
+    "question": "What are the maximum and minimum week on top of all volumes?",
+    "sql": "SELECT max(Weeks_on_Top) ,  min(Weeks_on_Top) FROM volume"
+  },
+  {
+    "db_id": "music_4",
+    "question": "What are the dates of ceremony and results for each music festival?",
+    "sql": "SELECT Date_of_ceremony ,  RESULT FROM music_festival"
+  },
+  {
+    "db_id": "music_4",
+    "question": "Return the issue dates of volumes by artists who are at most 23 years old?",
+    "sql": "SELECT Issue_Date FROM artist AS T1 JOIN volume AS T2 ON T1.Artist_ID  =  T2.Artist_ID WHERE T1.age  <=  23"
+  },
+  {
+    "db_id": "news_report",
+    "question": "Show the names of journalists from \"England\" or \"Wales\".",
+    "sql": "SELECT Name FROM journalist WHERE Nationality  =  \"England\" OR Nationality  =  \"Wales\""
+  },
+  {
+    "db_id": "news_report",
+    "question": "what are the average and maximum attendances of all events?",
+    "sql": "SELECT avg(Event_Attendance) ,  max(Event_Attendance) FROM event"
+  },
+  {
+    "db_id": "news_report",
+    "question": "Show the names of journalists and the names of the events they reported in ascending order",
+    "sql": "SELECT T3.Name ,  T2.Name FROM news_report AS T1 JOIN event AS T2 ON T1.Event_ID  =  T2.Event_ID JOIN journalist AS T3 ON T1.journalist_ID  =  T3.journalist_ID ORDER BY T2.Event_Attendance ASC"
+  },
+  {
+    "db_id": "news_report",
+    "question": "What are the nationalities and ages of journalists?",
+    "sql": "SELECT Nationality ,  Age FROM journalist"
+  },
+  {
+    "db_id": "news_report",
+    "question": "Show the different nationalities and the number of journalists of each nationality.",
+    "sql": "SELECT Nationality ,  COUNT(*) FROM journalist GROUP BY Nationality"
+  },
+  {
+    "db_id": "news_report",
+    "question": "Show the names of journalists and the dates of the events they reported.",
+    "sql": "SELECT T3.Name ,  T2.Date FROM news_report AS T1 JOIN event AS T2 ON T1.Event_ID  =  T2.Event_ID JOIN journalist AS T3 ON T1.journalist_ID  =  T3.journalist_ID"
+  },
+  {
+    "db_id": "news_report",
+    "question": "List the event venues and names that have the top 2 most number of people attended.",
+    "sql": "SELECT venue ,  name FROM event ORDER BY Event_Attendance DESC LIMIT 2"
+  },
+  {
+    "db_id": "news_report",
+    "question": "Show the nations that have both journalists with more than 10 years of working and journalists with less than 3 years of working.",
+    "sql": "SELECT Nationality FROM journalist WHERE Years_working  >  10 INTERSECT SELECT Nationality FROM journalist WHERE Years_working  <  3"
+  },
+  {
+    "db_id": "party_people",
+    "question": "Which member names are shared among members in the party with the id 3 and the party with the id 1?",
+    "sql": "SELECT member_name FROM member WHERE party_id  =  3 INTERSECT SELECT member_name FROM member WHERE party_id  =  1"
+  },
+  {
+    "db_id": "party_people",
+    "question": "What are the names of parties that have no members?",
+    "sql": "SELECT party_name FROM party WHERE party_id NOT IN (SELECT party_id FROM Member)"
+  },
+  {
+    "db_id": "party_people",
+    "question": "Show all party names and their region names.",
+    "sql": "SELECT T1.party_name ,  T2.region_name FROM party AS T1 JOIN region AS T2 ON T1.region_id  =  T2.region_id"
+  },
+  {
+    "db_id": "party_people",
+    "question": "Count the number of different parties.",
+    "sql": "SELECT count(DISTINCT party_name) FROM party"
+  },
+  {
+    "db_id": "party_people",
+    "question": "Which ministers are not a part of the Progress Party?",
+    "sql": "SELECT minister FROM party WHERE party_name != 'Progress Party'"
+  },
+  {
+    "db_id": "party_people",
+    "question": "Show all distinct region names ordered by their labels.",
+    "sql": "SELECT DISTINCT region_name FROM region ORDER BY Label"
+  },
+  {
+    "db_id": "party_people",
+    "question": "Who are the ministers, when did they take office, and when did they leave office, ordered by when they left office?",
+    "sql": "SELECT minister ,  took_office ,  left_office FROM party ORDER BY left_office"
+  },
+  {
+    "db_id": "party_people",
+    "question": "Show all ministers and parties they belong to in descending order of the time they took office.",
+    "sql": "SELECT minister ,  party_name FROM party ORDER BY took_office DESC"
+  },
+  {
+    "db_id": "school_player",
+    "question": "Which team has the oldest player?",
+    "sql": "SELECT Team FROM player ORDER BY Age DESC LIMIT 1"
+  },
+  {
+    "db_id": "school_player",
+    "question": "What are the team and the location of school each player belongs to?",
+    "sql": "SELECT T1.Team ,  T2.Location FROM player AS T1 JOIN school AS T2 ON T1.School_ID  =  T2.School_ID"
+  },
+  {
+    "db_id": "school_player",
+    "question": "Show locations and nicknames of schools.",
+    "sql": "SELECT T1.Location ,  T2.Nickname FROM school AS T1 JOIN school_details AS T2 ON T1.School_ID  =  T2.School_ID"
+  },
+  {
+    "db_id": "school_player",
+    "question": "What is the average enrollment of schools?",
+    "sql": "SELECT avg(Enrollment) FROM school"
+  },
+  {
+    "db_id": "school_player",
+    "question": "Show the denomination of the school that has the most players.",
+    "sql": "SELECT T2.Denomination FROM player AS T1 JOIN school AS T2 ON T1.School_ID  =  T2.School_ID GROUP BY T1.School_ID ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "school_player",
+    "question": "List the teams of the players with the top 5 largest ages.",
+    "sql": "SELECT Team FROM player ORDER BY Age DESC LIMIT 5"
+  },
+  {
+    "db_id": "school_player",
+    "question": "What are the teams of the players, sorted in ascending alphabetical order?",
+    "sql": "SELECT Team FROM player ORDER BY Team ASC"
+  },
+  {
+    "db_id": "school_player",
+    "question": "What is the list of school locations sorted in descending order of school foundation year?",
+    "sql": "SELECT LOCATION FROM school ORDER BY Founded DESC"
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "What is the name of the project that requires the fewest number of hours, and the names of the scientists assigned to it?",
+    "sql": "SELECT T2.name ,  T3.name FROM assignedto AS T1 JOIN projects AS T2 ON T1.project  =  T2.code JOIN scientists AS T3 ON T1.scientist  =  T3.SSN WHERE T2.hours  =  (SELECT min(hours) FROM projects)"
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "What is the name and hours for the project which has the most scientists assigned to it?",
+    "sql": "SELECT T1.name ,  T1.hours FROM projects AS T1 JOIN assignedto AS T2 ON T1.code  =  T2.project GROUP BY T2.project ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "What are the names of any scientists who worked on projects named 'Matter of Time' and 'A Puzzling Pattern'?",
+    "sql": "SELECT T3.name FROM assignedto AS T1 JOIN projects AS T2 ON T1.project  =  T2.code JOIN scientists AS T3 ON T1.scientist  =  T3.SSN WHERE T2.name  =  'Matter of Time' INTERSECT SELECT T3.name FROM assignedto AS T1 JOIN projects AS T2 ON T1.project  =  T2.code JOIN scientists AS T3 ON T1.scientist  =  T3.SSN WHERE T2.name  =  'A Puzzling Parallax'"
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "Find name of the project that needs the least amount of time to finish and the name of scientists who worked on it.",
+    "sql": "SELECT T2.name ,  T3.name FROM assignedto AS T1 JOIN projects AS T2 ON T1.project  =  T2.code JOIN scientists AS T3 ON T1.scientist  =  T3.SSN WHERE T2.hours  =  (SELECT min(hours) FROM projects)"
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "How many different projects are there?",
+    "sql": "SELECT count(DISTINCT name) FROM projects"
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "Find the SSN and name of scientists who are assigned to the project with the longest hours.",
+    "sql": "SELECT T3.ssn ,  T3.name FROM assignedto AS T1 JOIN projects AS T2 ON T1.project  =  T2.code JOIN scientists AS T3 ON T1.scientist  =  T3.SSN WHERE T2.hours  =  (SELECT max(hours) FROM projects)"
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "Find the number of scientists involved for the projects that require more than 300 hours.",
+    "sql": "SELECT count(*) ,  T1.name FROM projects AS T1 JOIN assignedto AS T2 ON T1.code  =  T2.project WHERE T1.hours  >  300 GROUP BY T1.name"
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "What are the names of scientists who are assigned to any project?",
+    "sql": "SELECT T2.name FROM assignedto AS T1 JOIN scientists AS T2 ON T1.scientist  =  T2.ssn"
+  },
+  {
+    "db_id": "university_basketball",
+    "question": "What is the maximum enrollment across all schools?",
+    "sql": "SELECT max(Enrollment) FROM university"
+  },
+  {
+    "db_id": "university_basketball",
+    "question": "Return the name of the team and the acc during the regular season for the school that was founded the earliest.",
+    "sql": "SELECT t2.team_name ,  t2.ACC_Regular_Season FROM university AS t1 JOIN basketball_match AS t2 ON t1.school_id  =  t2.school_id ORDER BY t1.founded LIMIT 1"
+  },
+  {
+    "db_id": "university_basketball",
+    "question": "List all public schools and their locations.",
+    "sql": "SELECT school ,  LOCATION FROM university WHERE affiliation  =  'Public'"
+  },
+  {
+    "db_id": "university_basketball",
+    "question": "How many schools are in the basketball match?",
+    "sql": "SELECT count(DISTINCT school_id) FROM basketball_match"
+  },
+  {
+    "db_id": "university_basketball",
+    "question": "What are the different schools and their nicknames, ordered by their founding years?",
+    "sql": "SELECT school ,  nickname FROM university ORDER BY founded"
+  },
+  {
+    "db_id": "university_basketball",
+    "question": "Return the highest acc percent across all basketball matches.",
+    "sql": "SELECT acc_percent FROM basketball_match ORDER BY acc_percent DESC LIMIT 1"
+  },
+  {
+    "db_id": "university_basketball",
+    "question": "Find the location and all games score of the school that has Clemson as its team name.",
+    "sql": "SELECT t2.All_Games ,  t1.location FROM university AS t1 JOIN basketball_match AS t2 ON t1.school_id  =  t2.school_id WHERE team_name  =  'Clemson'"
+  },
+  {
+    "db_id": "university_basketball",
+    "question": "What are the names of teams from universities that have a below average enrollment?",
+    "sql": "SELECT t2.team_name FROM university AS t1 JOIN basketball_match AS t2 ON t1.school_id  =  t2.school_id WHERE enrollment  <  (SELECT avg(enrollment) FROM university)"
+  }
+]

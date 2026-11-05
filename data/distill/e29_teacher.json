@@ -1,0 +1,52 @@
+[
+  {
+    "db_id": "hospital_1",
+    "question": "How many patients do each physician take care of? List their names and number of patients they take care of.",
+    "failed_sql": "SELECT T1.name ,  count(*) FROM Physician AS T1 JOIN Patient AS T2 ON T1.id  =  T2.id GROUP BY T1.id",
+    "tool_feedback": "no such column: T1.id",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT T1.Name, COUNT(*) \nFROM Physician AS T1 \nJOIN Patient AS T2 ON T1.EmployeeID = T2.PCP \nGROUP BY T1.EmployeeID",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "hr_1",
+    "question": "What is all the information regarding employees who are managers?",
+    "failed_sql": "SELECT * FROM employees WHERE role = 'manager'",
+    "tool_feedback": "no such column: role",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT DISTINCT e.* FROM employees e JOIN employees em ON e.EMPLOYEE_ID = em.MANAGER_ID",
+    "verified": false,
+    "verification_error": null
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "What is the average cost of procedures that physician John Wen was trained in?",
+    "failed_sql": "SELECT avg(cost) FROM Physician JOIN Procedures ON Physician.id = Procedures Physician_id WHERE Physician_name = \"John Wen\"",
+    "tool_feedback": "near \"Physician_id\": syntax error",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT AVG(PR.Cost) FROM Physician P JOIN Trained_In T ON P.EmployeeID = T.Physician JOIN Procedures PR ON T.Treatment = PR.Code WHERE P.Name = 'John Wen'",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "hr_1",
+    "question": "What are the first names and department numbers for employees with last name McEwen?",
+    "failed_sql": "SELECT first_name ,  department_number FROM employees WHERE last_name  =  \"McEwen\"",
+    "tool_feedback": "no such column: department_number",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT first_name, DEPARTMENT_ID FROM employees WHERE last_name = 'McEwen'",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "What are names of customers who never ordered product Latte.",
+    "failed_sql": "SELECT name FROM customers WHERE id NOT IN (SELECT id FROM orders WHERE product_id  =  latte)",
+    "tool_feedback": "no such table: orders",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "ValueError: Expected SELECT SQL"
+  }
+]

@@ -1,0 +1,152 @@
+[
+  {
+    "db_id": "college_1",
+    "question": "What is the name of the department with the student that has the lowest GPA?",
+    "failed_sql": "SELECT dept_name FROM DEPARTMENT ORDER BY STU_GPA ASC LIMIT 1",
+    "tool_feedback": "no such column: STU_GPA",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "ValueError: Expected SELECT SQL"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find the names and average salaries of all departments whose average salary is greater than 42000.",
+    "failed_sql": "SELECT dept_name ,  avg(salary) FROM department AS t1 JOIN instructor AS t2 ON t1.dept_name  =  t2.dept_name GROUP BY dept_name HAVING avg(salary)  >  42000",
+    "tool_feedback": "ambiguous column name: dept_name",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT t1.dept_name , AVG(t2.salary) FROM department AS t1 JOIN instructor AS t2 ON t1.dept_name = t2.dept_name GROUP BY t1.dept_name HAVING AVG(t2.salary) > 42000",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find names of instructors with salary greater than that of some (at least one) instructor in the Biology department.",
+    "failed_sql": "SELECT name FROM instructor WHERE salary  >  SELECT salary FROM instructor GROUP BY dept_name INTERSECT SELECT salary FROM instructor GROUP BY dept_name",
+    "tool_feedback": "near \"SELECT\": syntax error",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "ValueError: Expected SELECT SQL"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the building, room number, semester and year of courses in the Psychology department, sorted using course title?",
+    "failed_sql": "SELECT building ,  room_number ,  semester ,  year FROM course WHERE dept_name  =  'Psychology' ORDER BY title",
+    "tool_feedback": "no such column: building",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT s.building, s.room_number, s.semester, s.year FROM section s JOIN course c ON s.course_id = c.course_id WHERE c.dept_name = 'Psychology' ORDER BY c.title",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find courses that ran in Fall 2009 but not in Spring 2010.",
+    "failed_sql": "SELECT t1.title FROM course AS t1 JOIN section AS t2 ON t1.course_id  =  t2.course_id JOIN semester AS t3 ON t2.semester  =  t3.semester WHERE t3.semester  =  'Fall' AND t2.year  =  2009 INTERSECT SELECT t1.title FROM course AS t1 JOIN section AS t2 ON t1.course_id  =  t2.course_id JOIN semester AS t3 ON t2.semester  =  t3.semester WHERE t3.semester  =  'Spring'",
+    "tool_feedback": "no such table: semester",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "ValueError: Expected SELECT SQL"
+  },
+  {
+    "db_id": "department_store",
+    "question": "What are the names and genders of staff who have held the title Sales Person, but never Clerical Staff?",
+    "failed_sql": "SELECT staff_name ,  staff_gender FROM staff WHERE job_title_code  =  'Sales Person' INTERSECT SELECT staff_name ,  staff_gender FROM staff WHERE job_title_code  =  'Clerical Staff'",
+    "tool_feedback": "no such column: job_title_code",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT DISTINCT staff_name, staff_gender FROM Staff INNER JOIN Staff_Department_Assignments ON Staff.staff_id = Staff_Department_Assignments.staff_id WHERE Staff_Department_Assignments.job_title_code = 'Sales Person' AND Staff_ID NOT IN (SELECT staff_id FROM Staff_Department_Assignments WHERE job_title_code = 'Clerical Staff')",
+    "verified": false,
+    "verification_error": "OperationalError: ambiguous column name: Staff_ID"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "Which city does staff with first name as Janessa and last name as Sawayn live?",
+    "failed_sql": "SELECT city FROM staff WHERE first_name  =  'Janessa' AND last_name  =  'Sawayn'",
+    "tool_feedback": "no such column: city",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT a.city FROM Staff s JOIN Addresses a ON s.staff_address_id = a.address_id WHERE s.first_name = 'Janessa' AND s.last_name = 'Sawayn'",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "formula_1",
+    "question": "Find the distinct driver id of all drivers that have a longer stop duration than some drivers in the race whose id is 841?",
+    "failed_sql": "SELECT DISTINCT driverId FROM qualifying WHERE T1.stop  >  SELECT T1.stop FROM qualifying AS T1 AS T2 JOIN races AS T2 ON T1.raceId  =  T2.raceId WHERE T2.id  =  841",
+    "tool_feedback": "near \"SELECT\": syntax error",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT DISTINCT driverId FROM pitStops WHERE milliseconds > (SELECT MIN(milliseconds) FROM pitStops WHERE raceId = 841)",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What are all the different first names of the drivers who are in position as standing and won?",
+    "failed_sql": "SELECT surname FROM driverStandings AS T1 JOIN drivers AS T2 ON T1.driverId  =  T2.driverId WHERE T1.position  =  1 AND T2.surname  !=  T1.surname GROUP BY T2.surname",
+    "tool_feedback": "no such column: T1.surname",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT DISTINCT forename FROM driverStandings AS T1 JOIN drivers AS T2 ON T1.driverId = T2.driverId WHERE T1.position = 1 AND T1.wins > 0",
+    "verified": false,
+    "verification_error": null
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What are all details of the students who registered but did not attend any course?",
+    "failed_sql": "SELECT T1.student_details FROM STUDENTS AS T1 JOIN STUDENT_COURSE_REGISTRATIONS AS T2 ON T1.student_id  =  T2.student_id JOIN COURSES AS T3 ON T2.course_id  =  T3.course_id WHERE T1.student_id  =  (SELECT T1 FROM STUDENTS AS T1 JOIN STUDENT_COURSE_REGISTRATIONS AS T2 ON T1.student_id  =  T2.student_id JOIN COURSES AS T3 ON T2.course_id  =  T3.course_id WHERE T1.student_id  =  (SELECT T1 FROM STUDENTS AS T",
+    "tool_feedback": "incomplete input",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "ValueError: Expected SELECT SQL"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What is the id of the candidate whose email is stanley.monahan@example.org?",
+    "failed_sql": "SELECT candidate_id FROM candidates WHERE email_address  =  'stanley.monahan@example.org'",
+    "tool_feedback": "no such column: email_address",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "ValueError: Expected SELECT SQL"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What are the task details, task ids, and project ids for the progrects that are detailed as 'omnis' or have at least 3 outcomes?",
+    "failed_sql": "SELECT task_details ,  task_id ,  project_id FROM Tasks WHERE task_details LIKE '%omnis%' OR count(*)  >=  3",
+    "tool_feedback": "misuse of aggregate function count()",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT task_details, task_id, project_id FROM Tasks WHERE project_id IN (SELECT project_id FROM Projects WHERE project_details LIKE '%omnis%') OR project_id IN (SELECT project_id FROM Project_Outcomes GROUP BY project_id HAVING COUNT(*) >= 3)",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What are the details of the project with no outcomes?",
+    "failed_sql": "SELECT project_details FROM projects WHERE outcome_code  =  ''",
+    "tool_feedback": "no such column: outcome_code",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "ValueError: Expected SELECT SQL"
+  },
+  {
+    "db_id": "college_1",
+    "question": "What is the count and code of the job with the most employee?",
+    "failed_sql": "SELECT PROF_JOBCODE ,  count(*) FROM EMPLOYEE GROUP BY PROF_JOBCODE ORDER BY count(*) DESC LIMIT 1",
+    "tool_feedback": "no such column: PROF_JOBCODE",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT EMP_JOBCODE, COUNT(*) FROM EMPLOYEE GROUP BY EMP_JOBCODE ORDER BY COUNT(*) DESC LIMIT 1",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the names and average salaries for departments with average salary higher than 42000?",
+    "failed_sql": "SELECT dept_name ,  salary FROM department WHERE salary  >  42000",
+    "tool_feedback": "no such column: salary",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "ValueError: Expected SELECT SQL"
+  }
+]

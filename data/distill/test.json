@@ -1,0 +1,252 @@
+[
+  {
+    "db_id": "tracking_software_problems",
+    "question": "Which staff members who reported problems from the product \"rem\" but not \"aut\"? Give me their first and last names.",
+    "reference_sql": "SELECT T3.staff_first_name ,  T3.staff_last_name FROM problems AS T1 JOIN product AS T2 JOIN staff AS T3 ON T1.product_id = T2.product_id AND T1.reported_by_staff_id = T3.staff_id WHERE T2.product_name = \"rem\" EXCEPT SELECT T3.staff_first_name ,  T3.staff_last_name FROM problems AS T1 JOIN product AS T2 JOIN staff AS T3 ON T1.product_id = T2.product_id AND T1.reported_by_staff_id = T3.staff_id WHERE T2.product_name = \"aut\""
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "When did the first payment happen?",
+    "reference_sql": "SELECT payment_date FROM payment ORDER BY payment_date ASC LIMIT 1"
+  },
+  {
+    "db_id": "products_for_hire",
+    "question": "What are the daily hire costs for the products with substring 'Book' in its name?",
+    "reference_sql": "SELECT daily_hire_cost FROM Products_for_hire WHERE product_name LIKE '%Book%'"
+  },
+  {
+    "db_id": "college_3",
+    "question": "What are the maximum and minumum grade points?",
+    "reference_sql": "SELECT max(gradepoint) ,  min(gradepoint) FROM GRADECONVERSION"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "Return the amount of the largest payment.",
+    "reference_sql": "SELECT amount FROM payment ORDER BY amount DESC LIMIT 1"
+  },
+  {
+    "db_id": "behavior_monitoring",
+    "question": "Return all detention summaries.",
+    "reference_sql": "SELECT detention_summary FROM Detention"
+  },
+  {
+    "db_id": "products_for_hire",
+    "question": "What are the id and the amount of refund of the booking that incurred the most times of payments?",
+    "reference_sql": "SELECT T1.booking_id ,  T1.amount_of_refund FROM Bookings AS T1 JOIN Payments AS T2 ON T1.booking_id  =  T2.booking_id GROUP BY T1.booking_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "assets_maintenance",
+    "question": "For all the faults of different parts, what are all the decriptions of the skills required to fix them? List the name of the faults and the skill description.",
+    "reference_sql": "SELECT T1.fault_short_name ,  T3.skill_description FROM Part_Faults AS T1 JOIN Skills_Required_To_Fix AS T2 ON T1.part_fault_id  =  T2.part_fault_id JOIN Skills AS T3 ON T2.skill_id  =  T3.skill_id"
+  },
+  {
+    "db_id": "customers_and_invoices",
+    "question": "Show the number of accounts.",
+    "reference_sql": "SELECT count(*) FROM Accounts"
+  },
+  {
+    "db_id": "tracking_software_problems",
+    "question": "Which problems were reported before the date of any problem reported by the staff Lysanne Turcotte? Give me the ids of the problems.",
+    "reference_sql": "SELECT T1.problem_id FROM problems AS T1 JOIN staff AS T2 ON T1.reported_by_staff_id = T2.staff_id WHERE date_problem_reported  <  ( SELECT min(date_problem_reported) FROM problems AS T3 JOIN staff AS T4 ON T3.reported_by_staff_id = T4.staff_id WHERE T4.staff_first_name = \"Lysanne\" AND T4.staff_last_name = \"Turcotte\" )"
+  },
+  {
+    "db_id": "college_3",
+    "question": "What are the first names of students, ordered by age from greatest to least?",
+    "reference_sql": "SELECT Fname FROM STUDENT ORDER BY Age DESC"
+  },
+  {
+    "db_id": "baseball_1",
+    "question": "What is the average height of the players from the college named 'Yale University'?",
+    "reference_sql": "SELECT avg(T1.height) FROM player AS T1 JOIN player_college AS T2 ON T1.player_id  =  T2.player_id JOIN college AS T3 ON T3.college_id  =  T2.college_id WHERE T3.name_full  =  'Yale University';"
+  },
+  {
+    "db_id": "baseball_1",
+    "question": "Count the number of players who enter hall of fame for each year.",
+    "reference_sql": "SELECT yearid ,  count(*) FROM hall_of_fame GROUP BY yearid;"
+  },
+  {
+    "db_id": "baseball_1",
+    "question": "Which team offers the lowest average salary? Give me the name and id of the team.",
+    "reference_sql": "SELECT T1.name ,  T1.team_id FROM team AS T1 JOIN salary AS T2 ON T1.team_id = T2.team_id GROUP BY T1.team_id ORDER BY avg(T2.salary) ASC LIMIT 1;"
+  },
+  {
+    "db_id": "college_3",
+    "question": "Give the maximum and minimum gradepoints for students living in NYC?",
+    "reference_sql": "SELECT max(T2.gradepoint) ,  min(T2.gradepoint) FROM ENROLLED_IN AS T1 JOIN GRADECONVERSION AS T2 JOIN STUDENT AS T3 ON T1.Grade  =  T2.lettergrade AND T1.StuID  =  T3.StuID WHERE T3.city_code  =  \"NYC\""
+  },
+  {
+    "db_id": "tracking_software_problems",
+    "question": "Which problems were reported by the staff named Dameon Frami or Jolie Weber? Give me the ids of the problems.",
+    "reference_sql": "SELECT product_id FROM problems AS T1 JOIN staff AS T2 ON T1.reported_by_staff_id = T2.staff_id WHERE T2.staff_first_name = \"Dameon\" AND T2.staff_last_name = \"Frami\" UNION SELECT product_id FROM problems AS T1 JOIN staff AS T2 ON T1.reported_by_staff_id = T2.staff_id WHERE T2.staff_first_name = \"Jolie\" AND T2.staff_last_name = \"Weber\""
+  },
+  {
+    "db_id": "college_3",
+    "question": "Find the last name of female (sex is F) students in the descending order of age.",
+    "reference_sql": "SELECT LName FROM STUDENT WHERE Sex  =  \"F\" ORDER BY Age DESC"
+  },
+  {
+    "db_id": "baseball_1",
+    "question": "List three countries which are the origins of the least players.",
+    "reference_sql": "SELECT birth_country FROM player GROUP BY birth_country ORDER BY count(*) ASC LIMIT 3;"
+  },
+  {
+    "db_id": "baseball_1",
+    "question": "How much salary did the top 3 well-paid players get in 2001?",
+    "reference_sql": "SELECT salary FROM salary WHERE YEAR  =  2001 ORDER BY salary DESC LIMIT 3;"
+  },
+  {
+    "db_id": "tracking_software_problems",
+    "question": "How many problems are there for product voluptatem?",
+    "reference_sql": "SELECT count(*) FROM product AS T1 JOIN problems AS T2 ON T1.product_id = T2.product_id WHERE T1.product_name = \"voluptatem\""
+  },
+  {
+    "db_id": "baseball_1",
+    "question": "Which team had the least number of attendances in home games in 1980?",
+    "reference_sql": "SELECT T2.name FROM home_game AS T1 JOIN team AS T2 ON T1.team_id = T2.team_id_br WHERE T1.year = 1980 ORDER BY T1.attendance ASC LIMIT 1;"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "Return the title and inventory id of the film that is rented most often.",
+    "reference_sql": "SELECT T1.title ,  T2.inventory_id FROM film AS T1 JOIN inventory AS T2 ON T1.film_id  =  T2.film_id JOIN rental AS T3 ON T2.inventory_id  =  T3.inventory_id GROUP BY T2.inventory_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "college_3",
+    "question": "What is all the information about courses, ordered by credits ascending?",
+    "reference_sql": "SELECT * FROM COURSE ORDER BY Credits"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "Return the most common first name among all actors.",
+    "reference_sql": "SELECT first_name FROM actor GROUP BY first_name ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "What are the city name, id, and number of addresses corresponding to the city with the most addressed?",
+    "reference_sql": "SELECT T2.city ,  count(*) ,  T1.city_id FROM address AS T1 JOIN city AS T2 ON T1.city_id  =  T2.city_id GROUP BY T1.city_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "customers_and_invoices",
+    "question": "What are the different product names, and what is the sum of quantity ordered for each product?",
+    "reference_sql": "SELECT T2.product_name ,  sum(T1.product_quantity) FROM Order_items AS T1 JOIN Products AS T2 ON T1.product_id  =  T2.product_id GROUP BY T2.product_name"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "Where does the staff member with the first name Elsa live?",
+    "reference_sql": "SELECT T2.address FROM staff AS T1 JOIN address AS T2 ON T1.address_id  =  T2.address_id WHERE T1.first_name  =  'Elsa'"
+  },
+  {
+    "db_id": "cre_Drama_Workshop_Groups",
+    "question": "List the actual delivery date for all the orders with quantity 1",
+    "reference_sql": "SELECT T1.Actual_Delivery_Date FROM Customer_Orders AS T1 JOIN ORDER_ITEMS AS T2 ON T1.Order_ID  =  T2.Order_ID WHERE T2.Order_Quantity  =  1"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "Return the first names of customers who did not rented a film after the date '2005-08-23 02:06:01'.",
+    "reference_sql": "SELECT first_name FROM customer WHERE customer_id NOT IN( SELECT customer_id FROM rental WHERE rental_date  >  '2005-08-23 02:06:01' )"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "Give the address of the staff member who has the first name Elsa.",
+    "reference_sql": "SELECT T2.address FROM staff AS T1 JOIN address AS T2 ON T1.address_id  =  T2.address_id WHERE T1.first_name  =  'Elsa'"
+  },
+  {
+    "db_id": "products_for_hire",
+    "question": "What is the maximum total amount paid by a customer? List the customer id and amount.",
+    "reference_sql": "SELECT customer_id ,  sum(amount_paid) FROM Payments GROUP BY customer_id ORDER BY sum(amount_paid) DESC LIMIT 1"
+  },
+  {
+    "db_id": "assets_maintenance",
+    "question": "Which assets did not incur any fault log? List the asset model.",
+    "reference_sql": "SELECT asset_model FROM Assets WHERE asset_id NOT IN (SELECT asset_id FROM Fault_Log)"
+  },
+  {
+    "db_id": "customers_and_invoices",
+    "question": "How many customers are there of each gender?",
+    "reference_sql": "SELECT gender ,  count(*) FROM Customers GROUP BY gender"
+  },
+  {
+    "db_id": "tracking_software_problems",
+    "question": "Find the oldest log id and its corresponding problem id.",
+    "reference_sql": "SELECT problem_log_id ,  problem_id FROM problem_log ORDER BY log_entry_date LIMIT 1"
+  },
+  {
+    "db_id": "tracking_software_problems",
+    "question": "Find all the ids and dates of the logs for the problem whose id is 10.",
+    "reference_sql": "SELECT problem_log_id ,  log_entry_date FROM problem_log WHERE problem_id = 10"
+  },
+  {
+    "db_id": "baseball_1",
+    "question": "Find the first name, last name and id for the top three players won the most player awards.",
+    "reference_sql": "SELECT T1.name_first ,  T1.name_last ,  T1.player_id FROM player AS T1 JOIN player_award AS T2 ON T1.player_id  =  T2.player_id GROUP BY T1.player_id ORDER BY count(*) DESC LIMIT 3;"
+  },
+  {
+    "db_id": "cre_Drama_Workshop_Groups",
+    "question": "What is the payment method code used by the most orders?",
+    "reference_sql": "SELECT payment_method_code FROM INVOICES GROUP BY payment_method_code ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "assets_maintenance",
+    "question": "What are all the fault descriptions and the fault status of all the faults recoreded in the logs?",
+    "reference_sql": "SELECT T1.fault_description ,  T2.fault_status FROM Fault_Log AS T1 JOIN Fault_Log_Parts AS T2 ON T1.fault_log_entry_id  =  T2.fault_log_entry_id"
+  },
+  {
+    "db_id": "baseball_1",
+    "question": "What is the total salary expenses of team Boston Red Stockings in 2010?",
+    "reference_sql": "SELECT sum(T1.salary) FROM salary AS T1 JOIN team AS T2 ON T1.team_id  =  T2.team_id_br WHERE T2.name  = 'Boston Red Stockings' AND T1.year  =  2010"
+  },
+  {
+    "db_id": "document_management",
+    "question": "Find names of the document without any images.",
+    "reference_sql": "SELECT document_name FROM documents EXCEPT SELECT t1.document_name FROM documents AS t1 JOIN document_sections AS t2 ON t1.document_code  =  t2.document_code JOIN document_sections_images AS t3 ON t2.section_id  =  t3.section_id"
+  },
+  {
+    "db_id": "college_3",
+    "question": "What are the full names of students minoring in department 140?",
+    "reference_sql": "SELECT T2.Fname ,  T2.Lname FROM MINOR_IN AS T1 JOIN STUDENT AS T2 ON T1.StuID  =  T2.StuID WHERE T1.DNO  =  140"
+  },
+  {
+    "db_id": "cre_Drama_Workshop_Groups",
+    "question": "Count the total number of bookings made.",
+    "reference_sql": "SELECT count(*) FROM BOOKINGS"
+  },
+  {
+    "db_id": "assets_maintenance",
+    "question": "Which gender makes up the majority of the staff?",
+    "reference_sql": "SELECT gender FROM staff GROUP BY gender ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "How many customers have an active value of 1?",
+    "reference_sql": "SELECT count(*) FROM customer WHERE active = '1'"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "What is the full name and id of the customer who has the lowest total amount of payment?",
+    "reference_sql": "SELECT T1.first_name ,  T1.last_name ,  T1.customer_id FROM customer AS T1 JOIN payment AS T2 ON T1.customer_id  =  T2.customer_id GROUP BY T1.customer_id ORDER BY sum(amount) ASC LIMIT 1"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "What is the most popular full name of the actors?",
+    "reference_sql": "SELECT first_name ,  last_name FROM actor GROUP BY first_name ,  last_name ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "behavior_monitoring",
+    "question": "Find the start and end dates of behavior incidents of students with last name \"Fahey\".",
+    "reference_sql": "SELECT T1.date_incident_start ,  date_incident_end FROM Behavior_Incident AS T1 JOIN Students AS T2 ON T1.student_id  =  T2.student_id WHERE T2.last_name  =  \"Fahey\""
+  },
+  {
+    "db_id": "document_management",
+    "question": "What is the type of the document named \"David CV\"?",
+    "reference_sql": "SELECT document_type_code FROM documents WHERE document_name  =  \"David CV\""
+  },
+  {
+    "db_id": "customers_and_invoices",
+    "question": "Show the order ids and the number of items in each order.",
+    "reference_sql": "SELECT order_id ,  count(*) FROM Order_items GROUP BY order_id"
+  },
+  {
+    "db_id": "baseball_1",
+    "question": "How many home games did the team Boston Red Stockings play from 1990 to 2000 in total?",
+    "reference_sql": "SELECT sum(T1.games) FROM home_game AS T1 JOIN team AS T2 ON T1.team_id = T2.team_id_br WHERE T2.name = 'Boston Red Stockings' AND T1.year BETWEEN 1990 AND 2000;"
+  }
+]

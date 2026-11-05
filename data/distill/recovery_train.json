@@ -1,0 +1,242 @@
+[
+  {
+    "db_id": "department_store",
+    "question": "Give me the product type, name and price for all the products supplied by supplier id 3.",
+    "failed_sql": "SELECT product_type_code ,  product_name ,  product_price FROM products WHERE supplier_id  =  3",
+    "tool_feedback": "no such column: supplier_id",
+    "corrected_sql": "SELECT T2.product_type_code ,  T2.product_name ,  T2.product_price FROM product_suppliers AS T1 JOIN products AS T2 ON T1.product_id  =  T2.product_id WHERE T1.supplier_id  =  3",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "Find the number of routes and airport name for each source airport, order the results by decreasing number of routes.",
+    "failed_sql": "SELECT src_ap ,  count(*) FROM routes GROUP BY src_ap ORDER BY count(*) DESC",
+    "tool_feedback": "Query executed, but its result was incorrect.",
+    "corrected_sql": "SELECT count(*) ,  T1.name FROM airports AS T1 JOIN routes AS T2 ON T1.apid  =  T2.src_apid GROUP BY T1.name ORDER BY count(*) DESC",
+    "failure_type": "semantic"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "How many routes go from the United States to Canada?",
+    "failed_sql": "SELECT count(*) FROM routes WHERE dst_ap  =  'Canada' AND country  =  'United States'",
+    "tool_feedback": "no such column: country",
+    "corrected_sql": "SELECT count(*) FROM routes WHERE dst_apid IN (SELECT apid FROM airports WHERE country  =  'Canada') AND src_apid IN (SELECT apid FROM airports WHERE country  =  'United States')",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "Show different tourist attractions' names, ids, and the corresponding number of visits.",
+    "failed_sql": "SELECT name ,  tourist_attraction_id ,  count(*) FROM visits GROUP BY name ,  tourist_attraction_id",
+    "tool_feedback": "no such column: name",
+    "corrected_sql": "SELECT T1.Name ,  T2.Tourist_Attraction_ID ,   COUNT(*) FROM Tourist_Attractions AS T1 JOIN VISITS AS T2 ON T1.Tourist_Attraction_ID  =  T2.Tourist_Attraction_ID GROUP BY T2.Tourist_Attraction_ID",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find names of instructors with salary greater than that of some (at least one) instructor in the Biology department.",
+    "failed_sql": "SELECT name FROM instructor WHERE salary  >  SELECT salary FROM instructor GROUP BY dept_name INTERSECT SELECT salary FROM instructor GROUP BY dept_name",
+    "tool_feedback": "near \"SELECT\": syntax error",
+    "corrected_sql": "SELECT name FROM instructor WHERE salary  >  (SELECT min(salary) FROM instructor WHERE dept_name  =  'Biology')",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "college_1",
+    "question": "What is the name of the department with the student that has the lowest GPA?",
+    "failed_sql": "SELECT dept_name FROM DEPARTMENT ORDER BY STU_GPA ASC LIMIT 1",
+    "tool_feedback": "no such column: STU_GPA",
+    "corrected_sql": "SELECT T2.dept_name FROM student AS T1 JOIN department AS T2 ON T1.dept_code  =  T2.dept_code ORDER BY stu_gpa LIMIT 1",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What is the title, credit value, and department name for courses with more than one prerequisite?",
+    "failed_sql": "SELECT title ,  credits ,  dept_name FROM course WHERE credits  >  0 AND prereq_id  =  0",
+    "tool_feedback": "no such column: prereq_id",
+    "corrected_sql": "SELECT T1.title ,  T1.credits , T1.dept_name FROM course AS T1 JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  >  1",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "department_store",
+    "question": "List the names of all the distinct customers who bought a keyboard.",
+    "failed_sql": "SELECT customer_name FROM customer_orders AS T1 JOIN products AS T2 ON T1.customer_id  =  T2.product_id GROUP BY T1.customer_id HAVING T2.product_name  =  \"keyboard\"",
+    "tool_feedback": "no such column: customer_name",
+    "corrected_sql": "SELECT DISTINCT T1.customer_name FROM customers AS T1 JOIN customer_orders AS T2 ON T1.customer_id  =  T2.customer_id JOIN order_items AS T3 ON T2.order_id  =  T3.order_id JOIN products AS T4 ON T3.product_id  =  T4.product_id WHERE T4.product_name  =  \"keyboard\"",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "department_store",
+    "question": "Return the name and job title of the staff with the latest date assigned.",
+    "failed_sql": "SELECT t1.staff_name ,  t2.job_title_code FROM Staff AS t1 JOIN Staff_Department_Assignments AS t2 ON t1.staff_id  =  t2.staff_id JOIN Departments AS t3 ON t1.department_id  =  t3.department_id ORDER BY date_assigned_to DESC LIMIT 1",
+    "tool_feedback": "no such column: t1.department_id",
+    "corrected_sql": "SELECT T1.staff_name ,  T2.job_title_code FROM staff AS T1 JOIN staff_department_assignments AS T2 ON T1.staff_id  =  T2.staff_id ORDER BY T2.date_assigned_to DESC LIMIT 1",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "college_1",
+    "question": "What is the first name of students who got grade C in any class?",
+    "failed_sql": "SELECT T1.emp_fname FROM STUDENT AS T1 JOIN ENROLL AS T2 ON T1.stu_num  =  T2.stu_num WHERE T2.grade  =  'C'",
+    "tool_feedback": "no such column: T1.emp_fname",
+    "corrected_sql": "SELECT DISTINCT stu_fname FROM student AS T1 JOIN enroll AS T2 ON T1.stu_num  =  T2.stu_num WHERE enroll_grade  =  'C'",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "college_1",
+    "question": "How many different locations does each school have?",
+    "failed_sql": "SELECT count(DISTINCT school_code) FROM DEPARTMENT",
+    "tool_feedback": "Query executed, but its result was incorrect.",
+    "corrected_sql": "SELECT count(DISTINCT dept_address) ,  school_code FROM department GROUP BY school_code",
+    "failure_type": "semantic"
+  },
+  {
+    "db_id": "department_store",
+    "question": "What are the names and genders of staff who have held the title Sales Person, but never Clerical Staff?",
+    "failed_sql": "SELECT staff_name ,  staff_gender FROM staff WHERE job_title_code  =  'Sales Person' INTERSECT SELECT staff_name ,  staff_gender FROM staff WHERE job_title_code  =  'Clerical Staff'",
+    "tool_feedback": "no such column: job_title_code",
+    "corrected_sql": "SELECT T1.staff_name ,  T1.staff_gender FROM staff AS T1 JOIN Staff_Department_Assignments AS T2 ON T1.staff_id  =  T2.staff_id WHERE T2.job_title_code  =  \"Sales Person\" EXCEPT SELECT T1.staff_name ,  T1.staff_gender FROM staff AS T1 JOIN Staff_Department_Assignments AS T2 ON T1.staff_id  =  T2.staff_id WHERE T2.job_title_code  =  \"Clerical Staff\"",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "Which city does staff with first name as Janessa and last name as Sawayn live?",
+    "failed_sql": "SELECT city FROM staff WHERE first_name  =  'Janessa' AND last_name  =  'Sawayn'",
+    "tool_feedback": "no such column: city",
+    "corrected_sql": "SELECT T1.city FROM Addresses AS T1 JOIN Staff AS T2 ON T1.address_id = T2.staff_address_id WHERE T2.first_name = \"Janessa\" AND T2.last_name = \"Sawayn\";",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "What is the average price for a lesson taught by Janessa Sawayn?",
+    "failed_sql": "SELECT avg(price) FROM lessons AS T1 JOIN customers AS T2 ON T1.customer_id  =  T2.customer_id JOIN staff AS T3 ON T2.first_name  =  T3.first_name WHERE T3.last_name  =  \"Sawayn\"",
+    "tool_feedback": "Query executed, but its result was incorrect.",
+    "corrected_sql": "SELECT avg(price) FROM Lessons AS T1 JOIN Staff AS T2 ON T1.staff_id = T2.staff_id WHERE T2.first_name = \"Janessa\" AND T2.last_name = \"Sawayn\";",
+    "failure_type": "semantic"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What roles did staff members play between '2003-04-19 15:06:20' and '2016-03-15 00:33:18'?",
+    "failed_sql": "SELECT role_description FROM project_staff WHERE date_from  <=  '2003-04-19 15:06:20' AND date_to  >=  '2016-03-15 00:33:18'",
+    "tool_feedback": "no such column: role_description",
+    "corrected_sql": "SELECT role_code FROM Project_Staff WHERE date_from  >  '2003-04-19 15:06:20' AND date_to  <  '2016-03-15 00:33:18'",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "department_store",
+    "question": "List the names and phone numbers of all the distinct suppliers who supply red jeans.",
+    "failed_sql": "SELECT supplier_name ,  supplier_phone FROM suppliers WHERE product_id  =  1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "tool_feedback": "no such column: product_id",
+    "corrected_sql": "SELECT DISTINCT T1.supplier_name ,  T1.supplier_phone FROM suppliers AS T1 JOIN product_suppliers AS T2 ON T1.supplier_id  =  T2.supplier_id JOIN products AS T3 ON T2.product_id  =  T3.product_id WHERE T3.product_name  =  \"red jeans\"",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What is detail of the student who most recently registered course?",
+    "failed_sql": "SELECT student_details FROM student_course_registrations ORDER BY registration_date DESC LIMIT 1",
+    "tool_feedback": "no such column: student_details",
+    "corrected_sql": "SELECT T2.student_details FROM student_course_registrations AS T1 JOIN students AS T2 ON T1.student_id = T2.student_id ORDER BY T1.registration_date DESC LIMIT 1",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What are all details of the students who registered but did not attend any course?",
+    "failed_sql": "SELECT T1.student_details FROM STUDENTS AS T1 JOIN STUDENT_COURSE_REGISTRATIONS AS T2 ON T1.student_id  =  T2.student_id JOIN COURSES AS T3 ON T2.course_id  =  T3.course_id WHERE T1.student_id  =  (SELECT T1 FROM STUDENTS AS T1 JOIN STUDENT_COURSE_REGISTRATIONS AS T2 ON T1.student_id  =  T2.student_id JOIN COURSES AS T3 ON T2.course_id  =  T3.course_id WHERE T1.student_id  =  (SELECT T1 FROM STUDENTS AS T",
+    "tool_feedback": "incomplete input",
+    "corrected_sql": "SELECT * FROM student_course_registrations WHERE student_id NOT IN (SELECT student_id FROM student_course_attendance)",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "What are the price ranges of five star hotels?",
+    "failed_sql": "SELECT price_range FROM hotels WHERE star_rating_code  =  '5' GROUP BY star_rating_code ORDER BY price_range DESC LIMIT 5",
+    "tool_feedback": "Query executed, but its result was incorrect.",
+    "corrected_sql": "SELECT price_range FROM HOTELS WHERE star_rating_code  =  \"5\"",
+    "failure_type": "semantic"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find the names and average salaries of all departments whose average salary is greater than 42000.",
+    "failed_sql": "SELECT dept_name ,  avg(salary) FROM department AS t1 JOIN instructor AS t2 ON t1.dept_name  =  t2.dept_name GROUP BY dept_name HAVING avg(salary)  >  42000",
+    "tool_feedback": "ambiguous column name: dept_name",
+    "corrected_sql": "SELECT dept_name ,  AVG (salary) FROM instructor GROUP BY dept_name HAVING AVG (salary)  >  42000",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "List the description of the outcomes for all projects.",
+    "failed_sql": "SELECT outcome_description FROM Research_Outcomes",
+    "tool_feedback": "Query executed, but its result was incorrect.",
+    "corrected_sql": "SELECT T1.outcome_description FROM Research_outcomes AS T1 JOIN Project_outcomes AS T2 ON T1.outcome_code  =  T2.outcome_code",
+    "failure_type": "semantic"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find courses that ran in Fall 2009 but not in Spring 2010.",
+    "failed_sql": "SELECT t1.title FROM course AS t1 JOIN section AS t2 ON t1.course_id  =  t2.course_id JOIN semester AS t3 ON t2.semester  =  t3.semester WHERE t3.semester  =  'Fall' AND t2.year  =  2009 INTERSECT SELECT t1.title FROM course AS t1 JOIN section AS t2 ON t1.course_id  =  t2.course_id JOIN semester AS t3 ON t2.semester  =  t3.semester WHERE t3.semester  =  'Spring'",
+    "tool_feedback": "no such table: semester",
+    "corrected_sql": "SELECT course_id FROM SECTION WHERE semester  =  'Fall' AND YEAR  =  2009 EXCEPT SELECT course_id FROM SECTION WHERE semester  =  'Spring' AND YEAR  =  2010",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "For each project id, how many tasks are there?",
+    "failed_sql": "SELECT count(*) FROM Tasks AS T1 JOIN Projects AS T2 ON T1.project_id  =  T2.project_id",
+    "tool_feedback": "Query executed, but its result was incorrect.",
+    "corrected_sql": "SELECT count(*) ,  T1.project_details FROM Projects AS T1 JOIN Tasks AS T2 ON T1.project_id  =  T2.project_id GROUP BY T1.project_id",
+    "failure_type": "semantic"
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What are the forenames and surnames of drivers who participated in the races named Australian Grand Prix but not the races named Chinese Grand Prix?",
+    "failed_sql": "SELECT f.forename ,  s.surname FROM drivers AS t1 JOIN races AS t2 ON t1.driverid  =  t2.driverid JOIN circuits AS t3 ON t2.circuitid  =  t3.circuitid WHERE t2.name  =  \"Australian Grand Prix\" INTERSECT SELECT f.forename ,  s.surname FROM drivers AS t1 JOIN races AS t2 ON t1.driverid  =  t2.driverid JOIN circuits AS t3 ON t2.circuitid  =  t3.circuitid WHERE t2.name  !=  \"Chinese Grand Prix\"",
+    "tool_feedback": "no such column: f.forename",
+    "corrected_sql": "SELECT T3.forename ,  T3.surname FROM races AS T1 JOIN results AS T2 ON T1.raceid = T2.raceid JOIN drivers AS T3 ON T2.driverid = T3.driverid WHERE T1.name = \"Australian Grand Prix\" EXCEPT SELECT T3.forename ,  T3.surname FROM races AS T1 JOIN results AS T2 ON T1.raceid = T2.raceid JOIN drivers AS T3 ON T2.driverid = T3.driverid WHERE T1.name = \"Chinese Grand Prix\"",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "List phone number and email address of customer with more than 2000 outstanding balance.",
+    "failed_sql": "SELECT email_address ,  phone_number FROM customers WHERE amount_outstanding  >  2000",
+    "tool_feedback": "Query executed, but its result was incorrect.",
+    "corrected_sql": "SELECT phone_number ,  email_address FROM Customers WHERE amount_outstanding  >  2000;",
+    "failure_type": "semantic"
+  },
+  {
+    "db_id": "store_1",
+    "question": "How many orders does Luca Mancini have in his invoices?",
+    "failed_sql": "SELECT count(*) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id  =  T2.id JOIN employees AS T3 ON T2.support_rep_id  =  T3.id WHERE T3.first_name  =  \"Luca\" AND T3.last_name  =  \"Mancini\"",
+    "tool_feedback": "Query executed, but its result was incorrect.",
+    "corrected_sql": "SELECT count(*) FROM customers AS T1 JOIN invoices AS T2 ON T1.id = T2.customer_id WHERE T1.first_name = \"Lucas\" AND T1.last_name = \"Mancini\";",
+    "failure_type": "semantic"
+  },
+  {
+    "db_id": "store_1",
+    "question": "List the number of invoices from Chicago, IL.",
+    "failed_sql": "SELECT count(*) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id  =  T2.id JOIN T2.city  =  T2.city AS T3 ON T2.id  =  T3.id WHERE T3.city  =  \"Chicago\" AND T3.state  =  \"IL\"",
+    "tool_feedback": "near \"=\": syntax error",
+    "corrected_sql": "SELECT COUNT(*) FROM invoices WHERE billing_city  =  \"Chicago\" AND billing_state  =  \"IL\";",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "What are the duration of the longest and shortest pop tracks in milliseconds?",
+    "failed_sql": "SELECT T1.TAR, T2.TAR FROM TRACK AS T1 JOIN TRACK AS T2 ON T1.TAR  =  T2.TAR ORDER BY T1.TAR DESC LIMIT 1 ,  ORDER BY T1.TAR ASC LIMIT 1",
+    "tool_feedback": "near \"ORDER\": syntax error",
+    "corrected_sql": "SELECT max(Milliseconds) ,  min(Milliseconds) FROM GENRE AS T1 JOIN TRACK AS T2 ON T1.GenreId  =  T2.GenreId WHERE T1.Name  =  \"Pop\"",
+    "failure_type": "execution"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the titles of courses without prerequisites?",
+    "failed_sql": "SELECT title FROM course WHERE dept_name IS NULL",
+    "tool_feedback": "Query executed, but its result was incorrect.",
+    "corrected_sql": "SELECT title FROM course WHERE course_id NOT IN (SELECT course_id FROM prereq)",
+    "failure_type": "semantic"
+  },
+  {
+    "db_id": "store_1",
+    "question": "How many albums has Billy Cobam released?",
+    "failed_sql": "SELECT count(*) FROM albums AS T1 JOIN artists AS T2 ON T1.artist_id  =  T2.id WHERE T2.name  =  \"Billy Cobam\"",
+    "tool_feedback": "Query executed, but its result was incorrect.",
+    "corrected_sql": "SELECT count(*) FROM albums AS T1 JOIN artists AS T2 ON  T1.artist_id = T2.id WHERE T2.name = \"Billy Cobham\";",
+    "failure_type": "semantic"
+  }
+]

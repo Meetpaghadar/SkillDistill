@@ -1,0 +1,502 @@
+[
+  {
+    "db_id": "college_1",
+    "question": "What is the department name of the students with lowest gpa belongs to?",
+    "reference_sql": "SELECT T2.dept_name FROM student AS T1 JOIN department AS T2 ON T1.dept_code  =  T2.dept_code ORDER BY stu_gpa LIMIT 1"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find the minimum salary for the departments whose average salary is above the average payment of all instructors.",
+    "reference_sql": "SELECT min(salary) ,  dept_name FROM instructor GROUP BY dept_name HAVING avg(salary)  >  (SELECT avg(salary) FROM instructor)"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "What is the status code, mobile phone number and email address of customer with last name as Kohler or first name as Marina?",
+    "reference_sql": "SELECT customer_status_code ,  cell_mobile_phone_number ,  email_address FROM Customers WHERE first_name = \"Marina\" OR last_name  =  \"Kohler\""
+  },
+  {
+    "db_id": "college_2",
+    "question": "list in alphabetic order all course names and their instructors' names in year 2008.",
+    "reference_sql": "SELECT T1.title ,  T3.name FROM course AS T1 JOIN teaches AS T2 ON T1.course_id  =  T2.course_id JOIN instructor AS T3 ON T2.id  =  T3.id WHERE YEAR  =  2008 ORDER BY T1.title"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What is the title, credit value, and department name for courses with more than one prerequisite?",
+    "reference_sql": "SELECT T1.title ,  T1.credits , T1.dept_name FROM course AS T1 JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  >  1"
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "What are the names and descriptions of the photos taken at the tourist attraction \"film festival\"?",
+    "reference_sql": "SELECT T1.Name ,  T1.Description FROM PHOTOS AS T1 JOIN TOURIST_ATTRACTIONS AS T2 ON T1.Tourist_Attraction_ID  =  T2.Tourist_Attraction_ID WHERE T2.Name  =  \"film festival\""
+  },
+  {
+    "db_id": "college_2",
+    "question": "How many students are in each department?",
+    "reference_sql": "SELECT count(*) ,  dept_name FROM student GROUP BY dept_name"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find courses that ran in Fall 2009 but not in Spring 2010.",
+    "reference_sql": "SELECT course_id FROM SECTION WHERE semester  =  'Fall' AND YEAR  =  2009 EXCEPT SELECT course_id FROM SECTION WHERE semester  =  'Spring' AND YEAR  =  2010"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the building, room number, semester and year of courses in the Psychology department, sorted using course title?",
+    "reference_sql": "SELECT T2.building ,  T2.room_number ,  T2.semester ,  T2.year FROM course AS T1 JOIN SECTION AS T2 ON T1.course_id  =  T2.course_id WHERE T1.dept_name  =  'Psychology' ORDER BY T1.title"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What is the response received date for the document described as Regular that was granted more than 100 dollars?",
+    "reference_sql": "SELECT T1.response_received_date FROM Documents AS T1 JOIN Document_Types AS T2 ON T1.document_type_code  =  T2.document_type_code JOIN Grants AS T3 ON T1.grant_id  =  T3.grant_id WHERE T2.document_description  =  'Regular' OR T3.grant_amount  >  100"
+  },
+  {
+    "db_id": "college_1",
+    "question": "What are the different locations of the school with the code BUS?",
+    "reference_sql": "SELECT count(DISTINCT dept_address) FROM department WHERE school_code  =  'BUS'"
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "Find the names of all the tracks that contain the word \"you\".",
+    "reference_sql": "SELECT Name FROM TRACK WHERE Name LIKE '%you%'"
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "What are the price ranges of five star hotels?",
+    "reference_sql": "SELECT price_range FROM HOTELS WHERE star_rating_code  =  \"5\""
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What is the id and last name of the driver who participated in the most races after 2010?",
+    "reference_sql": "SELECT T1.driverid ,  T1.surname FROM drivers AS T1 JOIN results AS T2 ON T1.driverid  =  T2.driverid JOIN races AS T3 ON T2.raceid = T3.raceid WHERE T3.year > 2010 GROUP BY T1.driverid ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "List the names of all music genres.",
+    "reference_sql": "SELECT Name FROM GENRE"
+  },
+  {
+    "db_id": "college_1",
+    "question": "How many professors are teaching class with code ACCT-211?",
+    "reference_sql": "SELECT count(DISTINCT PROF_NUM) FROM CLASS WHERE CRS_CODE  =  \"ACCT-211\""
+  },
+  {
+    "db_id": "department_store",
+    "question": "List the names of all the distinct customers who bought a keyboard.",
+    "reference_sql": "SELECT DISTINCT T1.customer_name FROM customers AS T1 JOIN customer_orders AS T2 ON T1.customer_id  =  T2.customer_id JOIN order_items AS T3 ON T2.order_id  =  T3.order_id JOIN products AS T4 ON T3.product_id  =  T4.product_id WHERE T4.product_name  =  \"keyboard\""
+  },
+  {
+    "db_id": "college_1",
+    "question": "How many different locations does each school have?",
+    "reference_sql": "SELECT count(DISTINCT dept_address) ,  school_code FROM department GROUP BY school_code"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the titles of courses without prerequisites?",
+    "reference_sql": "SELECT title FROM course WHERE course_id NOT IN (SELECT course_id FROM prereq)"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "List phone number and email address of customer with more than 2000 outstanding balance.",
+    "reference_sql": "SELECT phone_number ,  email_address FROM Customers WHERE amount_outstanding  >  2000;"
+  },
+  {
+    "db_id": "college_2",
+    "question": "How many classrooms are not in Lamberton?",
+    "reference_sql": "SELECT count(*) FROM classroom WHERE building != 'Lamberton'"
+  },
+  {
+    "db_id": "store_1",
+    "question": "Which employee manage most number of peoples? List employee's first and last name, and number of people report to that employee.",
+    "reference_sql": "SELECT T2.first_name , T2.last_name ,  count(T1.reports_to) FROM employees AS T1 JOIN employees AS T2 ON T1.reports_to = T2.id GROUP BY T1.reports_to ORDER BY count(T1.reports_to) DESC LIMIT 1;"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "List all vehicle id",
+    "reference_sql": "SELECT vehicle_id FROM Vehicles;"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "For each customer status code, how many customers are classified that way?",
+    "reference_sql": "SELECT customer_status_code , count(*) FROM Customers GROUP BY customer_status_code;"
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "Which artist has the most albums?",
+    "reference_sql": "SELECT T2.Name FROM ALBUM AS T1 JOIN ARTIST AS T2 ON T1.ArtistId  =  T2.ArtistId GROUP BY T2.Name ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "Find the number of routes and airport name for each source airport, order the results by decreasing number of routes.",
+    "reference_sql": "SELECT count(*) ,  T1.name FROM airports AS T1 JOIN routes AS T2 ON T1.apid  =  T2.src_apid GROUP BY T1.name ORDER BY count(*) DESC"
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "Find the average unit price for a track.",
+    "reference_sql": "SELECT AVG(UnitPrice) FROM TRACK"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find the names and average salaries of all departments whose average salary is greater than 42000.",
+    "reference_sql": "SELECT dept_name ,  AVG (salary) FROM instructor GROUP BY dept_name HAVING AVG (salary)  >  42000"
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "What are the duration of the longest and shortest pop tracks in milliseconds?",
+    "reference_sql": "SELECT max(Milliseconds) ,  min(Milliseconds) FROM GENRE AS T1 JOIN TRACK AS T2 ON T1.GenreId  =  T2.GenreId WHERE T1.Name  =  \"Pop\""
+  },
+  {
+    "db_id": "store_1",
+    "question": "What are the names of all the playlists?",
+    "reference_sql": "SELECT name FROM playlists;"
+  },
+  {
+    "db_id": "college_1",
+    "question": "What is the name of the department with the student that has the lowest GPA?",
+    "reference_sql": "SELECT T2.dept_name FROM student AS T1 JOIN department AS T2 ON T1.dept_code  =  T2.dept_code ORDER BY stu_gpa LIMIT 1"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find names of instructors with salary greater than that of some (at least one) instructor in the Biology department.",
+    "reference_sql": "SELECT name FROM instructor WHERE salary  >  (SELECT min(salary) FROM instructor WHERE dept_name  =  'Biology')"
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "What is the average price range of hotels for each each star rating code?",
+    "reference_sql": "SELECT star_rating_code ,  avg(price_range) FROM HOTELS GROUP BY star_rating_code"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "List the id of students who never attends courses?",
+    "reference_sql": "SELECT student_id FROM students WHERE student_id NOT IN (SELECT student_id FROM student_course_attendance)"
+  },
+  {
+    "db_id": "formula_1",
+    "question": "Find the distinct driver id of all drivers that have a longer stop duration than some drivers in the race whose id is 841?",
+    "reference_sql": "SELECT DISTINCT driverid ,  STOP FROM pitstops WHERE duration  >  (SELECT min(duration) FROM pitstops WHERE raceid  =  841)"
+  },
+  {
+    "db_id": "store_1",
+    "question": "List top 10 employee work longest in the company. List employee's first and last name.",
+    "reference_sql": "SELECT first_name , last_name FROM employees ORDER BY hire_date ASC LIMIT 10;"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "List the description of the outcomes for all projects.",
+    "reference_sql": "SELECT T1.outcome_description FROM Research_outcomes AS T1 JOIN Project_outcomes AS T2 ON T1.outcome_code  =  T2.outcome_code"
+  },
+  {
+    "db_id": "department_store",
+    "question": "What are the order ids and customer ids for orders that have been Cancelled, sorted by their order dates?",
+    "reference_sql": "SELECT order_id ,  customer_id FROM customer_orders WHERE order_status_code  =   \"Cancelled\" ORDER BY order_date"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What is the title of the course with Differential Geometry as a prerequisite?",
+    "reference_sql": "SELECT title FROM course WHERE course_id IN (SELECT T1.course_id FROM prereq AS T1 JOIN course AS T2 ON T1.prereq_id  =  T2.course_id WHERE T2.title  =  'Differential Geometry')"
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "Find the maximum and minimum millisecond lengths of pop tracks.",
+    "reference_sql": "SELECT max(Milliseconds) ,  min(Milliseconds) FROM GENRE AS T1 JOIN TRACK AS T2 ON T1.GenreId  =  T2.GenreId WHERE T1.Name  =  \"Pop\""
+  },
+  {
+    "db_id": "college_1",
+    "question": "What is the count and code of the job with the most employee?",
+    "reference_sql": "SELECT emp_jobcode ,  count(*) FROM employee GROUP BY emp_jobcode ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "college_2",
+    "question": "List in alphabetic order the names of all distinct instructors.",
+    "reference_sql": "SELECT DISTINCT name FROM  instructor ORDER BY name"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "For each project id, how many tasks are there?",
+    "reference_sql": "SELECT count(*) ,  T1.project_details FROM Projects AS T1 JOIN Tasks AS T2 ON T1.project_id  =  T2.project_id GROUP BY T1.project_id"
+  },
+  {
+    "db_id": "college_2",
+    "question": "How many departments offer courses?",
+    "reference_sql": "SELECT count(DISTINCT dept_name) FROM course"
+  },
+  {
+    "db_id": "store_1",
+    "question": "What are the first and last names of all the employees and how many people report to them?",
+    "reference_sql": "SELECT T2.first_name , T2.last_name ,  count(T1.reports_to) FROM employees AS T1 JOIN employees AS T2 ON T1.reports_to = T2.id GROUP BY T1.reports_to ORDER BY count(T1.reports_to) DESC LIMIT 1;"
+  },
+  {
+    "db_id": "department_store",
+    "question": "Return the distinct name of customers whose order status is Pending, in the order of customer id.",
+    "reference_sql": "SELECT DISTINCT T1.customer_name FROM customers AS T1 JOIN customer_orders AS T2 ON T1.customer_id  =  T2.customer_id WHERE T2.order_status_code  =  \"Pending\" ORDER BY T2.customer_id"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the names of students and their respective departments, ordered by number of credits from least to greatest?",
+    "reference_sql": "SELECT name ,  dept_name FROM student ORDER BY tot_cred"
+  },
+  {
+    "db_id": "cre_Doc_Tracking_DB",
+    "question": "What is the code of each location and the number of documents in that location?",
+    "reference_sql": "SELECT location_code ,  count(*) FROM Document_locations GROUP BY location_code"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "List the first name middle name and last name of all staff.",
+    "reference_sql": "SELECT first_name ,  middle_name ,  last_name FROM Staff;"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "What is the total number of airlines?",
+    "reference_sql": "SELECT count(*) FROM airlines"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What are the details of the project with no outcomes?",
+    "reference_sql": "SELECT project_details FROM Projects WHERE project_id NOT IN ( SELECT project_id FROM Project_outcomes )"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "What is the average price for a lesson taught by Janessa Sawayn?",
+    "reference_sql": "SELECT avg(price) FROM Lessons AS T1 JOIN Staff AS T2 ON T1.staff_id = T2.staff_id WHERE T2.first_name = \"Janessa\" AND T2.last_name = \"Sawayn\";"
+  },
+  {
+    "db_id": "store_1",
+    "question": "List the number of invoices from Chicago, IL.",
+    "reference_sql": "SELECT COUNT(*) FROM invoices WHERE billing_city  =  \"Chicago\" AND billing_state  =  \"IL\";"
+  },
+  {
+    "db_id": "college_2",
+    "question": "How many rooms does the Lamberton building have?",
+    "reference_sql": "SELECT count(*) FROM classroom WHERE building  =  'Lamberton'"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find the name of students who took any class in the years of 2009 and 2010.",
+    "reference_sql": "SELECT DISTINCT T1.name FROM student AS T1 JOIN takes AS T2 ON T1.id  =  T2.id WHERE YEAR  =  2009 OR YEAR  =  2010"
+  },
+  {
+    "db_id": "college_1",
+    "question": "How many departments are in each school?",
+    "reference_sql": "SELECT count(DISTINCT dept_name) ,  school_code FROM department GROUP BY school_code"
+  },
+  {
+    "db_id": "store_1",
+    "question": "How many albums has Billy Cobam released?",
+    "reference_sql": "SELECT count(*) FROM albums AS T1 JOIN artists AS T2 ON  T1.artist_id = T2.id WHERE T2.name = \"Billy Cobham\";"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the names and salaries of instructors who advises students in the History department?",
+    "reference_sql": "SELECT T2.name ,  T2.salary FROM advisor AS T1 JOIN instructor AS T2 ON T1.i_id  =  T2.id JOIN student AS T3 ON T1.s_id  =  T3.id WHERE T3.dept_name  =  'History'"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "How many routes go from the United States to Canada?",
+    "reference_sql": "SELECT count(*) FROM routes WHERE dst_apid IN (SELECT apid FROM airports WHERE country  =  'Canada') AND src_apid IN (SELECT apid FROM airports WHERE country  =  'United States')"
+  },
+  {
+    "db_id": "department_store",
+    "question": "What are the names and genders of staff who have held the title Sales Person, but never Clerical Staff?",
+    "reference_sql": "SELECT T1.staff_name ,  T1.staff_gender FROM staff AS T1 JOIN Staff_Department_Assignments AS T2 ON T1.staff_id  =  T2.staff_id WHERE T2.job_title_code  =  \"Sales Person\" EXCEPT SELECT T1.staff_name ,  T1.staff_gender FROM staff AS T1 JOIN Staff_Department_Assignments AS T2 ON T1.staff_id  =  T2.staff_id WHERE T2.job_title_code  =  \"Clerical Staff\""
+  },
+  {
+    "db_id": "soccer_1",
+    "question": "What is the average weight of all players?",
+    "reference_sql": "SELECT avg(weight) FROM Player"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "For each payment method, how many payments were made?",
+    "reference_sql": "SELECT payment_method_code ,  count(*) FROM Customer_Payments GROUP BY payment_method_code;"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "How many airports are there per country? Order the countries by decreasing number of airports.",
+    "reference_sql": "SELECT count(*) ,  country FROM airports GROUP BY country ORDER BY count(*) DESC"
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "Show the names and ids of tourist attractions that are visited at most once.",
+    "reference_sql": "SELECT T1.Name ,  T1.Tourist_Attraction_ID FROM Tourist_Attractions AS T1 JOIN VISITS AS T2 ON T1.Tourist_Attraction_ID  =  T2.Tourist_Attraction_ID GROUP BY T2.Tourist_Attraction_ID HAVING count(*)  <=  1"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "What are the first, middle, and last names of all staff?",
+    "reference_sql": "SELECT first_name ,  middle_name ,  last_name FROM Staff;"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "What are the names of all airports whose elevation is between -50 and 50?",
+    "reference_sql": "SELECT name FROM airports WHERE elevation BETWEEN -50 AND 50"
+  },
+  {
+    "db_id": "department_store",
+    "question": "Return the name and job title of the staff with the latest date assigned.",
+    "reference_sql": "SELECT T1.staff_name ,  T2.job_title_code FROM staff AS T1 JOIN staff_department_assignments AS T2 ON T1.staff_id  =  T2.staff_id ORDER BY T2.date_assigned_to DESC LIMIT 1"
+  },
+  {
+    "db_id": "cre_Doc_Control_Systems",
+    "question": "What is the shipping agent code of shipping agent UPS?",
+    "reference_sql": "SELECT shipping_agent_code FROM Ref_Shipping_Agents WHERE shipping_agent_name = \"UPS\";"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What is detail of the student who most recently registered course?",
+    "reference_sql": "SELECT T2.student_details FROM student_course_registrations AS T1 JOIN students AS T2 ON T1.student_id = T2.student_id ORDER BY T1.registration_date DESC LIMIT 1"
+  },
+  {
+    "db_id": "cre_Doc_Tracking_DB",
+    "question": "Show the names of all the employees with role \"HR\".",
+    "reference_sql": "SELECT employee_name FROM Employees WHERE role_code  =  \"HR\""
+  },
+  {
+    "db_id": "college_1",
+    "question": "What is the first name of students who got grade C in any class?",
+    "reference_sql": "SELECT DISTINCT stu_fname FROM student AS T1 JOIN enroll AS T2 ON T1.stu_num  =  T2.stu_num WHERE enroll_grade  =  'C'"
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What are all the different first names of the drivers who are in position as standing and won?",
+    "reference_sql": "SELECT DISTINCT T1.forename FROM drivers AS T1 JOIN driverstandings AS T2 ON T1.driverid = T2.driverid WHERE T2.position = 1 AND T2.wins = 1"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find the name of the instructors who taught C Programming course before.",
+    "reference_sql": "SELECT T1.name FROM instructor AS T1 JOIN teaches AS T2 ON T1.id  =  T2.id JOIN course AS T3 ON T2.course_id  =  T3.course_id WHERE T3.title  =  'C Programming'"
+  },
+  {
+    "db_id": "store_1",
+    "question": "How many orders does Luca Mancini have in his invoices?",
+    "reference_sql": "SELECT count(*) FROM customers AS T1 JOIN invoices AS T2 ON T1.id = T2.customer_id WHERE T1.first_name = \"Lucas\" AND T1.last_name = \"Mancini\";"
+  },
+  {
+    "db_id": "college_2",
+    "question": "How many different instructors have taught some course?",
+    "reference_sql": "SELECT COUNT (DISTINCT id) FROM teaches"
+  },
+  {
+    "db_id": "cre_Doc_Tracking_DB",
+    "question": "Give me the name and description of the location with code x.",
+    "reference_sql": "SELECT location_name ,  location_description FROM Ref_locations WHERE location_code  =  \"x\""
+  },
+  {
+    "db_id": "department_store",
+    "question": "Give me the product type, name and price for all the products supplied by supplier id 3.",
+    "reference_sql": "SELECT T2.product_type_code ,  T2.product_name ,  T2.product_price FROM product_suppliers AS T1 JOIN products AS T2 ON T1.product_id  =  T2.product_id WHERE T1.supplier_id  =  3"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "What is the id and detail of the vehicle used in lessons for most of the times?",
+    "reference_sql": "SELECT T1.vehicle_id ,  T1.vehicle_details FROM Vehicles AS T1 JOIN Lessons AS T2 ON T1.vehicle_id  =  T2.vehicle_id GROUP BY T1.vehicle_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the names and average salaries for departments with average salary higher than 42000?",
+    "reference_sql": "SELECT dept_name ,  AVG (salary) FROM instructor GROUP BY dept_name HAVING AVG (salary)  >  42000"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What is the id of the candidate whose email is stanley.monahan@example.org?",
+    "reference_sql": "SELECT T2.candidate_id FROM people AS T1 JOIN candidates AS T2 ON T1.person_id = T2.candidate_id WHERE T1.email_address = \"stanley.monahan@example.org\""
+  },
+  {
+    "db_id": "flight_4",
+    "question": "Return the cities with more than 3 airports in the United States.",
+    "reference_sql": "SELECT city FROM airports WHERE country  =  'United States' GROUP BY city HAVING count(*)  >  3"
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What are the names of all races that occurred after 12:00:00 or before 09:00:00?",
+    "reference_sql": "SELECT name FROM races WHERE TIME > \"12:00:00\" OR TIME < \"09:00:00\""
+  },
+  {
+    "db_id": "department_store",
+    "question": "List the names and phone numbers of all the distinct suppliers who supply red jeans.",
+    "reference_sql": "SELECT DISTINCT T1.supplier_name ,  T1.supplier_phone FROM suppliers AS T1 JOIN product_suppliers AS T2 ON T1.supplier_id  =  T2.supplier_id JOIN products AS T3 ON T2.product_id  =  T3.product_id WHERE T3.product_name  =  \"red jeans\""
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What are the names of all races held between 2009 and 2011?",
+    "reference_sql": "SELECT name FROM races WHERE YEAR BETWEEN 2009 AND 2011"
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "Show different tourist attractions' names, ids, and the corresponding number of visits.",
+    "reference_sql": "SELECT T1.Name ,  T2.Tourist_Attraction_ID ,   COUNT(*) FROM Tourist_Attractions AS T1 JOIN VISITS AS T2 ON T1.Tourist_Attraction_ID  =  T2.Tourist_Attraction_ID GROUP BY T2.Tourist_Attraction_ID"
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "What are the last names of customers without invoice totals exceeding 20?",
+    "reference_sql": "SELECT LastName FROM CUSTOMER EXCEPT SELECT T1.LastName FROM CUSTOMER AS T1 JOIN Invoice AS T2 ON T1.CustomerId  =  T2.CustomerId WHERE T2.total  >  20"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What roles did staff members play between '2003-04-19 15:06:20' and '2016-03-15 00:33:18'?",
+    "reference_sql": "SELECT role_code FROM Project_Staff WHERE date_from  >  '2003-04-19 15:06:20' AND date_to  <  '2016-03-15 00:33:18'"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "What are the countries of all airlines whose names start with Orbit?",
+    "reference_sql": "SELECT country FROM airlines WHERE name LIKE 'Orbit%'"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What are all details of the students who registered but did not attend any course?",
+    "reference_sql": "SELECT * FROM student_course_registrations WHERE student_id NOT IN (SELECT student_id FROM student_course_attendance)"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "Which city does staff with first name as Janessa and last name as Sawayn live?",
+    "reference_sql": "SELECT T1.city FROM Addresses AS T1 JOIN Staff AS T2 ON T1.address_id = T2.staff_address_id WHERE T2.first_name = \"Janessa\" AND T2.last_name = \"Sawayn\";"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What are the task details, task ids, and project ids for the progrects that are detailed as 'omnis' or have at least 3 outcomes?",
+    "reference_sql": "SELECT T1.task_details ,  T1.task_id ,  T2.project_id FROM Tasks AS T1 JOIN Projects AS T2 ON T1.project_id  =  T2.project_id WHERE T2.project_details  =  'omnis' UNION SELECT T1.task_details ,  T1.task_id ,  T2.project_id FROM Tasks AS T1 JOIN Projects AS T2 ON T1.project_id  =  T2.project_id JOIN Project_outcomes AS T3 ON T2.project_id  =  T3.project_id GROUP BY T2.project_id HAVING count(*)  >  2"
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What are the forenames and surnames of drivers who participated in the races named Australian Grand Prix but not the races named Chinese Grand Prix?",
+    "reference_sql": "SELECT T3.forename ,  T3.surname FROM races AS T1 JOIN results AS T2 ON T1.raceid = T2.raceid JOIN drivers AS T3 ON T2.driverid = T3.driverid WHERE T1.name = \"Australian Grand Prix\" EXCEPT SELECT T3.forename ,  T3.surname FROM races AS T1 JOIN results AS T2 ON T1.raceid = T2.raceid JOIN drivers AS T3 ON T2.driverid = T3.driverid WHERE T1.name = \"Chinese Grand Prix\""
+  },
+  {
+    "db_id": "solvency_ii",
+    "question": "What are the names and type codes of products?",
+    "reference_sql": "SELECT Product_Name ,  Product_Type_Code FROM Products"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "What is the number of airports per country, ordered from most to least?",
+    "reference_sql": "SELECT count(*) ,  country FROM airports GROUP BY country ORDER BY count(*) DESC"
+  },
+  {
+    "db_id": "college_1",
+    "question": "Find the last name and hire date of the professor who is in office DRE 102.",
+    "reference_sql": "SELECT T1.emp_lname ,  T1.emp_hiredate FROM employee AS T1 JOIN professor AS T2 ON T1.emp_num  =  T2.emp_num WHERE T2.prof_office  =  'DRE 102'"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What is the department name and corresponding building for the department with the greatest budget?",
+    "reference_sql": "SELECT dept_name ,  building FROM department ORDER BY budget DESC LIMIT 1"
+  },
+  {
+    "db_id": "college_1",
+    "question": "How many students are enrolled in the class taught by some professor from the accounting department?",
+    "reference_sql": "SELECT count(*) FROM CLASS AS T1 JOIN enroll AS T2 ON T1.class_code  =  T2.class_code JOIN course AS T3 ON T1.crs_code  =  T3.crs_code JOIN department AS T4 ON T3.dept_code  =  T4.dept_code WHERE T4.dept_name  =  'Accounting'"
+  },
+  {
+    "db_id": "college_1",
+    "question": "What are the names of all departments in alphabetical order?",
+    "reference_sql": "SELECT dept_name FROM department ORDER BY dept_name"
+  },
+  {
+    "db_id": "department_store",
+    "question": "How many customers use each payment method?",
+    "reference_sql": "SELECT payment_method_code ,  count(*) FROM customers GROUP BY payment_method_code"
+  },
+  {
+    "db_id": "college_1",
+    "question": "Which school has the fewest professors?",
+    "reference_sql": "SELECT T1.school_code FROM department AS T1 JOIN professor AS T2 ON T1.dept_code  =  T2.dept_code GROUP BY T1.school_code ORDER BY count(*) LIMIT 1"
+  }
+]

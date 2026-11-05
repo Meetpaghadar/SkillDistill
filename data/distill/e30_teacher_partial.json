@@ -1,0 +1,172 @@
+[
+  {
+    "db_id": "chinook_1",
+    "question": "What are the duration of the longest and shortest pop tracks in milliseconds?",
+    "failed_sql": "SELECT T1.TAR, T2.TAR FROM TRACK AS T1 JOIN TRACK AS T2 ON T1.TAR  =  T2.TAR ORDER BY T1.TAR DESC LIMIT 1 ,  ORDER BY T1.TAR ASC LIMIT 1",
+    "tool_feedback": "near \"ORDER\": syntax error",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT T1.Milliseconds\nFROM TRACK AS T1\nJOIN GENRE AS T2 ON T1.GenreId = T2.GenreId\nWHERE T2.Name = 'Pop'\nORDER BY T1.Milliseconds DESC\nUNION QUALLY\nSELECT T1.Milliseconds\nFROM TRACK AS T1\nJOIN GENRE AS T2 ON T1.GenreId = T2.GenreId\nWHERE T2.Name = 'Pop'\nORDER BY T1.Milliseconds ASC",
+    "verified": false,
+    "verification_error": "OperationalError: near \"QUALLY\": syntax error"
+  },
+  {
+    "db_id": "college_1",
+    "question": "What is the department name of the students with lowest gpa belongs to?",
+    "failed_sql": "SELECT dept_name FROM STUDENT ORDER BY STU_GPA ASC LIMIT 1",
+    "tool_feedback": "no such column: dept_name",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT DEPARTMENT.DEPT_NAME FROM STUDENT JOIN DEPARTMENT ON STUDENT.DEPT_CODE = DEPARTMENT.DEPT_CODE ORDER BY STUDENT.STU_GPA ASC LIMIT 1",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "college_2",
+    "question": "list in alphabetic order all course names and their instructors' names in year 2008.",
+    "failed_sql": "SELECT t1.title , instructor.name FROM course AS t1 JOIN instructor AS t2 ON t1.dept_name  =  t2.dept_name WHERE t1.year  =  2008 ORDER BY t1.title , t2.name",
+    "tool_feedback": "no such column: instructor.name",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT c.title, i.name\nFROM course AS c\nJOIN section AS s ON c.course_id = s.course_id\nJOIN teaches AS t ON s.course_id = t.course_id AND s.sec_id = t.sec_id AND s.semester = t.semester AND s.year = t.year\nJOIN instructor AS i ON t.ID = i.ID\nWHERE s.year = 2008\nORDER BY c.title, i.name",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "cre_Doc_Tracking_DB",
+    "question": "Give me the name and description of the location with code x.",
+    "failed_sql": "SELECT Location_Name ,  Location_Description FROM Ref_Locations WHERE LOCATION_CODE  =  x",
+    "tool_feedback": "no such column: x",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT Location_Name, Location_Description FROM Ref_Locations WHERE Location_Code = 'x'",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "Show the names and ids of tourist attractions that are visited at most once.",
+    "failed_sql": "SELECT name ,  tourist_attraction_id FROM visits GROUP BY tourist_attraction_id HAVING count(*)  <=  1",
+    "tool_feedback": "no such column: name",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT Name, Tourist_Attraction_ID FROM Tourist_Attractions INNER JOIN Visits ON Tourist_Attractions.Tourist_Attraction_ID = Visits.Tourist_Attraction_ID GROUP BY Tourist_Attraction_ID HAVING COUNT(*) <= 1",
+    "verified": false,
+    "verification_error": "OperationalError: ambiguous column name: Tourist_Attraction_ID"
+  },
+  {
+    "db_id": "department_store",
+    "question": "List the names of all the distinct customers who bought a keyboard.",
+    "failed_sql": "SELECT customer_name FROM customer_orders AS T1 JOIN products AS T2 ON T1.customer_id  =  T2.product_id GROUP BY T1.customer_id HAVING T2.product_name  =  \"keyboard\"",
+    "tool_feedback": "no such column: customer_name",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "APITimeoutError: Request timed out."
+  },
+  {
+    "db_id": "driving_school",
+    "question": "What is the status code, mobile phone number and email address of customer with last name as Kohler or first name as Marina?",
+    "failed_sql": "SELECT T1.lesson_status_code ,  T2.cell_mobile_phone_number ,  T1.email_address FROM Customers AS T1 JOIN T2 ON T1.customer_id  =  T2.customer_id WHERE T1.last_name  =  \"Kohler\" OR T1.first_name  =  \"Marina\"",
+    "tool_feedback": "no such table: T2",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "APITimeoutError: Request timed out."
+  },
+  {
+    "db_id": "flight_4",
+    "question": "How many routes go from the United States to Canada?",
+    "failed_sql": "SELECT count(*) FROM routes WHERE dst_ap  =  'Canada' AND country  =  'United States'",
+    "tool_feedback": "no such column: country",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT count(*) FROM routes r\nJOIN airports src ON r.src_apid = src.apid\nJOIN airports dst ON r.dst_apid = dst.apid\nWHERE src.country = 'United States' AND dst.country = 'Canada'",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What is the id and last name of the driver who participated in the most races after 2010?",
+    "failed_sql": "SELECT driverId ,  surname FROM drivers ORDER BY count(*) DESC LIMIT 1",
+    "tool_feedback": "misuse of aggregate: count()",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT driverId, surname FROM drivers JOIN results ON drivers.driverId = results.driverId JOIN races ON results.raceId = races.raceId WHERE races.year > 2010 GROUP BY driverId ORDER BY COUNT(*) DESC LIMIT 1",
+    "verified": false,
+    "verification_error": "OperationalError: ambiguous column name: driverId"
+  },
+  {
+    "db_id": "store_1",
+    "question": "List the number of invoices from Chicago, IL.",
+    "failed_sql": "SELECT count(*) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id  =  T2.id JOIN T2.city  =  T2.city AS T3 ON T2.id  =  T3.id WHERE T3.city  =  \"Chicago\" AND T3.state  =  \"IL\"",
+    "tool_feedback": "near \"=\": syntax error",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT COUNT(*) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id = T2.id WHERE T2.city = 'Chicago' AND T2.state = 'IL'",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What is detail of the student who most recently registered course?",
+    "failed_sql": "SELECT student_details FROM student_course_registrations ORDER BY registration_date DESC LIMIT 1",
+    "tool_feedback": "no such column: student_details",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT s.student_details FROM Students s INNER JOIN Student_Course_Registrations scr ON s.student_id = scr.student_id ORDER BY scr.registration_date DESC LIMIT 1",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What is the response received date for the document described as Regular that was granted more than 100 dollars?",
+    "failed_sql": "SELECT response_received_date FROM Documents WHERE document_description  =  \"Regular\" AND grant_amount  >  100",
+    "tool_feedback": "no such column: document_description",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "ValueError: Expected SELECT SQL"
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "What are the last names of customers without invoice totals exceeding 20?",
+    "failed_sql": "SELECT T2.lastName FROM customer AS T1 JOIN invoice AS T2 ON T1.customerid  =  T2.customerid WHERE T2.total  EXCEEDS  20",
+    "tool_feedback": "near \"EXCEEDS\": syntax error",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "",
+    "verified": false,
+    "verification_error": "ValueError: Expected SELECT SQL"
+  },
+  {
+    "db_id": "college_1",
+    "question": "How many professors are teaching class with code ACCT-211?",
+    "failed_sql": "SELECT count(*) FROM CLASS AS T1 JOIN PROFESSOR AS T2 ON T1.CLASS_CODE  =  T2.CLASS_CODE WHERE T1.CLASS_CODE  =  'ACCT-211'",
+    "tool_feedback": "no such column: T2.CLASS_CODE",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT count(*) FROM CLASS AS T1 JOIN PROFESSOR AS T2 ON T1.PROF_NUM = T2.EMP_NUM WHERE T1.CLASS_CODE = 'ACCT-211'",
+    "verified": false,
+    "verification_error": null
+  },
+  {
+    "db_id": "college_2",
+    "question": "What is the title, credit value, and department name for courses with more than one prerequisite?",
+    "failed_sql": "SELECT title ,  credits ,  dept_name FROM course WHERE credits  >  0 AND prereq_id  =  0",
+    "tool_feedback": "no such column: prereq_id",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT c.title, c.credits, c.dept_name FROM course c JOIN prereq p ON c.course_id = p.course_id GROUP BY c.course_id HAVING COUNT(*) > 1",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "Show different tourist attractions' names, ids, and the corresponding number of visits.",
+    "failed_sql": "SELECT name ,  tourist_attraction_id ,  count(*) FROM visits GROUP BY name ,  tourist_attraction_id",
+    "tool_feedback": "no such column: name",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT t.Name, t.Tourist_Attraction_ID, COUNT(*) FROM Visits v INNER JOIN Tourist_Attractions t ON v.Tourist_Attraction_ID = t.Tourist_Attraction_ID GROUP BY t.Name, t.Tourist_Attraction_ID",
+    "verified": true,
+    "verification_error": null
+  },
+  {
+    "db_id": "department_store",
+    "question": "Return the distinct name of customers whose order status is Pending, in the order of customer id.",
+    "failed_sql": "SELECT customer_name FROM customer_orders AS T1 JOIN customer_addresses AS T2 ON T1.customer_id  =  T2.customer_id WHERE T1.order_status_code  =  \"Pending\" ORDER BY customer_id",
+    "tool_feedback": "no such column: customer_name",
+    "teacher_model": "Qwen/Qwen3.5-9B",
+    "teacher_sql": "SELECT DISTINCT c.customer_name FROM Customer_Orders AS T1 JOIN Customers AS c ON T1.customer_id = c.customer_id WHERE T1.order_status_code = 'Pending' ORDER BY T1.customer_id",
+    "verified": true,
+    "verification_error": null
+  }
+]

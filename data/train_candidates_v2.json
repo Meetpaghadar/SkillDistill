@@ -1,0 +1,502 @@
+[
+  {
+    "db_id": "insurance_fnol",
+    "question": "What are all the policy types of the customer that has the most policies listed?",
+    "sql": "SELECT DISTINCT t3.policy_type_code FROM customers AS t1 JOIN customers_policies AS t2 ON t1.customer_id  =  t2.customer_id JOIN available_policies AS t3 ON t2.policy_id  =  t3.policy_id WHERE t1.customer_name  =  (SELECT t1.customer_name FROM customers AS t1 JOIN customers_policies AS t2 ON t1.customer_id  =  t2.customer_id GROUP BY t1.customer_name ORDER BY count(*) DESC LIMIT 1)"
+  },
+  {
+    "db_id": "customers_and_invoices",
+    "question": "What is the average, minimum, maximum, and total transaction amount?",
+    "sql": "SELECT avg(transaction_amount) ,  min(transaction_amount) ,  max(transaction_amount) ,   sum(transaction_amount) FROM Financial_transactions"
+  },
+  {
+    "db_id": "product_catalog",
+    "question": "What are the entry names of catalog with the attribute possessed by most entries.",
+    "sql": "SELECT t1.catalog_entry_name FROM Catalog_Contents AS t1 JOIN Catalog_Contents_Additional_Attributes AS t2 ON t1.catalog_entry_id  =  t2.catalog_entry_id WHERE t2.attribute_value  =  (SELECT attribute_value FROM Catalog_Contents_Additional_Attributes GROUP BY attribute_value ORDER BY count(*) DESC LIMIT 1)"
+  },
+  {
+    "db_id": "college_1",
+    "question": "Find the max, average, and minimum gpa of all students in each department.",
+    "sql": "SELECT max(stu_gpa) ,  avg(stu_gpa) ,  min(stu_gpa) ,  dept_code FROM student GROUP BY dept_code"
+  },
+  {
+    "db_id": "customer_complaints",
+    "question": "Which products has been complained by the customer who has filed least amount of complaints?",
+    "sql": "SELECT DISTINCT t1.product_name FROM products AS t1 JOIN complaints AS t2 ON t1.product_id  =  t2.product_id JOIN customers AS t3 GROUP BY t3.customer_id ORDER BY count(*) LIMIT 1"
+  },
+  {
+    "db_id": "insurance_policies",
+    "question": "Which claims caused more than 2 settlements or have the maximum claim value? List the date the claim was made and the claim id.",
+    "sql": "SELECT T1.Date_Claim_Made ,  T1.Claim_id FROM Claims AS T1 JOIN Settlements AS T2 ON T1.Claim_id  =  T2.Claim_id GROUP BY T1.Claim_id HAVING count(*)  >  2 UNION SELECT T1.Date_Claim_Made ,  T1.Claim_id FROM Claims AS T1 JOIN Settlements AS T2 ON T1.Claim_id  =  T2.Claim_id WHERE T1.Amount_Claimed  =  ( SELECT max(Amount_Claimed) FROM Claims )"
+  },
+  {
+    "db_id": "insurance_and_eClaims",
+    "question": "Find the total amount claimed in the most recently created document.",
+    "sql": "SELECT sum(t1.amount_claimed) FROM claim_headers AS t1 JOIN claims_documents AS t2 ON t1.claim_header_id  =  t2.claim_id WHERE t2.created_date  =  (SELECT created_date FROM claims_documents ORDER BY created_date LIMIT 1)"
+  },
+  {
+    "db_id": "department_store",
+    "question": "What are the average amount purchased and value purchased for the supplier who supplies the most products.",
+    "sql": "SELECT avg(total_amount_purchased) ,  avg(total_value_purchased) FROM Product_Suppliers WHERE supplier_id  =  (SELECT supplier_id FROM Product_Suppliers GROUP BY supplier_id ORDER BY count(*) DESC LIMIT 1)"
+  },
+  {
+    "db_id": "game_1",
+    "question": "Show the average, minimum, and maximum age for different majors.",
+    "sql": "SELECT major ,  avg(age) ,  min(age) ,  max(age) FROM Student GROUP BY major"
+  },
+  {
+    "db_id": "soccer_1",
+    "question": "List all player names who have an overall rating higher than the average.",
+    "sql": "SELECT DISTINCT T1.player_name FROM Player AS T1 JOIN Player_Attributes AS T2 ON T1.player_api_id = T2.player_api_id WHERE T2.overall_rating  >  ( SELECT avg(overall_rating) FROM Player_Attributes )"
+  },
+  {
+    "db_id": "gas_company",
+    "question": "List the main industry with highest total market value and its number of companies.",
+    "sql": "SELECT main_industry ,  count(*) FROM company GROUP BY main_industry ORDER BY sum(market_value) DESC LIMIT 1"
+  },
+  {
+    "db_id": "movie_1",
+    "question": "What is the average rating stars and title for the oldest movie?",
+    "sql": "SELECT avg(T1.stars) ,  T2.title FROM Rating AS T1 JOIN Movie AS T2 ON T1.mID  =  T2.mID WHERE T2.year  =  (SELECT min(YEAR) FROM Movie)"
+  },
+  {
+    "db_id": "soccer_2",
+    "question": "What is the number of states that has some college whose enrollment is larger than the average enrollment?",
+    "sql": "SELECT count(DISTINCT state) FROM college WHERE enr  >  (SELECT avg(enr) FROM college)"
+  },
+  {
+    "db_id": "store_1",
+    "question": "List the top 10 customers by total gross sales. List customers' first and last name and total gross sales.",
+    "sql": "SELECT T1.first_name ,  T1.last_name ,  SUM(T2.total) FROM customers AS T1 JOIN invoices AS T2 ON T2.customer_id  =  T1.id GROUP BY T1.id ORDER BY SUM(T2.total) DESC LIMIT 10;"
+  },
+  {
+    "db_id": "dorm_1",
+    "question": "Find the first name of students who are living in the dorm that has most number of amenities.",
+    "sql": "SELECT T1.fname FROM student AS T1 JOIN lives_in AS T2 ON T1.stuid  =  T2.stuid WHERE T2.dormid IN (SELECT T2.dormid FROM dorm AS T3 JOIN has_amenity AS T4 ON T3.dormid  =  T4.dormid JOIN dorm_amenity AS T5 ON T4.amenid  =  T5.amenid GROUP BY T3.dormid ORDER BY count(*) DESC LIMIT 1)"
+  },
+  {
+    "db_id": "flight_1",
+    "question": "What is the minimum, average, and maximum distance of all aircrafts.",
+    "sql": "SELECT min(distance) ,  avg(distance) ,  max(distance) FROM Aircraft"
+  },
+  {
+    "db_id": "document_management",
+    "question": "Find the total access count of all documents in the most popular document type.",
+    "sql": "SELECT sum(access_count) FROM documents GROUP BY document_type_code ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "network_2",
+    "question": "Who has friends that are younger than the average age?",
+    "sql": "SELECT DISTINCT T2.name FROM Person AS T1 JOIN PersonFriend AS T2 ON T1.name  =  T2.friend WHERE T1.age  <  (SELECT avg(age) FROM person)"
+  },
+  {
+    "db_id": "e_government",
+    "question": "Find the emails of parties with the most popular party form.",
+    "sql": "SELECT t1.party_email FROM parties AS t1 JOIN party_forms AS t2 ON t1.party_id  =  t2.party_id WHERE t2.form_id  =  (SELECT form_id FROM party_forms GROUP BY form_id ORDER BY count(*) DESC LIMIT 1)"
+  },
+  {
+    "db_id": "allergy_1",
+    "question": "Show the minimum, average, and maximum age of all students.",
+    "sql": "SELECT min(age) ,  avg(age) ,  max(age) FROM Student"
+  },
+  {
+    "db_id": "manufactory_1",
+    "question": "Find number of products which Sony does not make.",
+    "sql": "SELECT count(DISTINCT name) FROM products WHERE name NOT IN (SELECT T1.name FROM products AS T1 JOIN manufacturers AS T2 ON T1.Manufacturer  =  T2.code WHERE T2.name  =  'Sony')"
+  },
+  {
+    "db_id": "cinema",
+    "question": "Show director with the largest number of show times in total.",
+    "sql": "SELECT T2.directed_by FROM schedule AS T1 JOIN film AS T2 ON T1.film_id  =  T2.film_id GROUP BY T2.directed_by ORDER BY sum(T1.show_times_per_day) DESC LIMIT 1"
+  },
+  {
+    "db_id": "bike_1",
+    "question": "What is the average longitude of stations that never had bike availability more than 10?",
+    "sql": "SELECT avg(long) FROM station WHERE id NOT IN (SELECT station_id FROM status GROUP BY station_id HAVING max(bikes_available)  >  10)"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find the minimum salary for the departments whose average salary is above the average payment of all instructors.",
+    "sql": "SELECT min(salary) ,  dept_name FROM instructor GROUP BY dept_name HAVING avg(salary)  >  (SELECT avg(salary) FROM instructor)"
+  },
+  {
+    "db_id": "phone_market",
+    "question": "Show the names of phones that have total number of stocks bigger than 2000, in descending order of the total number of stocks.",
+    "sql": "SELECT T2.Name FROM phone_market AS T1 JOIN phone AS T2 ON T1.Phone_ID  =  T2.Phone_ID GROUP BY T2.Name HAVING sum(T1.Num_of_stock)  >=  2000 ORDER BY sum(T1.Num_of_stock) DESC"
+  },
+  {
+    "db_id": "workshop_paper",
+    "question": "Show each author and the number of workshops they submitted to.",
+    "sql": "SELECT T2.Author ,  COUNT(DISTINCT T1.workshop_id) FROM acceptance AS T1 JOIN submission AS T2 ON T1.Submission_ID  =  T2.Submission_ID GROUP BY T2.Author"
+  },
+  {
+    "db_id": "race_track",
+    "question": "What is the minimum, maximum, and average seating for all tracks.",
+    "sql": "SELECT min(seating) ,  max(seating) ,  avg(seating) FROM track"
+  },
+  {
+    "db_id": "storm_record",
+    "question": "Show storm name with at least two regions and 10 cities affected.",
+    "sql": "SELECT T1.name FROM storm AS T1 JOIN affected_region AS T2 ON T1.storm_id  =  T2.storm_id GROUP BY T1.storm_id HAVING count(*)  >=  2 INTERSECT SELECT T1.name FROM storm AS T1 JOIN affected_region AS T2 ON T1.storm_id  =  T2.storm_id GROUP BY T1.storm_id HAVING sum(T2.number_city_affected)  >=  10"
+  },
+  {
+    "db_id": "formula_1",
+    "question": "Find the distinct driver id and the stop number of all drivers that have a shorter pit stop duration than some drivers in the race with id 841.",
+    "sql": "SELECT DISTINCT driverid ,  STOP FROM pitstops WHERE duration  <  (SELECT max(duration) FROM pitstops WHERE raceid  =  841)"
+  },
+  {
+    "db_id": "restaurant_1",
+    "question": "At which restaurant did the students spend the least amount of time? List restaurant and the time students spent on in total.",
+    "sql": "SELECT Restaurant.ResName ,  sum(Visits_Restaurant.Spent) FROM Visits_Restaurant JOIN Restaurant ON Visits_Restaurant.ResID = Restaurant.ResID GROUP BY Restaurant.ResID ORDER BY sum(Visits_Restaurant.Spent) ASC LIMIT 1;"
+  },
+  {
+    "db_id": "music_1",
+    "question": "What are the shortest duration and lowest rating of songs grouped by genre and ordered by genre?",
+    "sql": "SELECT min(T1.duration) ,  min(T2.rating) ,  T2.genre_is FROM files AS T1 JOIN song AS T2 ON T1.f_id  =  T2.f_id GROUP BY T2.genre_is ORDER BY T2.genre_is"
+  },
+  {
+    "db_id": "wine_1",
+    "question": "Find the distinct names of all wines that have prices higher than some wines from John Anthony winery.",
+    "sql": "SELECT DISTINCT Name FROM WINE WHERE Price  >  (SELECT min(Price) FROM wine WHERE Winery  =  \"John Anthony\")"
+  },
+  {
+    "db_id": "sakila_1",
+    "question": "Which customer, who has made at least one payment, has spent the least money? List his or her first name, last name, and the id.",
+    "sql": "SELECT T1.first_name ,  T1.last_name ,  T1.customer_id FROM customer AS T1 JOIN payment AS T2 ON T1.customer_id  =  T2.customer_id GROUP BY T1.customer_id ORDER BY sum(amount) ASC LIMIT 1"
+  },
+  {
+    "db_id": "phone_1",
+    "question": "List the maximum, minimum and average number of used kb in screen mode.",
+    "sql": "SELECT max(used_kb) , min(used_kb) , avg(used_kb) FROM screen_mode;"
+  },
+  {
+    "db_id": "loan_1",
+    "question": "List the name of all different customers who have some loan sorted by their total loan amount.",
+    "sql": "SELECT T1.cust_name FROM customer AS T1 JOIN loan AS T2 ON T1.cust_id  =  T2.cust_id GROUP BY T1.cust_name ORDER BY sum(T2.amount)"
+  },
+  {
+    "db_id": "game_injury",
+    "question": "What are the maximum, minimum and average home games each stadium held?",
+    "sql": "SELECT max(home_games) ,  min(home_games) ,  avg(home_games) FROM stadium"
+  },
+  {
+    "db_id": "device",
+    "question": "Show the name of the shop that have the largest quantity of devices in stock.",
+    "sql": "SELECT T2.Shop_Name FROM stock AS T1 JOIN shop AS T2 ON T1.Shop_ID  =  T2.Shop_ID GROUP BY T1.Shop_ID ORDER BY SUM(T1.quantity) DESC LIMIT 1"
+  },
+  {
+    "db_id": "inn_1",
+    "question": "Find the number of rooms that do not have any reservation.",
+    "sql": "SELECT count(*) FROM rooms WHERE roomid NOT IN (SELECT DISTINCT room FROM reservations)"
+  },
+  {
+    "db_id": "wedding",
+    "question": "Show the minimum, maximum, and average age for all people.",
+    "sql": "SELECT min(age) ,  max(age) ,  avg(age) FROM people"
+  },
+  {
+    "db_id": "customers_and_products_contacts",
+    "question": "What are the name and phone of the customer with the most ordered product quantity?",
+    "sql": "SELECT  T1.customer_name ,  T1.customer_phone FROM customers AS T1 JOIN customer_orders AS T2 ON T1.customer_id  =  T2.customer_id JOIN order_items AS T3 ON T3.order_id  =  T2.order_id GROUP BY T1.customer_id ORDER BY sum(T3.order_quantity) DESC LIMIT 1"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "List from which date and to which date these staff work: project staff of the project which hires the most staffs",
+    "sql": "SELECT date_from ,  date_to FROM Project_Staff WHERE project_id IN( SELECT project_id FROM Project_Staff GROUP BY project_id ORDER BY count(*) DESC LIMIT 1 ) UNION SELECT date_from ,  date_to FROM Project_Staff WHERE role_code  =  'leader'"
+  },
+  {
+    "db_id": "theme_gallery",
+    "question": "Show the average, minimum, and maximum ticket prices for exhibitions for all years before 2009.",
+    "sql": "SELECT avg(ticket_price) ,  min(ticket_price) ,  max(ticket_price) FROM exhibition WHERE YEAR  <  2009"
+  },
+  {
+    "db_id": "store_product",
+    "question": "Find the name of the products that are not using the most frequently-used max page size.",
+    "sql": "SELECT product FROM product WHERE product != (SELECT max_page_size FROM product GROUP BY max_page_size ORDER BY count(*) DESC LIMIT 1)"
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "What is the name of the customer that has purchased the most items?",
+    "sql": "SELECT t1.customer_name FROM customers AS t1 JOIN customer_orders AS t2 ON t1.customer_id  =  t2.customer_id JOIN order_items AS t3 ON t2.order_id  =  t3.order_id GROUP BY t1.customer_name ORDER BY sum(t3.order_quantity) DESC LIMIT 1"
+  },
+  {
+    "db_id": "cre_Drama_Workshop_Groups",
+    "question": "Show all the distinct product names with price higher than the average.",
+    "sql": "SELECT DISTINCT Product_Name FROM PRODUCTS WHERE Product_Price  >  (SELECT avg(Product_Price) FROM PRODUCTS)"
+  },
+  {
+    "db_id": "browser_web",
+    "question": "What is the maximum, minimum and average market share of the listed browsers?",
+    "sql": "SELECT max(market_share) ,  min(market_share) ,  avg(market_share) FROM browser"
+  },
+  {
+    "db_id": "twitter_1",
+    "question": "Find the names of the users whose number of followers is greater than that of the user named \"Tyler Swift\".",
+    "sql": "SELECT T1.name FROM user_profiles AS T1 JOIN follows AS T2 ON T1.uid  =  T2.f1 GROUP BY T2.f1 HAVING count(*)  >  (SELECT count(*) FROM user_profiles AS T1 JOIN follows AS T2 ON T1.uid  =  T2.f1 WHERE T1.name  =  'Tyler Swift')"
+  },
+  {
+    "db_id": "school_finance",
+    "question": "Show the average, maximum, minimum enrollment of all schools.",
+    "sql": "SELECT avg(enrollment) ,  max(enrollment) ,  min(enrollment) FROM school"
+  },
+  {
+    "db_id": "match_season",
+    "question": "How many distinct official languages are there among countries of players whose positions are defenders.",
+    "sql": "SELECT count(DISTINCT T1.Official_native_language) FROM country AS T1 JOIN match_season AS T2 ON T1.Country_id  =  T2.Country WHERE T2.Position  =  \"Defender\""
+  },
+  {
+    "db_id": "farm",
+    "question": "Show the status of the city that has hosted the greatest number of competitions.",
+    "sql": "SELECT T1.Status FROM city AS T1 JOIN farm_competition AS T2 ON T1.City_ID  =  T2.Host_city_ID GROUP BY T2.Host_city_ID ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "protein_institute",
+    "question": "What are the average, maximum, and minimum number of floors for all buildings?",
+    "sql": "SELECT avg(floors) ,  max(floors) ,  min(floors) FROM building"
+  },
+  {
+    "db_id": "election",
+    "question": "How many distinct delegates are from counties with population larger than 50000?",
+    "sql": "SELECT count(DISTINCT T2.Delegate) FROM county AS T1 JOIN election AS T2 ON T1.County_id  =  T2.District WHERE T1.Population  >  50000"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "which course has most number of registered students?",
+    "sql": "SELECT T1.course_name FROM courses AS T1 JOIN student_course_registrations AS T2 ON T1.course_id = T2.course_Id GROUP BY T1.course_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "products_for_hire",
+    "question": "What are the maximum, minimum, and average booked count for the products booked?",
+    "sql": "SELECT max(booked_count) ,  min(booked_count) ,  avg(booked_count) FROM products_booked"
+  },
+  {
+    "db_id": "customers_card_transactions",
+    "question": "What is the customer first, last name and id with least number of accounts.",
+    "sql": "SELECT T2.customer_first_name ,  T2.customer_last_name ,  T1.customer_id FROM Accounts AS T1 JOIN Customers AS T2 ON T1.customer_id  =  T2.customer_id GROUP BY T1.customer_id ORDER BY count(*) ASC LIMIT 1"
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "What are the highest cost, lowest cost and average cost of procedures?",
+    "sql": "SELECT MAX(cost) ,  MIN(cost) ,  AVG(cost) FROM procedures"
+  },
+  {
+    "db_id": "icfp_1",
+    "question": "How many papers are published by the institution \"Tokohu University\"?",
+    "sql": "SELECT count(DISTINCT t1.title) FROM papers AS t1 JOIN authorship AS t2 ON t1.paperid  =  t2.paperid JOIN inst AS t3 ON t2.instid  =  t3.instid WHERE t3.name  =  \"Tokohu University\""
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "Which artist has the most albums?",
+    "sql": "SELECT T2.Name FROM ALBUM AS T1 JOIN ARTIST AS T2 ON T1.ArtistId  =  T2.ArtistId GROUP BY T2.Name ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "school_bus",
+    "question": "What is the maximum, minimum and average years spent working on a school bus?",
+    "sql": "SELECT max(years_working) ,  min(years_working) ,  avg(years_working) FROM school_bus"
+  },
+  {
+    "db_id": "medicine_enzyme_interaction",
+    "question": "What are the ids, names and FDA approval status of medicines in descending order of the number of enzymes that it can interact with.",
+    "sql": "SELECT T1.id ,  T1.Name ,  T1.FDA_approved FROM medicine AS T1 JOIN medicine_enzyme_interaction AS T2 ON T2.medicine_id  =  T1.id GROUP BY T1.id ORDER BY count(*) DESC"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "What is maximum, minimum and average amount of outstanding of customer?",
+    "sql": "SELECT max(amount_outstanding) ,  min(amount_outstanding) ,  avg(amount_outstanding) FROM Customers;"
+  },
+  {
+    "db_id": "mountain_photos",
+    "question": "How many distinct kinds of camera lenses are used to take photos of mountains in the country 'Ethiopia'?",
+    "sql": "SELECT count(DISTINCT T2.camera_lens_id) FROM mountain AS T1 JOIN photos AS T2 ON T1.id  =  T2.mountain_id WHERE T1.country  =  'Ethiopia'"
+  },
+  {
+    "db_id": "epinions_1",
+    "question": "Find the name of the item with the lowest average rating.",
+    "sql": "SELECT T1.title FROM item AS T1 JOIN review AS T2 ON T1.i_id  =  T2.i_id GROUP BY T2.i_id ORDER BY avg(T2.rating) LIMIT 1"
+  },
+  {
+    "db_id": "hr_1",
+    "question": "display the department id and the total salary for those departments which contains at least two employees.",
+    "sql": "SELECT department_id ,  SUM(salary) FROM employees GROUP BY department_id HAVING count(*)  >=  2"
+  },
+  {
+    "db_id": "culture_company",
+    "question": "What is the average, maximum, and minimum budget for all movies before 2000.",
+    "sql": "SELECT avg(budget_million) ,  max(budget_million) ,  min(budget_million) FROM movie WHERE YEAR  <  2000"
+  },
+  {
+    "db_id": "riding_club",
+    "question": "How many gold medals has the club with the most coaches won?",
+    "sql": "SELECT T1.club_id ,  T1.gold FROM match_result AS T1 JOIN coach AS T2 ON T1.club_id  =  T2.club_id GROUP BY T1.club_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "candidate_poll",
+    "question": "which gender got the highest average uncertain ratio.",
+    "sql": "SELECT t1.sex FROM people AS t1 JOIN candidate AS t2 ON t1.people_id  =  t2.people_id GROUP BY t1.sex ORDER BY avg(t2.unsure_rate) DESC LIMIT 1"
+  },
+  {
+    "db_id": "club_1",
+    "question": "How many different roles are there in the club \"Bootup Baltimore\"?",
+    "sql": "SELECT count(DISTINCT t2.position) FROM club AS t1 JOIN member_of_club AS t2 ON t1.clubid  =  t2.clubid WHERE t1.clubname  =  \"Bootup Baltimore\""
+  },
+  {
+    "db_id": "apartment_rentals",
+    "question": "Show the apartment type code that has the largest number of total rooms, together with the number of bathrooms and number of bedrooms.",
+    "sql": "SELECT apt_type_code ,  bathroom_count ,  bedroom_count FROM Apartments GROUP BY apt_type_code ORDER BY sum(room_count) DESC LIMIT 1"
+  },
+  {
+    "db_id": "behavior_monitoring",
+    "question": "What are the id and first name of the student whose addresses have the highest average monthly rental?",
+    "sql": "SELECT T1.student_id ,  T2.first_name FROM Student_Addresses AS T1 JOIN Students AS T2 ON T1.student_id  =  T2.student_id GROUP BY T1.student_id ORDER BY AVG(monthly_rental) DESC LIMIT 1"
+  },
+  {
+    "db_id": "local_govt_and_lot",
+    "question": "How many distinct locations have the things with service detail 'Unsatisfied' been located in?",
+    "sql": "SELECT count(DISTINCT T2.Location_Code) FROM Things AS T1 JOIN Timed_Locations_of_Things AS T2 ON T1.thing_id  =  T2.thing_id WHERE T1.service_details  =  'Unsatisfied'"
+  },
+  {
+    "db_id": "small_bank_1",
+    "question": "Find the name and id of accounts whose checking balance is below the maximum checking balance.",
+    "sql": "SELECT T1.custid ,  T1.name FROM accounts AS T1 JOIN checking AS T2 ON T1.custid  =  T2.custid WHERE T2.balance  <  (SELECT max(balance) FROM checking)"
+  },
+  {
+    "db_id": "csu_1",
+    "question": "Which year has the most degrees conferred?",
+    "sql": "SELECT YEAR FROM degrees GROUP BY YEAR ORDER BY sum(degrees) DESC LIMIT 1"
+  },
+  {
+    "db_id": "station_weather",
+    "question": "Find the id and local authority of the station with has the highest average high temperature.",
+    "sql": "SELECT t2.id ,  t2.local_authority FROM weekly_weather AS t1 JOIN station AS t2 ON t1.station_id  =  t2.id GROUP BY t1.station_id ORDER BY avg(high_temperature) DESC LIMIT 1"
+  },
+  {
+    "db_id": "cre_Doc_Control_Systems",
+    "question": "For each document, list the number of employees who have showed up in the circulation history of that document. List the document ids and number of employees.",
+    "sql": "SELECT document_id ,  count(DISTINCT employee_id) FROM Circulation_History GROUP BY document_id;"
+  },
+  {
+    "db_id": "manufacturer",
+    "question": "Find the names of furnitures whose prices are lower than the highest price.",
+    "sql": "SELECT t1.name FROM furniture AS t1 JOIN furniture_manufacte AS t2 ON t1.Furniture_ID  =  t2.Furniture_ID WHERE t2.Price_in_Dollar  <  (SELECT max(Price_in_Dollar) FROM furniture_manufacte)"
+  },
+  {
+    "db_id": "college_3",
+    "question": "What is the maximum and minimum grade point of students who live in NYC?",
+    "sql": "SELECT max(T2.gradepoint) ,  min(T2.gradepoint) FROM ENROLLED_IN AS T1 JOIN GRADECONVERSION AS T2 JOIN STUDENT AS T3 ON T1.Grade  =  T2.lettergrade AND T1.StuID  =  T3.StuID WHERE T3.city_code  =  \"NYC\""
+  },
+  {
+    "db_id": "baseball_1",
+    "question": "In 2014, what are the id and rank of the team that has the largest average number of attendance?",
+    "sql": "SELECT T2.team_id ,  T2.rank FROM home_game AS T1 JOIN team AS T2 ON T1.team_id  =  T2.team_id WHERE T1.year  =  2014 GROUP BY T1.team_id ORDER BY avg(T1.attendance) DESC LIMIT 1;"
+  },
+  {
+    "db_id": "student_1",
+    "question": "For each grade, report the grade, the number of classrooms in which it is taught and the total number of students in the grade.",
+    "sql": "SELECT grade ,  count(DISTINCT classroom) ,  count(*) FROM list GROUP BY grade"
+  },
+  {
+    "db_id": "tracking_software_problems",
+    "question": "What are the ids of the problems reported before the date of any problem reported by Lysanne Turcotte?",
+    "sql": "SELECT T1.problem_id FROM problems AS T1 JOIN staff AS T2 ON T1.reported_by_staff_id = T2.staff_id WHERE date_problem_reported  <  ( SELECT min(date_problem_reported) FROM problems AS T3 JOIN staff AS T4 ON T3.reported_by_staff_id = T4.staff_id WHERE T4.staff_first_name = \"Lysanne\" AND T4.staff_last_name = \"Turcotte\" )"
+  },
+  {
+    "db_id": "tracking_share_transactions",
+    "question": "Show the average amount of transactions for different lots, ordered by average amount of transactions.",
+    "sql": "SELECT T2.lot_id ,  avg(amount_of_transaction) FROM TRANSACTIONS AS T1 JOIN Transactions_Lots AS T2 ON T1.transaction_id  =  T2.transaction_id GROUP BY T2.lot_id ORDER BY avg(amount_of_transaction)"
+  },
+  {
+    "db_id": "music_2",
+    "question": "How many instruments does the song \"Le Pop\" use?",
+    "sql": "SELECT count(DISTINCT instrument) FROM instruments AS T1 JOIN songs AS T2 ON T1.songid  =  T2.songid WHERE title  =  \"Le Pop\""
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "Find the SSN and name of scientists who are assigned to the project with the longest hours.",
+    "sql": "SELECT T3.ssn ,  T3.name FROM assignedto AS T1 JOIN projects AS T2 ON T1.project  =  T2.code JOIN scientists AS T3 ON T1.scientist  =  T3.SSN WHERE T2.hours  =  (SELECT max(hours) FROM projects)"
+  },
+  {
+    "db_id": "gymnast",
+    "question": "What is the most common hometown of gymnasts?",
+    "sql": "SELECT T2.Hometown FROM gymnast AS T1 JOIN people AS T2 ON T1.Gymnast_ID  =  T2.People_ID GROUP BY T2.Hometown ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "shop_membership",
+    "question": "How many branches where have more than average number of memberships are there?",
+    "sql": "SELECT count(*) FROM branch WHERE membership_amount  >  (SELECT avg(membership_amount) FROM branch)"
+  },
+  {
+    "db_id": "party_people",
+    "question": "What is the name of party with most number of members?",
+    "sql": "SELECT T2.party_name FROM Member AS T1 JOIN party AS T2 ON T1.party_id  =  T2.party_id GROUP BY T1.party_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "university_basketball",
+    "question": "What is the total and minimum enrollment of all schools?",
+    "sql": "SELECT sum(enrollment) ,  min(enrollment) FROM university"
+  },
+  {
+    "db_id": "products_gen_characteristics",
+    "question": "How many distinct characteristic names does the product \"cumin\" have?",
+    "sql": "SELECT count(DISTINCT t3.characteristic_name) FROM products AS t1 JOIN product_characteristics AS t2 ON t1.product_id  =  t2.product_id JOIN CHARACTERISTICS AS t3 ON t2.characteristic_id  =  t3.characteristic_id WHERE t1.product_name  =  \"sesame\""
+  },
+  {
+    "db_id": "local_govt_in_alabama",
+    "question": "Which service id and type has the least number of participants?",
+    "sql": "SELECT T3.service_id ,  T4.Service_Type_Code FROM participants AS T1 JOIN Participants_in_Events AS T2 ON T1.Participant_ID  =  T2.Participant_ID JOIN EVENTS AS T3 ON T2.Event_ID   =  T3.Event_ID JOIN services AS T4 ON T3.service_id  =  T4.service_id GROUP BY T3.service_id ORDER BY count(*) ASC LIMIT 1"
+  },
+  {
+    "db_id": "customer_deliveries",
+    "question": "Find the name and price of the product that has been ordered the greatest number of times.",
+    "sql": "SELECT t1.product_name ,   t1.product_price FROM products AS t1 JOIN regular_order_products AS t2 ON t1.product_id  =  t2.product_id GROUP BY t2.product_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "Find the number of different airports which are the destinations of the American Airlines.",
+    "sql": "SELECT count(DISTINCT dst_apid) FROM airlines AS T1 JOIN routes AS T2 ON T1.alid  =  T2.alid WHERE T1.name  =  'American Airlines'"
+  },
+  {
+    "db_id": "ship_1",
+    "question": "What are the average and minimum age of captains in different class?",
+    "sql": "SELECT avg(age) ,  min(age) ,  CLASS FROM captain GROUP BY CLASS"
+  },
+  {
+    "db_id": "assets_maintenance",
+    "question": "Which engineer has visited the most times? Show the engineer id, first name and last name.",
+    "sql": "SELECT T1.engineer_id ,  T1.first_name ,  T1.last_name FROM Maintenance_Engineers AS T1 JOIN Engineer_Visits AS T2 GROUP BY T1.engineer_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "program_share",
+    "question": "Find the name of the program that is broadcast most frequently.",
+    "sql": "SELECT t1.name FROM program AS t1 JOIN broadcast AS t2 ON t1.program_id  =  t2.program_id GROUP BY t2.program_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "e_learning",
+    "question": "Find the personal name, family name, and author ID of the course author that teaches the most courses.",
+    "sql": "SELECT T1.personal_name ,  T1.family_name ,  T2.author_id FROM Course_Authors_and_Tutors AS T1 JOIN Courses AS T2 ON T1.author_id  =  T2.author_id GROUP BY T2.author_id ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "cre_Doc_Tracking_DB",
+    "question": "Show the location name and code with the least documents.",
+    "sql": "SELECT T2.location_name ,  T1.location_code FROM Document_locations AS T1 JOIN Ref_locations AS T2 ON T1.location_code  =  T2.location_code GROUP BY T1.location_code ORDER BY count(*) ASC LIMIT 1"
+  },
+  {
+    "db_id": "company_office",
+    "question": "Show the name of the building that has the most company offices.",
+    "sql": "SELECT T2.name FROM Office_locations AS T1 JOIN buildings AS T2 ON T1.building_id  =  T2.id JOIN Companies AS T3 ON T1.company_id  =  T3.id GROUP BY T1.building_id ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "solvency_ii",
+    "question": "Show the names of products and the number of events they are in, sorted by the number of events in descending order.",
+    "sql": "SELECT T1.Product_Name ,  COUNT(*) FROM Products AS T1 JOIN Products_in_Events AS T2 ON T1.Product_ID  =  T2.Product_ID GROUP BY T1.Product_Name ORDER BY COUNT(*) DESC"
+  },
+  {
+    "db_id": "customers_campaigns_ecommerce",
+    "question": "Show the names of customers who have the most mailshots.",
+    "sql": "SELECT T2.customer_name FROM mailshot_customers AS T1 JOIN customers AS T2 ON T1.customer_id  =  T2.customer_id GROUP BY T1.customer_id ORDER BY count(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "department_management",
+    "question": "What are the maximum and minimum budget of the departments?",
+    "sql": "SELECT max(budget_in_billions) ,  min(budget_in_billions) FROM department"
+  }
+]

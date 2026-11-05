@@ -1,0 +1,206 @@
+{
+  "tasks": [
+    {
+      "db_id": "chinook_1",
+      "question": "What are the duration of the longest and shortest pop tracks in milliseconds?",
+      "reference_sql": "SELECT max(Milliseconds) ,  min(Milliseconds) FROM GENRE AS T1 JOIN TRACK AS T2 ON T1.GenreId  =  T2.GenreId WHERE T1.Name  =  \"Pop\""
+    },
+    {
+      "db_id": "college_1",
+      "question": "What is the department name of the students with lowest gpa belongs to?",
+      "reference_sql": "SELECT T2.dept_name FROM student AS T1 JOIN department AS T2 ON T1.dept_code  =  T2.dept_code ORDER BY stu_gpa LIMIT 1"
+    },
+    {
+      "db_id": "college_2",
+      "question": "list in alphabetic order all course names and their instructors' names in year 2008.",
+      "reference_sql": "SELECT T1.title ,  T3.name FROM course AS T1 JOIN teaches AS T2 ON T1.course_id  =  T2.course_id JOIN instructor AS T3 ON T2.id  =  T3.id WHERE YEAR  =  2008 ORDER BY T1.title"
+    },
+    {
+      "db_id": "cre_Doc_Tracking_DB",
+      "question": "Give me the name and description of the location with code x.",
+      "reference_sql": "SELECT location_name ,  location_description FROM Ref_locations WHERE location_code  =  \"x\""
+    },
+    {
+      "db_id": "cre_Theme_park",
+      "question": "Show the names and ids of tourist attractions that are visited at most once.",
+      "reference_sql": "SELECT T1.Name ,  T1.Tourist_Attraction_ID FROM Tourist_Attractions AS T1 JOIN VISITS AS T2 ON T1.Tourist_Attraction_ID  =  T2.Tourist_Attraction_ID GROUP BY T2.Tourist_Attraction_ID HAVING count(*)  <=  1"
+    },
+    {
+      "db_id": "department_store",
+      "question": "List the names of all the distinct customers who bought a keyboard.",
+      "reference_sql": "SELECT DISTINCT T1.customer_name FROM customers AS T1 JOIN customer_orders AS T2 ON T1.customer_id  =  T2.customer_id JOIN order_items AS T3 ON T2.order_id  =  T3.order_id JOIN products AS T4 ON T3.product_id  =  T4.product_id WHERE T4.product_name  =  \"keyboard\""
+    },
+    {
+      "db_id": "driving_school",
+      "question": "What is the status code, mobile phone number and email address of customer with last name as Kohler or first name as Marina?",
+      "reference_sql": "SELECT customer_status_code ,  cell_mobile_phone_number ,  email_address FROM Customers WHERE first_name = \"Marina\" OR last_name  =  \"Kohler\""
+    },
+    {
+      "db_id": "flight_4",
+      "question": "How many routes go from the United States to Canada?",
+      "reference_sql": "SELECT count(*) FROM routes WHERE dst_apid IN (SELECT apid FROM airports WHERE country  =  'Canada') AND src_apid IN (SELECT apid FROM airports WHERE country  =  'United States')"
+    },
+    {
+      "db_id": "formula_1",
+      "question": "What is the id and last name of the driver who participated in the most races after 2010?",
+      "reference_sql": "SELECT T1.driverid ,  T1.surname FROM drivers AS T1 JOIN results AS T2 ON T1.driverid  =  T2.driverid JOIN races AS T3 ON T2.raceid = T3.raceid WHERE T3.year > 2010 GROUP BY T1.driverid ORDER BY count(*) DESC LIMIT 1"
+    },
+    {
+      "db_id": "store_1",
+      "question": "List the number of invoices from Chicago, IL.",
+      "reference_sql": "SELECT COUNT(*) FROM invoices WHERE billing_city  =  \"Chicago\" AND billing_state  =  \"IL\";"
+    },
+    {
+      "db_id": "student_assessment",
+      "question": "What is detail of the student who most recently registered course?",
+      "reference_sql": "SELECT T2.student_details FROM student_course_registrations AS T1 JOIN students AS T2 ON T1.student_id = T2.student_id ORDER BY T1.registration_date DESC LIMIT 1"
+    },
+    {
+      "db_id": "tracking_grants_for_research",
+      "question": "What is the response received date for the document described as Regular that was granted more than 100 dollars?",
+      "reference_sql": "SELECT T1.response_received_date FROM Documents AS T1 JOIN Document_Types AS T2 ON T1.document_type_code  =  T2.document_type_code JOIN Grants AS T3 ON T1.grant_id  =  T3.grant_id WHERE T2.document_description  =  'Regular' OR T3.grant_amount  >  100"
+    },
+    {
+      "db_id": "chinook_1",
+      "question": "What are the last names of customers without invoice totals exceeding 20?",
+      "reference_sql": "SELECT LastName FROM CUSTOMER EXCEPT SELECT T1.LastName FROM CUSTOMER AS T1 JOIN Invoice AS T2 ON T1.CustomerId  =  T2.CustomerId WHERE T2.total  >  20"
+    },
+    {
+      "db_id": "college_1",
+      "question": "How many professors are teaching class with code ACCT-211?",
+      "reference_sql": "SELECT count(DISTINCT PROF_NUM) FROM CLASS WHERE CRS_CODE  =  \"ACCT-211\""
+    },
+    {
+      "db_id": "college_2",
+      "question": "What is the title, credit value, and department name for courses with more than one prerequisite?",
+      "reference_sql": "SELECT T1.title ,  T1.credits , T1.dept_name FROM course AS T1 JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  >  1"
+    },
+    {
+      "db_id": "cre_Theme_park",
+      "question": "Show different tourist attractions' names, ids, and the corresponding number of visits.",
+      "reference_sql": "SELECT T1.Name ,  T2.Tourist_Attraction_ID ,   COUNT(*) FROM Tourist_Attractions AS T1 JOIN VISITS AS T2 ON T1.Tourist_Attraction_ID  =  T2.Tourist_Attraction_ID GROUP BY T2.Tourist_Attraction_ID"
+    },
+    {
+      "db_id": "department_store",
+      "question": "Return the distinct name of customers whose order status is Pending, in the order of customer id.",
+      "reference_sql": "SELECT DISTINCT T1.customer_name FROM customers AS T1 JOIN customer_orders AS T2 ON T1.customer_id  =  T2.customer_id WHERE T2.order_status_code  =  \"Pending\" ORDER BY T2.customer_id"
+    },
+    {
+      "db_id": "driving_school",
+      "question": "Which city does staff with first name as Janessa and last name as Sawayn live?",
+      "reference_sql": "SELECT T1.city FROM Addresses AS T1 JOIN Staff AS T2 ON T1.address_id = T2.staff_address_id WHERE T2.first_name = \"Janessa\" AND T2.last_name = \"Sawayn\";"
+    },
+    {
+      "db_id": "formula_1",
+      "question": "Find the distinct driver id of all drivers that have a longer stop duration than some drivers in the race whose id is 841?",
+      "reference_sql": "SELECT DISTINCT driverid ,  STOP FROM pitstops WHERE duration  >  (SELECT min(duration) FROM pitstops WHERE raceid  =  841)"
+    },
+    {
+      "db_id": "student_assessment",
+      "question": "What is the id of the candidate whose email is stanley.monahan@example.org?",
+      "reference_sql": "SELECT T2.candidate_id FROM people AS T1 JOIN candidates AS T2 ON T1.person_id = T2.candidate_id WHERE T1.email_address = \"stanley.monahan@example.org\""
+    }
+  ],
+  "shared_failures": [
+    {
+      "index": 0,
+      "failed_sql": "SELECT T1.TAR, T2.TAR FROM TRACK AS T1 JOIN TRACK AS T2 ON T1.TAR  =  T2.TAR ORDER BY T1.TAR DESC LIMIT 1 ,  ORDER BY T1.TAR ASC LIMIT 1",
+      "error": "near \"ORDER\": syntax error"
+    },
+    {
+      "index": 1,
+      "failed_sql": "SELECT dept_name FROM STUDENT ORDER BY STU_GPA ASC LIMIT 1",
+      "error": "no such column: dept_name"
+    },
+    {
+      "index": 2,
+      "failed_sql": "SELECT t1.title , instructor.name FROM course AS t1 JOIN instructor AS t2 ON t1.dept_name  =  t2.dept_name WHERE t1.year  =  2008 ORDER BY t1.title , t2.name",
+      "error": "no such column: instructor.name"
+    },
+    {
+      "index": 3,
+      "failed_sql": "SELECT Location_Name ,  Location_Description FROM Ref_Locations WHERE LOCATION_CODE  =  x",
+      "error": "no such column: x"
+    },
+    {
+      "index": 4,
+      "failed_sql": "SELECT name ,  tourist_attraction_id FROM visits GROUP BY tourist_attraction_id HAVING count(*)  <=  1",
+      "error": "no such column: name"
+    },
+    {
+      "index": 5,
+      "failed_sql": "SELECT customer_name FROM customer_orders AS T1 JOIN products AS T2 ON T1.customer_id  =  T2.product_id GROUP BY T1.customer_id HAVING T2.product_name  =  \"keyboard\"",
+      "error": "no such column: customer_name"
+    },
+    {
+      "index": 6,
+      "failed_sql": "SELECT T1.lesson_status_code ,  T2.cell_mobile_phone_number ,  T1.email_address FROM Customers AS T1 JOIN T2 ON T1.customer_id  =  T2.customer_id WHERE T1.last_name  =  \"Kohler\" OR T1.first_name  =  \"Marina\"",
+      "error": "no such table: T2"
+    },
+    {
+      "index": 7,
+      "failed_sql": "SELECT count(*) FROM routes WHERE dst_ap  =  'Canada' AND country  =  'United States'",
+      "error": "no such column: country"
+    },
+    {
+      "index": 8,
+      "failed_sql": "SELECT driverId ,  surname FROM drivers ORDER BY count(*) DESC LIMIT 1",
+      "error": "misuse of aggregate: count()"
+    },
+    {
+      "index": 9,
+      "failed_sql": "SELECT count(*) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id  =  T2.id JOIN T2.city  =  T2.city AS T3 ON T2.id  =  T3.id WHERE T3.city  =  \"Chicago\" AND T3.state  =  \"IL\"",
+      "error": "near \"=\": syntax error"
+    },
+    {
+      "index": 10,
+      "failed_sql": "SELECT student_details FROM student_course_registrations ORDER BY registration_date DESC LIMIT 1",
+      "error": "no such column: student_details"
+    },
+    {
+      "index": 11,
+      "failed_sql": "SELECT response_received_date FROM Documents WHERE document_description  =  \"Regular\" AND grant_amount  >  100",
+      "error": "no such column: document_description"
+    },
+    {
+      "index": 12,
+      "failed_sql": "SELECT T2.lastName FROM customer AS T1 JOIN invoice AS T2 ON T1.customerid  =  T2.customerid WHERE T2.total  EXCEEDS  20",
+      "error": "near \"EXCEEDS\": syntax error"
+    },
+    {
+      "index": 13,
+      "failed_sql": "SELECT count(*) FROM CLASS AS T1 JOIN PROFESSOR AS T2 ON T1.CLASS_CODE  =  T2.CLASS_CODE WHERE T1.CLASS_CODE  =  'ACCT-211'",
+      "error": "no such column: T2.CLASS_CODE"
+    },
+    {
+      "index": 14,
+      "failed_sql": "SELECT title ,  credits ,  dept_name FROM course WHERE credits  >  0 AND prereq_id  =  0",
+      "error": "no such column: prereq_id"
+    },
+    {
+      "index": 15,
+      "failed_sql": "SELECT name ,  tourist_attraction_id ,  count(*) FROM visits GROUP BY name ,  tourist_attraction_id",
+      "error": "no such column: name"
+    },
+    {
+      "index": 16,
+      "failed_sql": "SELECT customer_name FROM customer_orders AS T1 JOIN customer_addresses AS T2 ON T1.customer_id  =  T2.customer_id WHERE T1.order_status_code  =  \"Pending\" ORDER BY customer_id",
+      "error": "no such column: customer_name"
+    },
+    {
+      "index": 17,
+      "failed_sql": "SELECT city FROM staff WHERE first_name  =  'Janessa' AND last_name  =  'Sawayn'",
+      "error": "no such column: city"
+    },
+    {
+      "index": 18,
+      "failed_sql": "SELECT DISTINCT driverId FROM qualifying WHERE T1.stop  >  SELECT T1.stop FROM qualifying AS T1 AS T2 JOIN races AS T2 ON T1.raceId  =  T2.raceId WHERE T2.id  =  841",
+      "error": "near \"SELECT\": syntax error"
+    },
+    {
+      "index": 19,
+      "failed_sql": "SELECT candidate_id FROM candidates WHERE email_address  =  'stanley.monahan@example.org'",
+      "error": "no such column: email_address"
+    }
+  ]
+}

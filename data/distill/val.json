@@ -1,0 +1,152 @@
+[
+  {
+    "db_id": "hospital_1",
+    "question": "How many patients do each physician take care of? List their names and number of patients they take care of.",
+    "reference_sql": "SELECT T1.name ,  count(*) FROM physician AS T1 JOIN patient AS T2 ON T1.employeeid  =  T2.PCP GROUP BY T1.employeeid"
+  },
+  {
+    "db_id": "hr_1",
+    "question": "Give the first name and job id for all employees in the Finance department.",
+    "reference_sql": "SELECT T1.first_name ,  T1.job_id FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T2.department_name  =  'Finance'"
+  },
+  {
+    "db_id": "hr_1",
+    "question": "What is all the information regarding employees who are managers?",
+    "reference_sql": "SELECT DISTINCT * FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T1.employee_id  =  T2.manager_id"
+  },
+  {
+    "db_id": "hr_1",
+    "question": "display all the information for all employees who have the letters D or S in their first name and also arrange the result in descending order by salary.",
+    "reference_sql": "SELECT * FROM employees WHERE first_name LIKE '%D%' OR first_name LIKE '%S%' ORDER BY salary DESC"
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "What is the average cost of procedures that physician John Wen was trained in?",
+    "reference_sql": "SELECT avg(T3.cost) FROM physician AS T1 JOIN trained_in AS T2 ON T1.employeeid  =  T2.physician JOIN procedures AS T3 ON T3.code  =  T2.treatment WHERE T1.name  =  \"John Wen\""
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "What are the details of all products?",
+    "reference_sql": "SELECT DISTINCT product_details FROM products"
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "Return all the distinct payment methods used by customers.",
+    "reference_sql": "SELECT DISTINCT payment_method FROM customers"
+  },
+  {
+    "db_id": "hr_1",
+    "question": "What are the first names and department numbers for employees with last name McEwen?",
+    "reference_sql": "SELECT first_name ,  department_id FROM employees WHERE last_name  =  'McEwen'"
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "What are names of customers who never ordered product Latte.",
+    "reference_sql": "SELECT customer_name FROM customers EXCEPT SELECT t1.customer_name FROM customers AS t1 JOIN customer_orders AS t2 ON t1.customer_id  =  t2.customer_id JOIN order_items AS t3 ON t2.order_id  =  t3.order_id JOIN products AS t4 ON t3.product_id  =  t4.product_id WHERE t4.product_details  =  'Latte'"
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "List the names of all the physicians who prescribe Thesisin as medication.",
+    "reference_sql": "SELECT DISTINCT T1.name FROM physician AS T1 JOIN prescribes AS T2 ON T1.employeeid = T2.physician JOIN medication AS T3 ON T3.code = T2.medication WHERE T3.name  =  \"Thesisin\""
+  },
+  {
+    "db_id": "hr_1",
+    "question": "display the employee name ( first name and last name ) and hire date for all employees in the same department as Clara.",
+    "reference_sql": "SELECT first_name ,  last_name ,  hire_date FROM employees WHERE department_id  =  (SELECT department_id FROM employees WHERE first_name  =  \"Clara\")"
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "Which contact channel has been used by the customer with name \"Tillman Ernser\"?",
+    "reference_sql": "SELECT DISTINCT channel_code FROM customers AS t1 JOIN customer_contact_channels AS t2 ON t1.customer_id  =  t2.customer_id WHERE t1.customer_name  =  \"Tillman Ernser\""
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "Find the name and ID of the product whose total order quantity is the largest.",
+    "reference_sql": "SELECT t2.product_details ,  t2.product_id FROM order_items AS t1 JOIN products AS t2 ON t1.product_id  =  t2.product_id GROUP BY t1.product_id ORDER BY sum(t1.order_quantity) LIMIT 1"
+  },
+  {
+    "db_id": "customer_deliveries",
+    "question": "Show the details of all trucks in the order of their license number.",
+    "reference_sql": "SELECT truck_details FROM trucks ORDER BY truck_licence_number"
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "Retrieve the list of all cities.",
+    "reference_sql": "SELECT DISTINCT city FROM addresses"
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "What is the id of the appointment that started most recently?",
+    "reference_sql": "SELECT appointmentid FROM appointment ORDER BY START DESC LIMIT 1"
+  },
+  {
+    "db_id": "hr_1",
+    "question": "display the employee number and name( first name and last name ) for all employees who work in a department with any employee whose name contains a \u2019T\u2019.",
+    "reference_sql": "SELECT employee_id ,  first_name ,  last_name FROM employees WHERE department_id IN ( SELECT department_id FROM employees WHERE first_name LIKE '%T%' )"
+  },
+  {
+    "db_id": "local_govt_and_lot",
+    "question": "What are the id and details of the customers who have at least 3 events?",
+    "reference_sql": "SELECT T1.customer_id ,  T1.customer_details FROM Customers AS T1 JOIN Customer_Events AS T2 ON T1.customer_id  =  T2.customer_id GROUP BY T1.customer_id HAVING count(*)  >=  3"
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "What are all the addresses in East Julianaside, Texas or in Gleasonmouth, Arizona.",
+    "reference_sql": "SELECT address_content FROM addresses WHERE city  =  \"East Julianaside\" AND state_province_county  =  \"Texas\" UNION SELECT address_content FROM addresses WHERE city  =  \"Gleasonmouth\" AND state_province_county  =  \"Arizona\""
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "Tell me the employee id of the head of the department with the least employees.",
+    "reference_sql": "SELECT head FROM department GROUP BY departmentID ORDER BY count(departmentID) LIMIT 1;"
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "What is the names of the physicians who prescribe medication Thesisin?",
+    "reference_sql": "SELECT DISTINCT T1.name FROM physician AS T1 JOIN prescribes AS T2 ON T1.employeeid = T2.physician JOIN medication AS T3 ON T3.code = T2.medication WHERE T3.name  =  \"Thesisin\""
+  },
+  {
+    "db_id": "hr_1",
+    "question": "Find the first name and last name and department id for those employees who earn such amount of salary which is the smallest salary of any of the departments.",
+    "reference_sql": "SELECT first_name ,  last_name ,  department_id FROM employees WHERE salary IN (SELECT MIN(salary) FROM employees GROUP BY department_id)"
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "What are the names of the physician who prescribed the highest dose?",
+    "reference_sql": "SELECT T1.name FROM physician AS T1 JOIN prescribes AS T2 ON T1.employeeid = T2.physician ORDER BY T2.dose DESC LIMIT 1"
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "How many orders have detail \"Second time\"?",
+    "reference_sql": "SELECT count(*) FROM customer_orders WHERE order_details  =  \"Second time\""
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "Find the physician who prescribed the highest dose. What is his or her name?",
+    "reference_sql": "SELECT T1.name FROM physician AS T1 JOIN prescribes AS T2 ON T1.employeeid = T2.physician ORDER BY T2.dose DESC LIMIT 1"
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "What are the names of the physicians who have 'senior' in their titles.",
+    "reference_sql": "SELECT name FROM physician WHERE POSITION LIKE '%senior%'"
+  },
+  {
+    "db_id": "customers_and_addresses",
+    "question": "Tell me the number of orders with \"Second time\" as order detail.",
+    "reference_sql": "SELECT count(*) FROM customer_orders WHERE order_details  =  \"Second time\""
+  },
+  {
+    "db_id": "hospital_1",
+    "question": "What are the names of procedures physician John Wen was trained in?",
+    "reference_sql": "SELECT T3.name FROM physician AS T1 JOIN trained_in AS T2 ON T1.employeeid  =  T2.physician JOIN procedures AS T3 ON T3.code  =  T2.treatment WHERE T1.name  =  \"John Wen\""
+  },
+  {
+    "db_id": "hr_1",
+    "question": "What is the first name and job id for all employees in the Finance department?",
+    "reference_sql": "SELECT T1.first_name ,  T1.job_id FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T2.department_name  =  'Finance'"
+  },
+  {
+    "db_id": "hr_1",
+    "question": "What are the department names, cities, and state provinces for each department?",
+    "reference_sql": "SELECT T1.department_name ,  T2.city ,  T2.state_province FROM departments AS T1 JOIN locations AS T2 ON T2.location_id  =  T1.location_id"
+  }
+]

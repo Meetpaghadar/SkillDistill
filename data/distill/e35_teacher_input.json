@@ -1,0 +1,156 @@
+{
+  "tasks": [
+    {
+      "db_id": "college_1",
+      "question": "What is the name of the department with the student that has the lowest GPA?",
+      "reference_sql": "SELECT T2.dept_name FROM student AS T1 JOIN department AS T2 ON T1.dept_code  =  T2.dept_code ORDER BY stu_gpa LIMIT 1"
+    },
+    {
+      "db_id": "college_2",
+      "question": "Find the names and average salaries of all departments whose average salary is greater than 42000.",
+      "reference_sql": "SELECT dept_name ,  AVG (salary) FROM instructor GROUP BY dept_name HAVING AVG (salary)  >  42000"
+    },
+    {
+      "db_id": "college_2",
+      "question": "Find names of instructors with salary greater than that of some (at least one) instructor in the Biology department.",
+      "reference_sql": "SELECT name FROM instructor WHERE salary  >  (SELECT min(salary) FROM instructor WHERE dept_name  =  'Biology')"
+    },
+    {
+      "db_id": "college_2",
+      "question": "What are the building, room number, semester and year of courses in the Psychology department, sorted using course title?",
+      "reference_sql": "SELECT T2.building ,  T2.room_number ,  T2.semester ,  T2.year FROM course AS T1 JOIN SECTION AS T2 ON T1.course_id  =  T2.course_id WHERE T1.dept_name  =  'Psychology' ORDER BY T1.title"
+    },
+    {
+      "db_id": "college_2",
+      "question": "Find courses that ran in Fall 2009 but not in Spring 2010.",
+      "reference_sql": "SELECT course_id FROM SECTION WHERE semester  =  'Fall' AND YEAR  =  2009 EXCEPT SELECT course_id FROM SECTION WHERE semester  =  'Spring' AND YEAR  =  2010"
+    },
+    {
+      "db_id": "department_store",
+      "question": "What are the names and genders of staff who have held the title Sales Person, but never Clerical Staff?",
+      "reference_sql": "SELECT T1.staff_name ,  T1.staff_gender FROM staff AS T1 JOIN Staff_Department_Assignments AS T2 ON T1.staff_id  =  T2.staff_id WHERE T2.job_title_code  =  \"Sales Person\" EXCEPT SELECT T1.staff_name ,  T1.staff_gender FROM staff AS T1 JOIN Staff_Department_Assignments AS T2 ON T1.staff_id  =  T2.staff_id WHERE T2.job_title_code  =  \"Clerical Staff\""
+    },
+    {
+      "db_id": "driving_school",
+      "question": "Which city does staff with first name as Janessa and last name as Sawayn live?",
+      "reference_sql": "SELECT T1.city FROM Addresses AS T1 JOIN Staff AS T2 ON T1.address_id = T2.staff_address_id WHERE T2.first_name = \"Janessa\" AND T2.last_name = \"Sawayn\";"
+    },
+    {
+      "db_id": "formula_1",
+      "question": "Find the distinct driver id of all drivers that have a longer stop duration than some drivers in the race whose id is 841?",
+      "reference_sql": "SELECT DISTINCT driverid ,  STOP FROM pitstops WHERE duration  >  (SELECT min(duration) FROM pitstops WHERE raceid  =  841)"
+    },
+    {
+      "db_id": "formula_1",
+      "question": "What are all the different first names of the drivers who are in position as standing and won?",
+      "reference_sql": "SELECT DISTINCT T1.forename FROM drivers AS T1 JOIN driverstandings AS T2 ON T1.driverid = T2.driverid WHERE T2.position = 1 AND T2.wins = 1"
+    },
+    {
+      "db_id": "student_assessment",
+      "question": "What are all details of the students who registered but did not attend any course?",
+      "reference_sql": "SELECT * FROM student_course_registrations WHERE student_id NOT IN (SELECT student_id FROM student_course_attendance)"
+    },
+    {
+      "db_id": "student_assessment",
+      "question": "What is the id of the candidate whose email is stanley.monahan@example.org?",
+      "reference_sql": "SELECT T2.candidate_id FROM people AS T1 JOIN candidates AS T2 ON T1.person_id = T2.candidate_id WHERE T1.email_address = \"stanley.monahan@example.org\""
+    },
+    {
+      "db_id": "tracking_grants_for_research",
+      "question": "What are the task details, task ids, and project ids for the progrects that are detailed as 'omnis' or have at least 3 outcomes?",
+      "reference_sql": "SELECT T1.task_details ,  T1.task_id ,  T2.project_id FROM Tasks AS T1 JOIN Projects AS T2 ON T1.project_id  =  T2.project_id WHERE T2.project_details  =  'omnis' UNION SELECT T1.task_details ,  T1.task_id ,  T2.project_id FROM Tasks AS T1 JOIN Projects AS T2 ON T1.project_id  =  T2.project_id JOIN Project_outcomes AS T3 ON T2.project_id  =  T3.project_id GROUP BY T2.project_id HAVING count(*)  >  2"
+    },
+    {
+      "db_id": "tracking_grants_for_research",
+      "question": "What are the details of the project with no outcomes?",
+      "reference_sql": "SELECT project_details FROM Projects WHERE project_id NOT IN ( SELECT project_id FROM Project_outcomes )"
+    },
+    {
+      "db_id": "college_1",
+      "question": "What is the count and code of the job with the most employee?",
+      "reference_sql": "SELECT emp_jobcode ,  count(*) FROM employee GROUP BY emp_jobcode ORDER BY count(*) DESC LIMIT 1"
+    },
+    {
+      "db_id": "college_2",
+      "question": "What are the names and average salaries for departments with average salary higher than 42000?",
+      "reference_sql": "SELECT dept_name ,  AVG (salary) FROM instructor GROUP BY dept_name HAVING AVG (salary)  >  42000"
+    }
+  ],
+  "shared_failures": [
+    {
+      "index": 0,
+      "failed_sql": "SELECT dept_name FROM DEPARTMENT ORDER BY STU_GPA ASC LIMIT 1",
+      "error": "no such column: STU_GPA"
+    },
+    {
+      "index": 1,
+      "failed_sql": "SELECT dept_name ,  avg(salary) FROM department AS t1 JOIN instructor AS t2 ON t1.dept_name  =  t2.dept_name GROUP BY dept_name HAVING avg(salary)  >  42000",
+      "error": "ambiguous column name: dept_name"
+    },
+    {
+      "index": 2,
+      "failed_sql": "SELECT name FROM instructor WHERE salary  >  SELECT salary FROM instructor GROUP BY dept_name INTERSECT SELECT salary FROM instructor GROUP BY dept_name",
+      "error": "near \"SELECT\": syntax error"
+    },
+    {
+      "index": 3,
+      "failed_sql": "SELECT building ,  room_number ,  semester ,  year FROM course WHERE dept_name  =  'Psychology' ORDER BY title",
+      "error": "no such column: building"
+    },
+    {
+      "index": 4,
+      "failed_sql": "SELECT t1.title FROM course AS t1 JOIN section AS t2 ON t1.course_id  =  t2.course_id JOIN semester AS t3 ON t2.semester  =  t3.semester WHERE t3.semester  =  'Fall' AND t2.year  =  2009 INTERSECT SELECT t1.title FROM course AS t1 JOIN section AS t2 ON t1.course_id  =  t2.course_id JOIN semester AS t3 ON t2.semester  =  t3.semester WHERE t3.semester  =  'Spring'",
+      "error": "no such table: semester"
+    },
+    {
+      "index": 5,
+      "failed_sql": "SELECT staff_name ,  staff_gender FROM staff WHERE job_title_code  =  'Sales Person' INTERSECT SELECT staff_name ,  staff_gender FROM staff WHERE job_title_code  =  'Clerical Staff'",
+      "error": "no such column: job_title_code"
+    },
+    {
+      "index": 6,
+      "failed_sql": "SELECT city FROM staff WHERE first_name  =  'Janessa' AND last_name  =  'Sawayn'",
+      "error": "no such column: city"
+    },
+    {
+      "index": 7,
+      "failed_sql": "SELECT DISTINCT driverId FROM qualifying WHERE T1.stop  >  SELECT T1.stop FROM qualifying AS T1 AS T2 JOIN races AS T2 ON T1.raceId  =  T2.raceId WHERE T2.id  =  841",
+      "error": "near \"SELECT\": syntax error"
+    },
+    {
+      "index": 8,
+      "failed_sql": "SELECT surname FROM driverStandings AS T1 JOIN drivers AS T2 ON T1.driverId  =  T2.driverId WHERE T1.position  =  1 AND T2.surname  !=  T1.surname GROUP BY T2.surname",
+      "error": "no such column: T1.surname"
+    },
+    {
+      "index": 9,
+      "failed_sql": "SELECT T1.student_details FROM STUDENTS AS T1 JOIN STUDENT_COURSE_REGISTRATIONS AS T2 ON T1.student_id  =  T2.student_id JOIN COURSES AS T3 ON T2.course_id  =  T3.course_id WHERE T1.student_id  =  (SELECT T1 FROM STUDENTS AS T1 JOIN STUDENT_COURSE_REGISTRATIONS AS T2 ON T1.student_id  =  T2.student_id JOIN COURSES AS T3 ON T2.course_id  =  T3.course_id WHERE T1.student_id  =  (SELECT T1 FROM STUDENTS AS T",
+      "error": "incomplete input"
+    },
+    {
+      "index": 10,
+      "failed_sql": "SELECT candidate_id FROM candidates WHERE email_address  =  'stanley.monahan@example.org'",
+      "error": "no such column: email_address"
+    },
+    {
+      "index": 11,
+      "failed_sql": "SELECT task_details ,  task_id ,  project_id FROM Tasks WHERE task_details LIKE '%omnis%' OR count(*)  >=  3",
+      "error": "misuse of aggregate function count()"
+    },
+    {
+      "index": 12,
+      "failed_sql": "SELECT project_details FROM projects WHERE outcome_code  =  ''",
+      "error": "no such column: outcome_code"
+    },
+    {
+      "index": 13,
+      "failed_sql": "SELECT PROF_JOBCODE ,  count(*) FROM EMPLOYEE GROUP BY PROF_JOBCODE ORDER BY count(*) DESC LIMIT 1",
+      "error": "no such column: PROF_JOBCODE"
+    },
+    {
+      "index": 14,
+      "failed_sql": "SELECT dept_name ,  salary FROM department WHERE salary  >  42000",
+      "error": "no such column: salary"
+    }
+  ]
+}

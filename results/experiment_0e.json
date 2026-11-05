@@ -1,0 +1,8 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "runs": 3,
+  "mean_tokens_per_second": 12.37,
+  "std_tokens_per_second": 0.26,
+  "median_latency_seconds": 10.29,
+  "max_allocated_mib": 1163.87
+}

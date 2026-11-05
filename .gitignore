@@ -1,0 +1,33 @@
+# Python environment
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Model weights
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Large downloaded datasets
+data/spider_data/
+
+# Cache
+.cache/
+
+# Large archives and datasets
+data/spider.zip
+data/spider_data/
+*.zip

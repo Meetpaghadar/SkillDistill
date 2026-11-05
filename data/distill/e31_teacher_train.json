@@ -1,0 +1,65 @@
+[
+  {
+    "db_id": "college_1",
+    "question": "What is the department name of the students with lowest gpa belongs to?",
+    "failed_sql": "SELECT dept_name FROM STUDENT ORDER BY STU_GPA ASC LIMIT 1",
+    "tool_feedback": "no such column: dept_name",
+    "target_sql": "SELECT DEPARTMENT.DEPT_NAME FROM STUDENT JOIN DEPARTMENT ON STUDENT.DEPT_CODE = DEPARTMENT.DEPT_CODE ORDER BY STUDENT.STU_GPA ASC LIMIT 1"
+  },
+  {
+    "db_id": "college_2",
+    "question": "list in alphabetic order all course names and their instructors' names in year 2008.",
+    "failed_sql": "SELECT t1.title , instructor.name FROM course AS t1 JOIN instructor AS t2 ON t1.dept_name  =  t2.dept_name WHERE t1.year  =  2008 ORDER BY t1.title , t2.name",
+    "tool_feedback": "no such column: instructor.name",
+    "target_sql": "SELECT c.title, i.name\nFROM course AS c\nJOIN section AS s ON c.course_id = s.course_id\nJOIN teaches AS t ON s.course_id = t.course_id AND s.sec_id = t.sec_id AND s.semester = t.semester AND s.year = t.year\nJOIN instructor AS i ON t.ID = i.ID\nWHERE s.year = 2008\nORDER BY c.title, i.name"
+  },
+  {
+    "db_id": "cre_Doc_Tracking_DB",
+    "question": "Give me the name and description of the location with code x.",
+    "failed_sql": "SELECT Location_Name ,  Location_Description FROM Ref_Locations WHERE LOCATION_CODE  =  x",
+    "tool_feedback": "no such column: x",
+    "target_sql": "SELECT Location_Name, Location_Description FROM Ref_Locations WHERE Location_Code = 'x'"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "How many routes go from the United States to Canada?",
+    "failed_sql": "SELECT count(*) FROM routes WHERE dst_ap  =  'Canada' AND country  =  'United States'",
+    "tool_feedback": "no such column: country",
+    "target_sql": "SELECT count(*) FROM routes r\nJOIN airports src ON r.src_apid = src.apid\nJOIN airports dst ON r.dst_apid = dst.apid\nWHERE src.country = 'United States' AND dst.country = 'Canada'"
+  },
+  {
+    "db_id": "store_1",
+    "question": "List the number of invoices from Chicago, IL.",
+    "failed_sql": "SELECT count(*) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id  =  T2.id JOIN T2.city  =  T2.city AS T3 ON T2.id  =  T3.id WHERE T3.city  =  \"Chicago\" AND T3.state  =  \"IL\"",
+    "tool_feedback": "near \"=\": syntax error",
+    "target_sql": "SELECT COUNT(*) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id = T2.id WHERE T2.city = 'Chicago' AND T2.state = 'IL'"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What is detail of the student who most recently registered course?",
+    "failed_sql": "SELECT student_details FROM student_course_registrations ORDER BY registration_date DESC LIMIT 1",
+    "tool_feedback": "no such column: student_details",
+    "target_sql": "SELECT s.student_details FROM Students s INNER JOIN Student_Course_Registrations scr ON s.student_id = scr.student_id ORDER BY scr.registration_date DESC LIMIT 1"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What is the title, credit value, and department name for courses with more than one prerequisite?",
+    "failed_sql": "SELECT title ,  credits ,  dept_name FROM course WHERE credits  >  0 AND prereq_id  =  0",
+    "tool_feedback": "no such column: prereq_id",
+    "target_sql": "SELECT c.title, c.credits, c.dept_name FROM course c JOIN prereq p ON c.course_id = p.course_id GROUP BY c.course_id HAVING COUNT(*) > 1"
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "Show different tourist attractions' names, ids, and the corresponding number of visits.",
+    "failed_sql": "SELECT name ,  tourist_attraction_id ,  count(*) FROM visits GROUP BY name ,  tourist_attraction_id",
+    "tool_feedback": "no such column: name",
+    "target_sql": "SELECT t.Name, t.Tourist_Attraction_ID, COUNT(*) FROM Visits v INNER JOIN Tourist_Attractions t ON v.Tourist_Attraction_ID = t.Tourist_Attraction_ID GROUP BY t.Name, t.Tourist_Attraction_ID"
+  },
+  {
+    "db_id": "department_store",
+    "question": "Return the distinct name of customers whose order status is Pending, in the order of customer id.",
+    "failed_sql": "SELECT customer_name FROM customer_orders AS T1 JOIN customer_addresses AS T2 ON T1.customer_id  =  T2.customer_id WHERE T1.order_status_code  =  \"Pending\" ORDER BY customer_id",
+    "tool_feedback": "no such column: customer_name",
+    "target_sql": "SELECT DISTINCT c.customer_name FROM Customer_Orders AS T1 JOIN Customers AS c ON T1.customer_id = c.customer_id WHERE T1.order_status_code = 'Pending' ORDER BY T1.customer_id"
+  }
+]

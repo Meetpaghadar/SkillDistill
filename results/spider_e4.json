@@ -1,0 +1,329 @@
+[
+  {
+    "question": "How many singers do we have?",
+    "reference_sql": "SELECT count(*) FROM singer",
+    "generated_sql": "SELECT COUNT(*) FROM singer;",
+    "expected": [
+      [
+        6
+      ]
+    ],
+    "actual": [
+      [
+        6
+      ]
+    ],
+    "passed": true,
+    "error": null
+  },
+  {
+    "question": "What is the total number of singers?",
+    "reference_sql": "SELECT count(*) FROM singer",
+    "generated_sql": "SELECT COUNT(*) FROM singer;",
+    "expected": [
+      [
+        6
+      ]
+    ],
+    "actual": [
+      [
+        6
+      ]
+    ],
+    "passed": true,
+    "error": null
+  },
+  {
+    "question": "Show name, country, age for all singers ordered by age from the oldest to the youngest.",
+    "reference_sql": "SELECT name ,  country ,  age FROM singer ORDER BY age DESC",
+    "generated_sql": "SELECT Name, Country, Age FROM singer ORDER BY Age DESC, Name;",
+    "expected": [
+      [
+        "Joe Sharp",
+        "Netherlands",
+        52
+      ],
+      [
+        "John Nizinik",
+        "France",
+        43
+      ],
+      [
+        "Rose White",
+        "France",
+        41
+      ],
+      [
+        "Timbaland",
+        "United States",
+        32
+      ],
+      [
+        "Justin Brown",
+        "France",
+        29
+      ],
+      [
+        "Tribal King",
+        "France",
+        25
+      ]
+    ],
+    "actual": [
+      [
+        "Joe Sharp",
+        "Netherlands",
+        52
+      ],
+      [
+        "John Nizinik",
+        "France",
+        43
+      ],
+      [
+        "Rose White",
+        "France",
+        41
+      ],
+      [
+        "Timbaland",
+        "United States",
+        32
+      ],
+      [
+        "Justin Brown",
+        "France",
+        29
+      ],
+      [
+        "Tribal King",
+        "France",
+        25
+      ]
+    ],
+    "passed": true,
+    "error": null
+  },
+  {
+    "question": "What are the names, countries, and ages for every singer in descending order of age?",
+    "reference_sql": "SELECT name ,  country ,  age FROM singer ORDER BY age DESC",
+    "generated_sql": "SELECT Name, Country, Age FROM singer ORDER BY Age DESC;",
+    "expected": [
+      [
+        "Joe Sharp",
+        "Netherlands",
+        52
+      ],
+      [
+        "John Nizinik",
+        "France",
+        43
+      ],
+      [
+        "Rose White",
+        "France",
+        41
+      ],
+      [
+        "Timbaland",
+        "United States",
+        32
+      ],
+      [
+        "Justin Brown",
+        "France",
+        29
+      ],
+      [
+        "Tribal King",
+        "France",
+        25
+      ]
+    ],
+    "actual": [
+      [
+        "Joe Sharp",
+        "Netherlands",
+        52
+      ],
+      [
+        "John Nizinik",
+        "France",
+        43
+      ],
+      [
+        "Rose White",
+        "France",
+        41
+      ],
+      [
+        "Timbaland",
+        "United States",
+        32
+      ],
+      [
+        "Justin Brown",
+        "France",
+        29
+      ],
+      [
+        "Tribal King",
+        "France",
+        25
+      ]
+    ],
+    "passed": true,
+    "error": null
+  },
+  {
+    "question": "What is the average, minimum, and maximum age of all singers from France?",
+    "reference_sql": "SELECT avg(age) ,  min(age) ,  max(age) FROM singer WHERE country  =  'France'",
+    "generated_sql": "SELECT AVG(Age), MIN(Age), MAX(Age) FROM singer WHERE Country = 'France';",
+    "expected": [
+      [
+        34.5,
+        25,
+        43
+      ]
+    ],
+    "actual": [
+      [
+        34.5,
+        25,
+        43
+      ]
+    ],
+    "passed": true,
+    "error": null
+  },
+  {
+    "question": "What is the average, minimum, and maximum age for all French singers?",
+    "reference_sql": "SELECT avg(age) ,  min(age) ,  max(age) FROM singer WHERE country  =  'France'",
+    "generated_sql": "SELECT Average, Lowest, Highest AS \"Average\" FROM singer ORDER BY Age ASC;",
+    "expected": [
+      [
+        34.5,
+        25,
+        43
+      ]
+    ],
+    "actual": null,
+    "passed": false,
+    "error": "no such column: Average"
+  },
+  {
+    "question": "Show the name and the release year of the song by the youngest singer.",
+    "reference_sql": "SELECT song_name ,  song_release_year FROM singer ORDER BY age LIMIT 1",
+    "generated_sql": "SELECT Name, Song_release_year FROM singer WHERE Age = (SELECT MIN(Age) FROM singer);",
+    "expected": [
+      [
+        "Love",
+        "2016"
+      ]
+    ],
+    "actual": [
+      [
+        "Tribal King",
+        "2016"
+      ]
+    ],
+    "passed": false,
+    "error": null
+  },
+  {
+    "question": "What are the names and release years for all the songs of the youngest singer?",
+    "reference_sql": "SELECT song_name ,  song_release_year FROM singer ORDER BY age LIMIT 1",
+    "generated_sql": "SELECT Song_Name, Song_release_year FROM singer_in_concert JOIN concert ON concert.concert_ID = singer_in_concert.concert_ID JOIN stadium ON concert.Stadium_ID = stadium.Stadium_ID WHERE Age = (SELECT MIN(Age) FROM singer);",
+    "expected": [
+      [
+        "Love",
+        "2016"
+      ]
+    ],
+    "actual": null,
+    "passed": false,
+    "error": "no such column: Song_Name"
+  },
+  {
+    "question": "What are all distinct countries where singers above age 20 are from?",
+    "reference_sql": "SELECT DISTINCT country FROM singer WHERE age  >  20",
+    "generated_sql": "SELECT Country FROM singer WHERE Age > 20;",
+    "expected": [
+      [
+        "Netherlands"
+      ],
+      [
+        "United States"
+      ],
+      [
+        "France"
+      ]
+    ],
+    "actual": [
+      [
+        "Netherlands"
+      ],
+      [
+        "United States"
+      ],
+      [
+        "France"
+      ],
+      [
+        "France"
+      ],
+      [
+        "France"
+      ],
+      [
+        "France"
+      ]
+    ],
+    "passed": false,
+    "error": null
+  },
+  {
+    "question": "What are  the different countries with singers above age 20?",
+    "reference_sql": "SELECT DISTINCT country FROM singer WHERE age  >  20",
+    "generated_sql": "SELECT Country, Age FROM singer WHERE Age > 20;",
+    "expected": [
+      [
+        "Netherlands"
+      ],
+      [
+        "United States"
+      ],
+      [
+        "France"
+      ]
+    ],
+    "actual": [
+      [
+        "Netherlands",
+        52
+      ],
+      [
+        "United States",
+        32
+      ],
+      [
+        "France",
+        29
+      ],
+      [
+        "France",
+        41
+      ],
+      [
+        "France",
+        43
+      ],
+      [
+        "France",
+        25
+      ]
+    ],
+    "passed": false,
+    "error": null
+  }
+]
