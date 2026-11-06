@@ -5,6 +5,9 @@ import re
 import sqlite3
 from collections import Counter
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=".env")
 DB_ROOT = Path("data/spider_data/database")
 from openai import OpenAI
 
@@ -18,9 +21,9 @@ from openai import OpenAI
 MODEL = "Qwen/Qwen3.5-9B"
 BASE_URL = "https://router.huggingface.co/v1"
 
-INPUT = Path("data/distill/e35_teacher_input.json")
-OUTPUT = Path("data/distill/e35_teacher.json")
-MAX_CASES = 20
+INPUT = Path("data/distill/e46_teacher_input_2.json")
+OUTPUT = Path("data/distill/e46_teacher_output_2.json")
+MAX_CASES = 58
 
 
 token = os.environ.get("HF_TOKEN")
@@ -221,10 +224,19 @@ for i, failure in enumerate(failures, 1):
                     "content": prompt,
                 },
             ],
-            max_tokens=1024,
+            max_tokens=4096,
         )
 
-        content = response.choices[0].message.content or ""
+        choice = response.choices[0]
+        content = choice.message.content or ""
+
+        print("Finish reason:", choice.finish_reason)
+        print(
+          "Output tokens:",
+           response.usage.completion_tokens if response.usage else "unknown"
+             )
+        print("Raw response:", repr(content[:500]))
+
         teacher_sql = clean_sql(content)
 
         # Reference result used ONLY for verification.

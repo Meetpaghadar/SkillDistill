@@ -1,0 +1,793 @@
+[
+  {
+    "db_id": "college_1",
+    "question": "What is the department name of the students with lowest gpa belongs to?",
+    "failed_sql": "SELECT dept_name FROM STUDENT ORDER BY STU_GPA ASC LIMIT 1",
+    "tool_feedback": "no such column: dept_name",
+    "target_sql": "SELECT DEPARTMENT.DEPT_NAME FROM STUDENT JOIN DEPARTMENT ON STUDENT.DEPT_CODE = DEPARTMENT.DEPT_CODE ORDER BY STUDENT.STU_GPA ASC LIMIT 1"
+  },
+  {
+    "db_id": "college_2",
+    "question": "list in alphabetic order all course names and their instructors' names in year 2008.",
+    "failed_sql": "SELECT t1.title , instructor.name FROM course AS t1 JOIN instructor AS t2 ON t1.dept_name  =  t2.dept_name WHERE t1.year  =  2008 ORDER BY t1.title , t2.name",
+    "tool_feedback": "no such column: instructor.name",
+    "target_sql": "SELECT c.title, i.name\nFROM course AS c\nJOIN section AS s ON c.course_id = s.course_id\nJOIN teaches AS t ON s.course_id = t.course_id AND s.sec_id = t.sec_id AND s.semester = t.semester AND s.year = t.year\nJOIN instructor AS i ON t.ID = i.ID\nWHERE s.year = 2008\nORDER BY c.title, i.name"
+  },
+  {
+    "db_id": "cre_Doc_Tracking_DB",
+    "question": "Give me the name and description of the location with code x.",
+    "failed_sql": "SELECT Location_Name ,  Location_Description FROM Ref_Locations WHERE LOCATION_CODE  =  x",
+    "tool_feedback": "no such column: x",
+    "target_sql": "SELECT Location_Name, Location_Description FROM Ref_Locations WHERE Location_Code = 'x'"
+  },
+  {
+    "db_id": "flight_4",
+    "question": "How many routes go from the United States to Canada?",
+    "failed_sql": "SELECT count(*) FROM routes WHERE dst_ap  =  'Canada' AND country  =  'United States'",
+    "tool_feedback": "no such column: country",
+    "target_sql": "SELECT count(*) FROM routes r\nJOIN airports src ON r.src_apid = src.apid\nJOIN airports dst ON r.dst_apid = dst.apid\nWHERE src.country = 'United States' AND dst.country = 'Canada'"
+  },
+  {
+    "db_id": "store_1",
+    "question": "List the number of invoices from Chicago, IL.",
+    "failed_sql": "SELECT count(*) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id  =  T2.id JOIN T2.city  =  T2.city AS T3 ON T2.id  =  T3.id WHERE T3.city  =  \"Chicago\" AND T3.state  =  \"IL\"",
+    "tool_feedback": "near \"=\": syntax error",
+    "target_sql": "SELECT COUNT(*) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id = T2.id WHERE T2.city = 'Chicago' AND T2.state = 'IL'"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What is detail of the student who most recently registered course?",
+    "failed_sql": "SELECT student_details FROM student_course_registrations ORDER BY registration_date DESC LIMIT 1",
+    "tool_feedback": "no such column: student_details",
+    "target_sql": "SELECT s.student_details FROM Students s INNER JOIN Student_Course_Registrations scr ON s.student_id = scr.student_id ORDER BY scr.registration_date DESC LIMIT 1"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What is the title, credit value, and department name for courses with more than one prerequisite?",
+    "failed_sql": "SELECT title ,  credits ,  dept_name FROM course WHERE credits  >  0 AND prereq_id  =  0",
+    "tool_feedback": "no such column: prereq_id",
+    "target_sql": "SELECT c.title, c.credits, c.dept_name FROM course c JOIN prereq p ON c.course_id = p.course_id GROUP BY c.course_id HAVING COUNT(*) > 1"
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "Show different tourist attractions' names, ids, and the corresponding number of visits.",
+    "failed_sql": "SELECT name ,  tourist_attraction_id ,  count(*) FROM visits GROUP BY name ,  tourist_attraction_id",
+    "tool_feedback": "no such column: name",
+    "target_sql": "SELECT t.Name, t.Tourist_Attraction_ID, COUNT(*) FROM Visits v INNER JOIN Tourist_Attractions t ON v.Tourist_Attraction_ID = t.Tourist_Attraction_ID GROUP BY t.Name, t.Tourist_Attraction_ID"
+  },
+  {
+    "db_id": "department_store",
+    "question": "Return the distinct name of customers whose order status is Pending, in the order of customer id.",
+    "failed_sql": "SELECT customer_name FROM customer_orders AS T1 JOIN customer_addresses AS T2 ON T1.customer_id  =  T2.customer_id WHERE T1.order_status_code  =  \"Pending\" ORDER BY customer_id",
+    "tool_feedback": "no such column: customer_name",
+    "target_sql": "SELECT DISTINCT c.customer_name FROM Customer_Orders AS T1 JOIN Customers AS c ON T1.customer_id = c.customer_id WHERE T1.order_status_code = 'Pending' ORDER BY T1.customer_id"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find the names and average salaries of all departments whose average salary is greater than 42000.",
+    "failed_sql": "SELECT dept_name ,  avg(salary) FROM department AS t1 JOIN instructor AS t2 ON t1.dept_name  =  t2.dept_name GROUP BY dept_name HAVING avg(salary)  >  42000",
+    "tool_feedback": "ambiguous column name: dept_name",
+    "target_sql": "SELECT t1.dept_name , AVG(t2.salary) FROM department AS t1 JOIN instructor AS t2 ON t1.dept_name = t2.dept_name GROUP BY t1.dept_name HAVING AVG(t2.salary) > 42000"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the building, room number, semester and year of courses in the Psychology department, sorted using course title?",
+    "failed_sql": "SELECT building ,  room_number ,  semester ,  year FROM course WHERE dept_name  =  'Psychology' ORDER BY title",
+    "tool_feedback": "no such column: building",
+    "target_sql": "SELECT s.building, s.room_number, s.semester, s.year FROM section s JOIN course c ON s.course_id = c.course_id WHERE c.dept_name = 'Psychology' ORDER BY c.title"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "Which city does staff with first name as Janessa and last name as Sawayn live?",
+    "failed_sql": "SELECT city FROM staff WHERE first_name  =  'Janessa' AND last_name  =  'Sawayn'",
+    "tool_feedback": "no such column: city",
+    "target_sql": "SELECT a.city FROM Staff s JOIN Addresses a ON s.staff_address_id = a.address_id WHERE s.first_name = 'Janessa' AND s.last_name = 'Sawayn'"
+  },
+  {
+    "db_id": "formula_1",
+    "question": "Find the distinct driver id of all drivers that have a longer stop duration than some drivers in the race whose id is 841?",
+    "failed_sql": "SELECT DISTINCT driverId FROM qualifying WHERE T1.stop  >  SELECT T1.stop FROM qualifying AS T1 AS T2 JOIN races AS T2 ON T1.raceId  =  T2.raceId WHERE T2.id  =  841",
+    "tool_feedback": "near \"SELECT\": syntax error",
+    "target_sql": "SELECT DISTINCT driverId FROM pitStops WHERE milliseconds > (SELECT MIN(milliseconds) FROM pitStops WHERE raceId = 841)"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What are the task details, task ids, and project ids for the progrects that are detailed as 'omnis' or have at least 3 outcomes?",
+    "failed_sql": "SELECT task_details ,  task_id ,  project_id FROM Tasks WHERE task_details LIKE '%omnis%' OR count(*)  >=  3",
+    "tool_feedback": "misuse of aggregate function count()",
+    "target_sql": "SELECT task_details, task_id, project_id FROM Tasks WHERE project_id IN (SELECT project_id FROM Projects WHERE project_details LIKE '%omnis%') OR project_id IN (SELECT project_id FROM Project_Outcomes GROUP BY project_id HAVING COUNT(*) >= 3)"
+  },
+  {
+    "db_id": "college_1",
+    "question": "What is the count and code of the job with the most employee?",
+    "failed_sql": "SELECT PROF_JOBCODE ,  count(*) FROM EMPLOYEE GROUP BY PROF_JOBCODE ORDER BY count(*) DESC LIMIT 1",
+    "tool_feedback": "no such column: PROF_JOBCODE",
+    "target_sql": "SELECT EMP_JOBCODE, COUNT(*) FROM EMPLOYEE GROUP BY EMP_JOBCODE ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "driving_school",
+    "question": "What is the status code, mobile phone number and email address of customer with last name as Kohler or first name as Marina?",
+    "failed_sql": "SELECT T1.lesson_status_code ,  T2.cell_mobile_phone_number ,  T1.email_address FROM Customers AS T1 JOIN T2 ON T1.customer_id  =  T2.customer_id WHERE T1.last_name  =  \"Kohler\" OR T1.first_name  =  \"Marina\"",
+    "tool_feedback": "no such table: T2",
+    "target_sql": "SELECT customer_status_code, cell_mobile_phone_number, email_address FROM Customers WHERE last_name = \"Kohler\" OR first_name = \"Marina\""
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What is the id and last name of the driver who participated in the most races after 2010?",
+    "failed_sql": "SELECT driverId ,  surname FROM drivers ORDER BY count(*) DESC LIMIT 1",
+    "tool_feedback": "misuse of aggregate: count()",
+    "target_sql": "SELECT r.driverId, d.surname\nFROM results r\nJOIN drivers d ON r.driverId = d.driverId\nJOIN races rac ON r.raceId = rac.raceId\nWHERE rac.year > 2010\nGROUP BY r.driverId\nORDER BY COUNT(r.raceId) DESC\nLIMIT 1"
+  },
+  {
+    "db_id": "department_store",
+    "question": "List the names of all the distinct customers who bought a keyboard.",
+    "failed_sql": "SELECT customer_name FROM customer_orders AS T1 JOIN products AS T2 ON T1.customer_id  =  T2.product_id GROUP BY T1.customer_id HAVING T2.product_name  =  \"keyboard\"",
+    "tool_feedback": "no such column: customer_name",
+    "target_sql": "SELECT DISTINCT c.customer_name\nFROM Customers c\nJOIN Customer_Orders co ON c.customer_id = co.customer_id\nJOIN Order_Items oi ON co.order_id = oi.order_id\nJOIN Products p ON oi.product_id = p.product_id\nWHERE p.product_name = 'keyboard'"
+  },
+  {
+    "db_id": "college_1",
+    "question": "What is the name of the department with the student that has the lowest GPA?",
+    "failed_sql": "SELECT dept_name FROM DEPARTMENT ORDER BY STU_GPA ASC LIMIT 1",
+    "tool_feedback": "no such column: STU_GPA",
+    "target_sql": "SELECT DEPARTMENT.DEPT_NAME FROM STUDENT JOIN DEPARTMENT ON STUDENT.DEPT_CODE = DEPARTMENT.DEPT_CODE ORDER BY STUDENT.STU_GPA ASC LIMIT 1"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What are the details of the project with no outcomes?",
+    "failed_sql": "SELECT project_details FROM projects WHERE outcome_code  =  ''",
+    "tool_feedback": "no such column: outcome_code",
+    "target_sql": "SELECT project_details FROM Projects WHERE project_id NOT IN (SELECT project_id FROM Project_Outcomes)"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Find the name of students who took any class in the years of 2009 and 2010.",
+    "failed_sql": "SELECT t2.name FROM student AS t1 JOIN takes AS t2 ON t1.id  =  t2.course_id JOIN course AS t3 ON t1.id  =  t3.course_id JOIN semester AS t4 ON t3.credits  =  t4.credits JOIN classroom AS t5 ON t3.course_id  =  t5.room_number JOIN semester AS t6 ON t3.credits  =  t6.credits JOIN classroom AS t7 ON t3.course_id  =  t7.room_number JOIN semester AS t8 ON t3.credits  =  t8.credits JOIN classroom",
+    "tool_feedback": "no such table: semester",
+    "target_sql": "SELECT DISTINCT s.name FROM student AS s JOIN takes AS t ON s.ID = t.ID WHERE t.year IN (2009, 2010)"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the names and salaries of instructors who advises students in the History department?",
+    "failed_sql": "SELECT name ,  salary FROM instructor JOIN dept_name ON dept_name  =  T1.dept_name JOIN department ON dept_name  =  T2.dept_name WHERE T1.dept_name  =  T2.dept_name",
+    "tool_feedback": "no such table: dept_name",
+    "target_sql": "SELECT I.name, I.salary FROM instructor I JOIN advisor A ON I.ID = A.i_ID JOIN student S ON A.s_ID = S.ID JOIN department D ON S.dept_name = D.dept_name WHERE D.dept_name = 'History'"
+  },
+  {
+    "db_id": "department_store",
+    "question": "What are the names and genders of staff who have held the title Sales Person, but never Clerical Staff?",
+    "failed_sql": "SELECT staff_name ,  staff_gender FROM staff WHERE job_title_code  =  'Sales Person' INTERSECT SELECT staff_name ,  staff_gender FROM staff WHERE job_title_code  =  'Clerical Staff'",
+    "tool_feedback": "no such column: job_title_code",
+    "target_sql": "SELECT staff_name, staff_gender FROM Staff WHERE staff_id IN (SELECT staff_id FROM Staff_Department_Assignments WHERE job_title_code = 'Sales Person') AND staff_id NOT IN (SELECT staff_id FROM Staff_Department_Assignments WHERE job_title_code = 'Clerical Staff')"
+  },
+  {
+    "db_id": "cre_Theme_park",
+    "question": "Show the names and ids of tourist attractions that are visited at most once.",
+    "failed_sql": "SELECT name ,  tourist_attraction_id FROM visits GROUP BY tourist_attraction_id HAVING count(*)  <=  1",
+    "tool_feedback": "no such column: name",
+    "target_sql": "SELECT ta.Name, ta.Tourist_Attraction_ID FROM Tourist_Attractions ta INNER JOIN Visits v ON ta.Tourist_Attraction_ID = v.Tourist_Attraction_ID GROUP BY ta.Tourist_Attraction_ID HAVING COUNT(*) <= 1"
+  },
+  {
+    "db_id": "department_store",
+    "question": "Return the name and job title of the staff with the latest date assigned.",
+    "failed_sql": "SELECT t1.staff_name ,  t2.job_title_code FROM Staff AS t1 JOIN Staff_Department_Assignments AS t2 ON t1.staff_id  =  t2.staff_id JOIN Departments AS t3 ON t1.department_id  =  t3.department_id ORDER BY date_assigned_to DESC LIMIT 1",
+    "tool_feedback": "no such column: t1.department_id",
+    "target_sql": "SELECT t1.staff_name ,  t2.job_title_code FROM Staff AS t1 JOIN Staff_Department_Assignments AS t2 ON t1.staff_id  =  t2.staff_id ORDER BY t2.date_assigned_to DESC LIMIT 1"
+  },
+  {
+    "db_id": "department_store",
+    "question": "Give me the product type, name and price for all the products supplied by supplier id 3.",
+    "failed_sql": "SELECT product_type_code ,  product_name ,  product_price FROM products WHERE supplier_id  =  3",
+    "tool_feedback": "no such column: supplier_id",
+    "target_sql": "SELECT p.product_type_code, p.product_name, p.product_price FROM Products p JOIN Product_Suppliers ps ON p.product_id = ps.product_id WHERE ps.supplier_id = 3"
+  },
+  {
+    "db_id": "college_2",
+    "question": "What are the names and average salaries for departments with average salary higher than 42000?",
+    "failed_sql": "SELECT dept_name ,  salary FROM department WHERE salary  >  42000",
+    "tool_feedback": "no such column: salary",
+    "target_sql": "SELECT d.dept_name, AVG(i.salary) FROM department d JOIN instructor i ON d.dept_name = i.dept_name GROUP BY d.dept_name HAVING AVG(i.salary) > 42000"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What is the id of the candidate whose email is stanley.monahan@example.org?",
+    "failed_sql": "SELECT candidate_id FROM candidates WHERE email_address  =  'stanley.monahan@example.org'",
+    "tool_feedback": "no such column: email_address",
+    "target_sql": "SELECT c.candidate_id FROM Candidates c INNER JOIN People p ON c.candidate_id = p.person_id WHERE p.email_address = 'stanley.monahan@example.org'"
+  },
+  {
+    "db_id": "department_store",
+    "question": "List the names and phone numbers of all the distinct suppliers who supply red jeans.",
+    "failed_sql": "SELECT supplier_name ,  supplier_phone FROM suppliers WHERE product_id  =  1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "tool_feedback": "no such column: product_id",
+    "target_sql": "SELECT DISTINCT s.supplier_name, s.supplier_phone FROM Suppliers s JOIN Product_Suppliers ps ON s.supplier_id = ps.supplier_id JOIN Products p ON ps.product_id = p.product_id WHERE p.product_name = 'red jeans'"
+  },
+  {
+    "db_id": "chinook_1",
+    "question": "What are the last names of customers without invoice totals exceeding 20?",
+    "failed_sql": "SELECT T2.lastName FROM customer AS T1 JOIN invoice AS T2 ON T1.customerid  =  T2.customerid WHERE T2.total  EXCEEDS  20",
+    "tool_feedback": "near \"EXCEEDS\": syntax error",
+    "target_sql": "SELECT DISTINCT C.LastName FROM Customer AS C LEFT JOIN Invoice AS I ON C.CustomerId = I.CustomerId GROUP BY C.CustomerId HAVING MAX(I.Total) <= 20"
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What are the forenames and surnames of drivers who participated in the races named Australian Grand Prix but not the races named Chinese Grand Prix?",
+    "failed_sql": "SELECT f.forename ,  s.surname FROM drivers AS t1 JOIN races AS t2 ON t1.driverid  =  t2.driverid JOIN circuits AS t3 ON t2.circuitid  =  t3.circuitid WHERE t2.name  =  \"Australian Grand Prix\" INTERSECT SELECT f.forename ,  s.surname FROM drivers AS t1 JOIN races AS t2 ON t1.driverid  =  t2.driverid JOIN circuits AS t3 ON t2.circuitid  =  t3.circuitid WHERE t2.name  !=  \"Chinese Grand Prix\"",
+    "tool_feedback": "no such column: f.forename",
+    "target_sql": "SELECT d.forename, d.surname FROM drivers d JOIN results r ON d.driverId = r.driverId JOIN races ra ON r.raceId = ra.raceId WHERE ra.name = \"Australian Grand Prix\" EXCEPT SELECT d.forename, d.surname FROM drivers d JOIN results r ON d.driverId = r.driverId JOIN races ra ON r.raceId = ra.raceId WHERE ra.name = \"Chinese Grand Prix\""
+  },
+  {
+    "db_id": "college_1",
+    "question": "Which school has the fewest professors?",
+    "failed_sql": "SELECT T2.SCHOOL_CODE FROM DEPARTMENT AS T1 JOIN STUDENT AS T2 ON T1.DEPT_CODE  =  T2.DEPT_CODE GROUP BY T1.SCHOOL_CODE ORDER BY COUNT(*) DESC LIMIT 1",
+    "tool_feedback": "no such column: T2.SCHOOL_CODE",
+    "target_sql": "SELECT D.SCHOOL_CODE FROM DEPARTMENT AS D JOIN PROFESSOR AS P ON D.DEPT_CODE = P.DEPT_CODE GROUP BY D.SCHOOL_CODE ORDER BY COUNT(*) ASC LIMIT 1"
+  },
+  {
+    "db_id": "college_1",
+    "question": "What are the course codes for every class that the student with the last name Smithson took?",
+    "failed_sql": "SELECT CRS_CODE FROM STUDENT AS T1 JOIN CLASS AS T2 ON T1.STU_NUM  =  T2.STU_NUM WHERE T1.STU_LNAME  =  \"Smithson\"",
+    "tool_feedback": "no such column: T2.STU_NUM",
+    "target_sql": "SELECT C.CRS_CODE \nFROM STUDENT AS S \nJOIN ENROLL AS E ON S.STU_NUM = E.STU_NUM \nJOIN CLASS AS C ON E.CLASS_CODE = C.CLASS_CODE \nWHERE S.STU_LNAME = 'Smithson'"
+  },
+  {
+    "db_id": "cre_Docs_and_Epenses",
+    "question": "What are the details for statements with the details 'Private Project', and what are the names of the corresponding documents?",
+    "failed_sql": "SELECT T1.Statement_Details ,  T2.Document_NAME FROM Statements AS T1 JOIN Documents AS T2 ON T1.Statement_ID  =  T2.Document_ID WHERE T2.Statement_Details  =  'Private Project'",
+    "tool_feedback": "no such column: T2.Statement_Details",
+    "target_sql": "SELECT T1.Statement_Details, T2.Document_Name FROM Statements AS T1 JOIN Documents AS T2 ON T1.Statement_ID = T2.Document_ID WHERE T1.Statement_Details = 'Private Project'"
+  },
+  {
+    "db_id": "music_1",
+    "question": "Find the name and country of origin for all artists who have release at least one song of resolution above 900.",
+    "failed_sql": "SELECT artist_name ,  country FROM artist WHERE artist_name  =  (SELECT T1.artist_name FROM song AS T1 JOIN artist AS T2 ON T1.artist_name  =  T2.artist_name GROUP BY T1.artist_name) INTERSECT SELECT T1.country FROM artist AS T1 JOIN song AS T2 ON T1.artist_name  =  T2.artist_name GROUP BY T1.country INTERSECT SELECT T1.country FROM T1 JOIN T2 ON T1.artist_name  =  T2.artist_name GROUP BY T1.country INTERSECT SELECT T1.country FROM T1 JOIN T2 ON T",
+    "tool_feedback": "no such table: T1",
+    "target_sql": "SELECT DISTINCT artist_name, country FROM artist WHERE artist_name IN (SELECT artist_name FROM song WHERE resolution > 900)"
+  },
+  {
+    "db_id": "flight_1",
+    "question": "what is the salary and name of the employee who has the most number of aircraft certificates?",
+    "failed_sql": "SELECT name ,  salary FROM certificate GROUP BY eid ORDER BY count(*) DESC LIMIT 1",
+    "tool_feedback": "no such column: name",
+    "target_sql": "SELECT e.name, e.salary FROM certificate c JOIN employee e ON c.eid = e.eid GROUP BY e.eid ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "aircraft",
+    "question": "For each aircraft that has won an award, what is its name and how many time has it won?",
+    "failed_sql": "SELECT Aircraft ,  count(*) FROM match GROUP BY Aircraft",
+    "tool_feedback": "no such column: Aircraft",
+    "target_sql": "SELECT a.\"Aircraft\", COUNT(*) FROM match m JOIN aircraft a ON m.\"Winning_Aircraft\" = a.\"Aircraft_ID\" GROUP BY a.\"Aircraft_ID\""
+  },
+  {
+    "db_id": "dorm_1",
+    "question": "Find the name of dorms that do not have any amenity",
+    "failed_sql": "SELECT dorm_name FROM dorm WHERE NOT EXISTS (SELECT 1 FROM has_amenity AS T1 JOIN dorm_amenity AS T2 ON T1.amenid  =  T2.amenid WHERE T1.dormid  =  T2.dormid)",
+    "tool_feedback": "no such column: T2.dormid",
+    "target_sql": "SELECT dorm_name FROM Dorm WHERE NOT EXISTS (SELECT 1 FROM Has_amenity AS T1 WHERE T1.dormid = Dorm.dormid)"
+  },
+  {
+    "db_id": "train_station",
+    "question": "Show the station name and number of trains in each station.",
+    "failed_sql": "SELECT T1.Name ,  T2.Number_of_Platforms FROM train_station AS T1 JOIN station AS T2 ON T1.Station_ID  =  T2.Station_ID",
+    "tool_feedback": "no such column: T1.Name",
+    "target_sql": "SELECT T2.Name, COUNT(*) FROM train_station T1 JOIN station T2 ON T1.Station_ID = T2.Station_ID GROUP BY T2.Station_ID"
+  },
+  {
+    "db_id": "college_2",
+    "question": "Give the title of the course offered in Chandler during the Fall of 2010.",
+    "failed_sql": "SELECT title FROM course WHERE dept_name  =  'Chandler' AND semester  =  'Fall' AND year  =  2010",
+    "tool_feedback": "no such column: semester",
+    "target_sql": "SELECT title FROM course JOIN section ON course.course_id = section.course_id WHERE section.building = 'Chandler' AND section.semester = 'Fall' AND section.year = 2010"
+  },
+  {
+    "db_id": "e_learning",
+    "question": "Find the subject ID, name of subject and the corresponding number of courses for each subject, and sort by the course count in ascending order.",
+    "failed_sql": "SELECT subject_id ,  subject_name ,  count(*) FROM Courses GROUP BY subject_id ORDER BY count(*)",
+    "tool_feedback": "no such column: subject_name",
+    "target_sql": "SELECT s.subject_id, s.subject_name, COUNT(*) AS course_count\nFROM Courses c\nJOIN Subjects s ON c.subject_id = s.subject_id\nGROUP BY s.subject_id\nORDER BY course_count ASC"
+  },
+  {
+    "db_id": "store_1",
+    "question": "What are the names of the top 8 countries by total invoice size and what are those sizes?",
+    "failed_sql": "SELECT T1.country ,  sum(T2.total) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id  =  T2.id GROUP BY T1.country ORDER BY sum(T2.total) DESC LIMIT 8",
+    "tool_feedback": "no such column: T1.country",
+    "target_sql": "SELECT T2.country, SUM(T1.total) FROM invoices AS T1 JOIN customers AS T2 ON T1.customer_id = T2.id GROUP BY T2.country ORDER BY SUM(T1.total) DESC LIMIT 8"
+  },
+  {
+    "db_id": "epinions_1",
+    "question": "Find the titles of items whose rating is higher than the average review rating of all items.",
+    "failed_sql": "SELECT title FROM item WHERE rating  >  (SELECT avg(rating) FROM review)",
+    "tool_feedback": "no such column: rating",
+    "target_sql": "SELECT i.title FROM item i JOIN review r ON i.i_id = r.i_id GROUP BY i.i_id HAVING AVG(r.rating) > (SELECT AVG(rating) FROM review)"
+  },
+  {
+    "db_id": "college_1",
+    "question": "Find the first names of all instructors who have taught some course and the course description.",
+    "failed_sql": "SELECT T1.emp_fname ,  T2.crs_description FROM EMPLOYEE AS T1 JOIN PROFESSOR AS T2 ON T1.emp_num  =  T2.emp_num JOIN COURSE AS T2 ON T1.emp_num  =  T2.emp_num JOIN DEPARTMENT AS T2 ON T1.emp_num  =  T2.emp_num JOIN COURSE AS T2 ON T1.emp_num  =  T2.emp_num JOIN DEPARTMENT AS T2 ON T1.emp_num  =  T2.emp_num JOIN COURSE AS T2 ON T1.emp_num  =  T2.emp_num JOIN",
+    "tool_feedback": "incomplete input",
+    "target_sql": "SELECT E.EMP_FNAME, C.CRS_DESCRIPTION\nFROM COURSE C\nJOIN CLASS CL ON C.CRS_CODE = CL.CRS_CODE\nJOIN EMPLOYEE E ON E.EMP_NUM = CL.PROF_NUM"
+  },
+  {
+    "db_id": "tracking_grants_for_research",
+    "question": "What are the ids and details for all organizations that have grants of more than 6000 dollars?",
+    "failed_sql": "SELECT organisation_id ,  other_details FROM organisations WHERE grant_amount  >  6000",
+    "tool_feedback": "no such column: other_details",
+    "target_sql": "SELECT o.organisation_id, o.organisation_details FROM Organisations o JOIN Grants g ON o.organisation_id = g.organisation_id WHERE g.grant_amount > 6000"
+  },
+  {
+    "db_id": "tracking_orders",
+    "question": "Which customers have ever canceled the purchase of the product \"food\" (the item status is \"Cancel\")?",
+    "failed_sql": "SELECT customer_name FROM orders AS T1 JOIN product_details AS T2 ON T1.customer_id  =  T2.product_id WHERE T2.product_name  =  \"food\" AND T1.order_status  =  \"Cancel\"",
+    "tool_feedback": "no such table: product_details",
+    "target_sql": "SELECT DISTINCT customer_name FROM Customers AS T1 JOIN Orders AS T2 ON T1.customer_id = T2.customer_id JOIN Order_Items AS T3 ON T2.order_id = T3.order_id JOIN Products AS T4 ON T3.product_id = T4.product_id WHERE T4.product_name = \"food\" AND T3.order_item_status = \"Cancel\""
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "Find the cell mobile number of the candidates whose assessment code is \"Fail\"?",
+    "failed_sql": "SELECT T1.cell_mobile_number FROM Candidates AS T1 JOIN Candidate_Assessments AS T2 ON T1.candidate_id  =  T2.candidate_id WHERE T2.asessment_outcome_code  =  \"Fail\"",
+    "tool_feedback": "no such column: T1.cell_mobile_number",
+    "target_sql": "SELECT P.cell_mobile_number FROM Candidates AS T1 JOIN People AS P ON T1.candidate_id = P.person_id JOIN Candidate_Assessments AS T2 ON T1.candidate_id = T2.candidate_id WHERE T2.asessment_outcome_code = \"Fail\""
+  },
+  {
+    "db_id": "flight_company",
+    "question": "List the vehicle flight number, date and pilot of all the flights, ordered by altitude.",
+    "failed_sql": "SELECT V.T1 ,  T2 ,  T3 FROM flight AS T1 JOIN airport AS T2 ON T1.airport_id  =  T2.id ORDER BY T1.altitude",
+    "tool_feedback": "no such column: V.T1",
+    "target_sql": "SELECT Vehicle_Flight_number, Date, Pilot FROM flight ORDER BY Altitude"
+  },
+  {
+    "db_id": "soccer_2",
+    "question": "What are the states of the colleges where students who tried out for the striker position attend?",
+    "failed_sql": "SELECT state FROM college WHERE cname IN (SELECT cname FROM tryout AS t1 JOIN college AS t2 ON t1.cname  =  t2.cname WHERE t1.ppos  =  \"striker\")",
+    "tool_feedback": "ambiguous column name: cname",
+    "target_sql": "SELECT DISTINCT C.state FROM College C JOIN Tryout T ON C.cName = T.cName WHERE T.pPos = 'striker'"
+  },
+  {
+    "db_id": "e_government",
+    "question": "What is the last name of the contact individual from the Labour party organization who was contacted most recently?",
+    "failed_sql": "SELECT individual_last_name FROM organization_contact_individuals JOIN parties ON organization_id  =  party_id ORDER BY date_contact_to DESC LIMIT 1",
+    "tool_feedback": "no such column: individual_last_name",
+    "target_sql": "SELECT i.individual_last_name FROM Organization_Contact_Individuals oci JOIN Organizations o ON oci.organization_id = o.organization_id JOIN Individuals i ON oci.individual_id = i.individual_id WHERE o.organization_name LIKE '%Labour%' ORDER BY oci.date_contact_to DESC LIMIT 1"
+  },
+  {
+    "db_id": "school_player",
+    "question": "List the school color of the school that has the largest enrollment.",
+    "failed_sql": "SELECT school_color FROM school ORDER BY enrollment DESC LIMIT 1",
+    "tool_feedback": "no such column: school_color",
+    "target_sql": "SELECT School_Colors FROM school ORDER BY Enrollment DESC LIMIT 1"
+  },
+  {
+    "db_id": "music_2",
+    "question": "Find all the songs performed by artist with last name \"Heilo\"",
+    "failed_sql": "SELECT T1.title FROM performances AS T1 JOIN band AS T2 ON T1.bandmate  =  T2.id WHERE T2.lastname  =  \"Heilo\"",
+    "tool_feedback": "no such table: performances",
+    "target_sql": "SELECT S.Title FROM Songs AS S JOIN Performance AS P ON S.SongId = P.SongId JOIN Band AS B ON P.Bandmate = B.Id WHERE B.Lastname = \"Heilo\""
+  },
+  {
+    "db_id": "cre_Doc_Tracking_DB",
+    "question": "Show the ids of all employees who have authorized destruction.",
+    "failed_sql": "SELECT T1.employee_id FROM Documents_to_be_Destroyed AS T1 JOIN Employees AS T2 ON T1.destruction_authorised_by_employee_id  =  T2.employee_id",
+    "tool_feedback": "no such column: T1.employee_id",
+    "target_sql": "SELECT DISTINCT T2.employee_id FROM Documents_to_be_Destroyed AS T1 JOIN Employees AS T2 ON T1.destruction_authorised_by_employee_id = T2.employee_id"
+  },
+  {
+    "db_id": "gymnast",
+    "question": "What are the hometowns that are shared by at least two gymnasts?",
+    "failed_sql": "SELECT Hometown FROM gymnast GROUP BY Hometown HAVING COUNT(*)  >=  2",
+    "tool_feedback": "no such column: Hometown",
+    "target_sql": "SELECT people.Hometown FROM people JOIN gymnast ON people.People_ID = gymnast.Gymnast_ID GROUP BY people.Hometown HAVING COUNT(*) >= 2"
+  },
+  {
+    "db_id": "match_season",
+    "question": "Show the players and years played for players from team \"Columbus Crew\".",
+    "failed_sql": "SELECT Player ,  Years_Played FROM player WHERE Team  =  (SELECT Team FROM team WHERE country  =  \"Columbus Crew\")",
+    "tool_feedback": "no such column: country",
+    "target_sql": "SELECT Player, Years_Played FROM player WHERE Team = (SELECT Team_id FROM team WHERE Name = \"Columbus Crew\")"
+  },
+  {
+    "db_id": "program_share",
+    "question": "Find the name of the program that is broadcast most frequently.",
+    "failed_sql": "SELECT Name FROM broadcast GROUP BY Name ORDER BY COUNT(*) DESC LIMIT 1",
+    "tool_feedback": "no such column: Name",
+    "target_sql": "SELECT p.Name FROM broadcast b JOIN program p ON b.Program_ID = p.Program_ID GROUP BY p.Program_ID ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "What are the ids of the candidates that have an outcome code of Pass?",
+    "failed_sql": "SELECT candidate_id FROM candidate_assessments WHERE assessment_outcome_code  =  'Pass'",
+    "tool_feedback": "no such column: assessment_outcome_code",
+    "target_sql": "SELECT candidate_id FROM Candidate_Assessments WHERE asessment_outcome_code = 'Pass'"
+  },
+  {
+    "db_id": "store_product",
+    "question": "Find the city with the most number of stores.",
+    "failed_sql": "SELECT T2.Store_name FROM store AS T1 JOIN store_district AS T2 ON T1.Store_id  =  T2.Store_id GROUP BY T2.Store_id ORDER BY count(*) DESC LIMIT 1",
+    "tool_feedback": "no such column: T2.Store_name",
+    "target_sql": "SELECT D.Headquartered_City FROM store AS T1 JOIN store_district AS T2 ON T1.Store_ID = T2.Store_ID JOIN district AS D ON T2.District_ID = D.District_ID GROUP BY D.District_ID ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "department_store",
+    "question": "Return the name and gender of the staff who was assigned in 2016.",
+    "failed_sql": "SELECT staff_name ,  staff_gender FROM staff JOIN staff_department_assignments ON staff.staff_id  =  staff_department_assignments.staff_id WHERE date_assigned_to  =  DATE_SUB(NOW(), INTERVAL 1 YEAR)",
+    "tool_feedback": "near \"1\": syntax error",
+    "target_sql": "SELECT staff_name, staff_gender FROM Staff JOIN Staff_Department_Assignments ON Staff.staff_id = Staff_Department_Assignments.staff_id WHERE strftime('%Y', date_assigned_from) = '2016'"
+  },
+  {
+    "db_id": "movie_1",
+    "question": "Find the titles of all movies not reviewed by Chris Jackson.",
+    "failed_sql": "SELECT title FROM movie WHERE mID NOT IN (SELECT mID FROM rating WHERE rID IN (SELECT rID FROM reviewer AS t1 JOIN reviewer AS t2 ON t1.rID  =  t2.rID WHERE t1.name  =  \"Chris Jackson\"))",
+    "tool_feedback": "ambiguous column name: rID",
+    "target_sql": "SELECT title FROM Movie WHERE mID NOT IN (SELECT mID FROM Rating WHERE rID IN (SELECT rID FROM Reviewer WHERE name = 'Chris Jackson'));"
+  },
+  {
+    "db_id": "e_learning",
+    "question": "Find the addresses and author IDs of the course authors that teach at least two courses.",
+    "failed_sql": "SELECT T1.address_line_1 ,  T2.author_id FROM Course_Authors_and_Tutors AS T1 JOIN Course_Authors_and_Tutors AS T2 ON T1.author_tutor_ATB  =  T2.author_tutor_ATB WHERE count(*)  >=  2",
+    "tool_feedback": "misuse of aggregate function count()",
+    "target_sql": "SELECT T1.address_line_1, T1.author_id FROM Course_Authors_and_Tutors AS T1 JOIN Courses AS T2 ON T1.author_id = T2.author_id GROUP BY T1.author_id HAVING COUNT(*) >= 2"
+  },
+  {
+    "db_id": "tracking_orders",
+    "question": "Which customers have made at least two orders? Give me each customer name and number of orders made.",
+    "failed_sql": "SELECT customer_name ,  count(*) FROM orders GROUP BY customer_id HAVING count(*)  >=  2",
+    "tool_feedback": "no such column: customer_name",
+    "target_sql": "SELECT c.customer_name, COUNT(*) FROM Customers c INNER JOIN Orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id HAVING COUNT(*) >= 2"
+  },
+  {
+    "db_id": "device",
+    "question": "Show the name of the shop that have the largest quantity of devices in stock.",
+    "failed_sql": "SELECT Shop_Name FROM stock GROUP BY Shop_ID ORDER BY COUNT(*) DESC LIMIT 1",
+    "tool_feedback": "no such column: Shop_Name",
+    "target_sql": "SELECT s.Shop_Name FROM stock st JOIN shop s ON st.Shop_ID = s.Shop_ID GROUP BY st.Shop_ID ORDER BY SUM(st.Quantity) DESC LIMIT 1"
+  },
+  {
+    "db_id": "race_track",
+    "question": "Show all track names that have had no races.",
+    "failed_sql": "SELECT Name FROM track WHERE Seatings = 0",
+    "tool_feedback": "no such column: Seatings",
+    "target_sql": "SELECT t.Name FROM track t LEFT JOIN race r ON t.Track_ID = r.Track_ID WHERE r.Track_ID IS NULL"
+  },
+  {
+    "db_id": "device",
+    "question": "What are the names of device shops, and what are the carriers that they carry devices in stock for?",
+    "failed_sql": "SELECT t1.shop_name ,  t2.carrier FROM stock AS t1 JOIN shop AS t2 ON t1.shop_id  =  t2.shop_id",
+    "tool_feedback": "no such column: t1.shop_name",
+    "target_sql": "SELECT s.shop_name, d.carrier\nFROM stock t1\nJOIN shop s ON t1.shop_id = s.shop_id\nJOIN device d ON t1.device_id = d.device_id"
+  },
+  {
+    "db_id": "loan_1",
+    "question": "What is the total account balance for customers with a credit score of above 100 for the different states?",
+    "failed_sql": "SELECT sum(acc_bal) ,  T2.state FROM customer AS T1 JOIN loan AS T2 ON T1.cust_id  =  T2.cust_id JOIN bank AS T3 ON T1.branch_id  =  T3.branch_id GROUP BY T2.state ORDER BY sum(acc_bal) DESC",
+    "tool_feedback": "no such column: T2.state",
+    "target_sql": "SELECT sum(acc_bal) AS total_balance, state FROM customer WHERE credit_score > 100 GROUP BY state ORDER BY total_balance DESC"
+  },
+  {
+    "db_id": "music_4",
+    "question": "What are the songs in volumes associated with the artist aged 32 or older?",
+    "failed_sql": "SELECT song FROM volume WHERE artist_id  =  SELECT artist_id FROM artist WHERE age  >  32",
+    "tool_feedback": "near \"SELECT\": syntax error",
+    "target_sql": "SELECT song FROM volume WHERE artist_id IN (SELECT Artist_ID FROM artist WHERE age >= 32)"
+  },
+  {
+    "db_id": "tracking_orders",
+    "question": "List the count and id of each product in all the orders.",
+    "failed_sql": "SELECT count(*) ,  product_id FROM orders GROUP BY product_id",
+    "tool_feedback": "no such column: product_id",
+    "target_sql": "SELECT COUNT(*), oi.product_id FROM Orders AS o JOIN Order_Items AS oi ON o.order_id = oi.order_id GROUP BY oi.product_id;"
+  },
+  {
+    "db_id": "musical",
+    "question": "What are the characters of actors in descending order of age?",
+    "failed_sql": "SELECT T2.Character FROM actor AS T1 JOIN musical AS T2 ON T1.Musical_ID  =  T2.Musical_ID ORDER BY T1.age DESC",
+    "tool_feedback": "no such column: T2.Character",
+    "target_sql": "SELECT T1.Character FROM actor AS T1 JOIN musical AS T2 ON T1.Musical_ID = T2.Musical_ID ORDER BY T1.age DESC"
+  },
+  {
+    "db_id": "music_1",
+    "question": "What is the id of the files that are available in the format of mp4 and a resolution smaller than 1000?",
+    "failed_sql": "SELECT f_id FROM files WHERE formats  =  'mp4' AND resolution  <  1000",
+    "tool_feedback": "no such column: resolution",
+    "target_sql": "SELECT f.f_id FROM files f JOIN song s ON f.f_id = s.f_id WHERE f.formats = 'mp4' AND s.resolution < 1000"
+  },
+  {
+    "db_id": "insurance_fnol",
+    "question": "Which customers do not have a first notification of loss record? Give me the customer names.",
+    "failed_sql": "SELECT customer_name FROM customers EXCEPT SELECT customer_name FROM first_notification_of_loss",
+    "tool_feedback": "no such column: customer_name",
+    "target_sql": "SELECT Customer_name FROM Customers WHERE Customer_ID NOT IN (SELECT DISTINCT Customer_ID FROM First_Notification_of_Loss)"
+  },
+  {
+    "db_id": "farm",
+    "question": "Show the official names of the cities that have hosted more than one competition.",
+    "failed_sql": "SELECT T1.official_name FROM farm_competition AS T1 JOIN city AS T2 ON T1.host_city_id  =  T2.city_id GROUP BY T1.host_city_id HAVING count(*)  >  1",
+    "tool_feedback": "no such column: T1.official_name",
+    "target_sql": "SELECT T2.Official_Name FROM farm_competition AS T1 JOIN city AS T2 ON T1.Host_city_ID = T2.City_ID GROUP BY T1.Host_city_ID HAVING COUNT(*) > 1"
+  },
+  {
+    "db_id": "store_1",
+    "question": "What are the top 5 countries by number of invoices and how many do they have?",
+    "failed_sql": "SELECT country ,  count(*) FROM invoices GROUP BY country ORDER BY count(*) DESC LIMIT 5",
+    "tool_feedback": "no such column: country",
+    "target_sql": "SELECT billing_country, count(*) FROM invoices GROUP BY billing_country ORDER BY count(*) DESC LIMIT 5"
+  },
+  {
+    "db_id": "student_1",
+    "question": "Find the first names of all the teachers that teach in classroom 110.",
+    "failed_sql": "SELECT T1.FIRST_NAME FROM teachers AS T1 JOIN list AS T2 ON T1.FIRST_NAME  =  T2.FIRST_NAME WHERE T2.CLASSROOM  =  110",
+    "tool_feedback": "no such column: T1.FIRST_NAME",
+    "target_sql": "SELECT FirstName FROM teachers WHERE Classroom = 110"
+  },
+  {
+    "db_id": "dorm_1",
+    "question": "What are the amenities in alphabetical order that Anonymous Donor Hall has?",
+    "failed_sql": "SELECT amenity_name FROM Has_amenity AS T1 JOIN Dorm_amenity AS T2 ON T1.amenid  =  T2.amenid ORDER BY T1.amenity_name ASC",
+    "tool_feedback": "no such column: T1.amenity_name",
+    "target_sql": "SELECT T3.amenity_name FROM Dorm AS T1 JOIN Has_amenity AS T2 ON T1.dormid = T2.dormid JOIN Dorm_amenity AS T3 ON T2.amenid = T3.amenid WHERE T1.dorm_name = 'Anonymous Donor Hall' ORDER BY T3.amenity_name ASC"
+  },
+  {
+    "db_id": "insurance_and_eClaims",
+    "question": "Which customers have an insurance policy with the type code \"Deputy\"? Give me the customer details.",
+    "failed_sql": "SELECT customer_details FROM policies WHERE policy_type_code  =  \"Deputy\"",
+    "tool_feedback": "no such column: customer_details",
+    "target_sql": "SELECT c.Customer_Details FROM Policies p JOIN Customers c ON p.Customer_ID = c.Customer_ID WHERE p.Policy_Type_Code = 'Deputy'"
+  },
+  {
+    "db_id": "music_1",
+    "question": "What are the names of all songs that are in mp3 format and have a resolution lower than 1000?",
+    "failed_sql": "SELECT song_name FROM song WHERE formats  =  'mp3' AND resolution  <  1000",
+    "tool_feedback": "no such column: formats",
+    "target_sql": "SELECT song_name FROM song JOIN files ON song.f_id = files.f_id WHERE files.formats = 'mp3' AND resolution < 1000"
+  },
+  {
+    "db_id": "activity_1",
+    "question": "What is the first and last name of the faculty participating in the most activities?",
+    "failed_sql": "SELECT fname ,  lname FROM Faculty ORDER BY count(*) DESC LIMIT 1",
+    "tool_feedback": "misuse of aggregate: count()",
+    "target_sql": "SELECT F.Fname, F.Lname FROM Faculty F INNER JOIN Faculty_Participates_in FP ON F.FacID = FP.FacID GROUP BY F.FacID ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "apartment_rentals",
+    "question": "What are the facility codes of the apartments with more than four bedrooms?",
+    "failed_sql": "SELECT facility_code FROM apartment_facilities WHERE apartment_id  =  (SELECT apt_id FROM apartments GROUP BY apt_id HAVING bedroom_count  >  4)",
+    "tool_feedback": "no such column: apartment_id",
+    "target_sql": "SELECT facility_code FROM apartment_facilities WHERE apt_id IN (SELECT apt_id FROM apartments WHERE bedroom_count > 4)"
+  },
+  {
+    "db_id": "tracking_orders",
+    "question": "When was the order placed whose shipment tracking number is 3452? Give me the date.",
+    "failed_sql": "SELECT date_order_placed FROM orders WHERE shipment_id  =  3452",
+    "tool_feedback": "no such column: shipment_id",
+    "target_sql": "SELECT o.date_order_placed FROM Orders o INNER JOIN Shipments s ON o.order_id = s.order_id WHERE s.shipment_tracking_number = '3452'"
+  },
+  {
+    "db_id": "club_1",
+    "question": "Which members of \"Bootup Baltimore\" major in \"600\"? Give me their first names and last names.",
+    "failed_sql": "SELECT fname ,  lname FROM student WHERE major  =  600 AND clubname  =  \"Bootup Baltimore\"",
+    "tool_feedback": "no such column: clubname",
+    "target_sql": "SELECT Fname, LName FROM Student JOIN Member_of_club ON Student.StuID = Member_of_club.StuID JOIN Club ON Member_of_club.ClubID = Club.ClubID WHERE Major = 600 AND Club.ClubName = 'Bootup Baltimore'"
+  },
+  {
+    "db_id": "architecture",
+    "question": "What is the id, name and nationality of the architect who built most mills?",
+    "failed_sql": "SELECT id ,  name ,  nationality FROM mill GROUP BY id ORDER BY count(*) DESC LIMIT 1",
+    "tool_feedback": "no such column: nationality",
+    "target_sql": "SELECT a.id, a.name, a.nationality FROM architect a INNER JOIN mill m ON a.id = m.architect_id GROUP BY a.id ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "csu_1",
+    "question": "What campus had more than 400 total enrollment but more than 200 full time enrollment in year 1956?",
+    "failed_sql": "SELECT campus FROM campuses AS T1 JOIN enrollments AS T2 ON T1.id  =  T2.campus WHERE T1.year  =  1956 AND T1.totalenrollment_ay  >  400 AND T1.fte_ay  >  200",
+    "tool_feedback": "ambiguous column name: campus",
+    "target_sql": "SELECT T1.Campus FROM Campuses AS T1 JOIN enrollments AS T2 ON T1.Id = T2.Campus WHERE T2.Year = 1956 AND T2.TotalEnrollment_AY > 400 AND T2.FTE_AY > 200"
+  },
+  {
+    "db_id": "store_1",
+    "question": "Find out the top 10 customers by total number of orders. List customers' first and last name and the number of total orders.",
+    "failed_sql": "SELECT first_name ,  last_name ,  sum(total) FROM invoices GROUP BY first_name ,  last_name ORDER BY sum(total) DESC LIMIT 10",
+    "tool_feedback": "no such column: first_name",
+    "target_sql": "SELECT c.first_name, c.last_name, COUNT(i.id) FROM invoices i JOIN customers c ON i.customer_id = c.id GROUP BY c.id, c.first_name, c.last_name ORDER BY COUNT(i.id) DESC LIMIT 10"
+  },
+  {
+    "db_id": "entrepreneur",
+    "question": "What are the names of entrepreneurs whose investor is not \"Rachel Elnaugh\"?",
+    "failed_sql": "SELECT Name FROM entrepreneur WHERE Investor != \"Rachel Elnaugh\"",
+    "tool_feedback": "no such column: Name",
+    "target_sql": "SELECT p.Name FROM entrepreneur e JOIN people p ON e.People_ID = p.People_ID WHERE e.Investor != 'Rachel Elnaugh'"
+  },
+  {
+    "db_id": "store_1",
+    "question": "What is the total amount of money spent by Lucas Mancini?",
+    "failed_sql": "SELECT sum(unit_price) FROM invoice_lines AS t1 JOIN invoices AS t2 ON t1.invoice_id  =  t2.id JOIN tracks AS t3 ON t1.track_id  =  t3.id JOIN composers AS t4 ON t3.composer  =  t4.id WHERE t2.customer_id  =  t3.customer_id AND t3.composer  =  \"Lucas Mancini\"",
+    "tool_feedback": "no such table: composers",
+    "target_sql": "SELECT SUM(i.total) FROM invoices AS i JOIN customers AS c ON i.customer_id = c.id WHERE c.first_name = 'Lucas' AND c.last_name = 'Mancini'"
+  },
+  {
+    "db_id": "aircraft",
+    "question": "What are the names of all aircrafts that have won a match at least twice?",
+    "failed_sql": "SELECT Aircraft FROM match GROUP BY Winning_Aircraft HAVING count(*)  >=  2",
+    "tool_feedback": "no such column: Aircraft",
+    "target_sql": "SELECT a.Aircraft \nFROM match m\nJOIN aircraft a ON m.Winning_Aircraft = a.Aircraft_ID\nGROUP BY a.Aircraft_ID\nHAVING COUNT(*) >= 2"
+  },
+  {
+    "db_id": "book_2",
+    "question": "List the titles of books that are not published.",
+    "failed_sql": "SELECT Title FROM book WHERE Publisher IS NULL",
+    "tool_feedback": "no such column: Publisher",
+    "target_sql": "SELECT Title FROM book WHERE Book_ID NOT IN (SELECT Book_ID FROM publication)"
+  },
+  {
+    "db_id": "formula_1",
+    "question": "What are the unique names of races that held after 2000 and the circuits were in Spain?",
+    "failed_sql": "SELECT DISTINCT name FROM races WHERE date  >  \"2000\" AND country  =  \"Spain\"",
+    "tool_feedback": "no such column: country",
+    "target_sql": "SELECT DISTINCT r.name FROM races r JOIN circuits c ON r.circuitId = c.circuitId WHERE r.year > 2000 AND c.country = 'Spain'"
+  },
+  {
+    "db_id": "tracking_orders",
+    "question": "List the name of all the distinct customers who have orders with status \"Packing\".",
+    "failed_sql": "SELECT DISTINCT customer_name FROM orders WHERE order_status  =  \"Packing\"",
+    "tool_feedback": "no such column: customer_name",
+    "target_sql": "SELECT DISTINCT c.customer_name FROM Orders o JOIN Customers c ON o.customer_id = c.customer_id WHERE o.order_status = 'Packing'"
+  },
+  {
+    "db_id": "school_bus",
+    "question": "find the name of driver who is driving the school bus with the longest working history.",
+    "failed_sql": "SELECT T1.Name FROM school_bus AS T1 JOIN driver AS T2 ON T1.Driver_ID  =  T2.Driver_ID ORDER BY T1.Years_Working DESC LIMIT 1",
+    "tool_feedback": "no such column: T1.Name",
+    "target_sql": "SELECT T2.Name FROM school_bus AS T1 JOIN driver AS T2 ON T1.Driver_ID = T2.Driver_ID ORDER BY T1.Years_Working DESC LIMIT 1"
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "Find the name of scientists who are not assigned to any project.",
+    "failed_sql": "SELECT Name FROM Scientists EXCEPT SELECT T1.Name FROM AssignedTo AS T1 JOIN Projects AS T2 ON T1.Project  =  T2.Code",
+    "tool_feedback": "no such column: T1.Name",
+    "target_sql": "SELECT Name FROM Scientists EXCEPT SELECT S.Name FROM AssignedTo A JOIN Scientists S ON A.Scientist = S.SSN"
+  },
+  {
+    "db_id": "wrestler",
+    "question": "What is the time of elimination for the wrestler with the most days held?",
+    "failed_sql": "SELECT T1.TIME FROM elimination AS T1 JOIN wrestler AS T2 ON T1.Wrestler_ID  =  T2.Wrestler_ID GROUP BY T1.Wrestler_ID ORDER BY T1.DAYS_HOLD DESC LIMIT 1",
+    "tool_feedback": "no such column: T1.DAYS_HOLD",
+    "target_sql": "SELECT T1.TIME FROM elimination AS T1 JOIN wrestler AS T2 ON T1.Wrestler_ID = T2.Wrestler_ID ORDER BY T2.\"Days_held\" DESC LIMIT 1"
+  },
+  {
+    "db_id": "network_2",
+    "question": "What are all the friends of Alice who are female?",
+    "failed_sql": "SELECT friend FROM personfriend WHERE name  =  'Alice' AND gender  =  'F'",
+    "tool_feedback": "no such column: gender",
+    "target_sql": "SELECT PersonFriend.friend FROM PersonFriend INNER JOIN Person ON PersonFriend.friend = Person.name WHERE PersonFriend.name = 'Alice' AND Person.gender = 'F'"
+  },
+  {
+    "db_id": "epinions_1",
+    "question": "Find the name of the user who gave the highest rating.",
+    "failed_sql": "SELECT name FROM useracct ORDER BY rating DESC LIMIT 1",
+    "tool_feedback": "no such column: rating",
+    "target_sql": "SELECT name FROM useracct JOIN review ON useracct.u_id = review.u_id ORDER BY rating DESC LIMIT 1"
+  },
+  {
+    "db_id": "bike_1",
+    "question": "What is the average bike availablility for stations not in Palo Alto?",
+    "failed_sql": "SELECT avg(bikes_available) FROM station WHERE station_id NOT IN (SELECT id FROM station)",
+    "tool_feedback": "no such column: bikes_available",
+    "target_sql": "SELECT AVG(status.bikes_available) FROM station JOIN status ON station.id = status.station_id WHERE station.city != 'Palo Alto'"
+  },
+  {
+    "db_id": "inn_1",
+    "question": "What are the names of rooms whose reservation frequency exceeds 60 times?",
+    "failed_sql": "SELECT roomName FROM reservations GROUP BY roomname HAVING count(*)  EXCEEDS  60",
+    "tool_feedback": "near \"EXCEEDS\": syntax error",
+    "target_sql": "SELECT r.roomName FROM Reservations res JOIN Rooms r ON res.Room = r.RoomId GROUP BY r.roomName HAVING COUNT(*) > 60"
+  },
+  {
+    "db_id": "scientist_1",
+    "question": "Find the number of distinct projects.",
+    "failed_sql": "SELECT count(DISTINCT project) FROM Projects",
+    "tool_feedback": "no such column: project",
+    "target_sql": "SELECT count(DISTINCT Code) FROM Projects;"
+  },
+  {
+    "db_id": "movie_1",
+    "question": "find the ids of reviewers who did not give 4 star.",
+    "failed_sql": "SELECT rID FROM reviewer WHERE name NOT IN (SELECT name FROM reviewer WHERE stars  =  4)",
+    "tool_feedback": "no such column: stars",
+    "target_sql": "SELECT rID FROM Reviewer WHERE rID NOT IN (SELECT rID FROM Rating WHERE stars = 4)"
+  },
+  {
+    "db_id": "tracking_orders",
+    "question": "Which customer made the most orders? Find the customer name.",
+    "failed_sql": "SELECT customer_name FROM orders GROUP BY customer_id ORDER BY count(*) DESC LIMIT 1",
+    "tool_feedback": "no such column: customer_name",
+    "target_sql": "SELECT c.customer_name FROM Customers c JOIN Orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "county_public_safety",
+    "question": "Show the crime rate of counties with a city having white percentage more than 90.",
+    "failed_sql": "SELECT crime_rate FROM city WHERE white  >  90",
+    "tool_feedback": "no such column: crime_rate",
+    "target_sql": "SELECT cs.Crime_rate FROM county_public_safety cs JOIN city c ON cs.County_ID = c.County_ID WHERE c.white > 90"
+  },
+  {
+    "db_id": "tracking_share_transactions",
+    "question": "What are the sale details and dates of transactions with amount smaller than 3000?",
+    "failed_sql": "SELECT sales_details ,  date_of_transaction FROM sales WHERE amount_of_transaction  <  3000",
+    "tool_feedback": "no such column: date_of_transaction",
+    "target_sql": "SELECT s.sales_details, t.date_of_transaction FROM Sales s JOIN Transactions t ON s.sales_transaction_id = t.transaction_id WHERE t.amount_of_transaction < 3000"
+  },
+  {
+    "db_id": "restaurant_1",
+    "question": "Advisor 1121 has how many students?",
+    "failed_sql": "SELECT count(*) FROM Student AS T1 JOIN Visits_Restaurant AS T2 ON T1.StuID  =  T2.StuID WHERE T2.Advisor  =  1121",
+    "tool_feedback": "no such column: T2.Advisor",
+    "target_sql": "SELECT count(*) FROM Student WHERE Advisor = 1121"
+  },
+  {
+    "db_id": "farm",
+    "question": "Give the years and official names of the cities of each competition.",
+    "failed_sql": "SELECT T1.T2 ,  T2.T1 FROM farm_competition AS T1 JOIN city AS T2 ON T1.host_city_id  =  T2.city_id",
+    "tool_feedback": "no such column: T1.T2",
+    "target_sql": "SELECT T1.Year, T2.Official_Name FROM farm_competition AS T1 JOIN city AS T2 ON T1.Host_city_ID = T2.City_ID"
+  },
+  {
+    "db_id": "wine_1",
+    "question": "Find the distinct winery of wines having price between 50 and 100.",
+    "failed_sql": "SELECT DISTINCT WINERIES FROM wine WHERE price BETWEEN 50 AND 100",
+    "tool_feedback": "no such column: WINERIES",
+    "target_sql": "SELECT DISTINCT \"Winery\" FROM \"wine\" WHERE \"Price\" BETWEEN 50 AND 100"
+  },
+  {
+    "db_id": "match_season",
+    "question": "Return the official native languages of countries who have players from Maryland or Duke colleges.",
+    "failed_sql": "SELECT T1.official_native_language FROM country AS T1 JOIN player AS T2 ON T1.country_id  =  T2.country_id WHERE T2.Team  =  1 OR T2.College  =  \"Duke\"",
+    "tool_feedback": "no such column: T2.College",
+    "target_sql": "SELECT T1.official_native_language FROM country AS T1 JOIN match_season AS T2 ON T1.country_id = T2.country WHERE T2.college = 'Maryland' OR T2.college = 'Duke'"
+  },
+  {
+    "db_id": "student_assessment",
+    "question": "which course has most number of registered students?",
+    "failed_sql": "SELECT course_name FROM STUDENTS COURSE_REGISTRATIONS GROUP BY course_id ORDER BY count(*) DESC LIMIT 1",
+    "tool_feedback": "no such column: course_name",
+    "target_sql": "SELECT c.course_name FROM Courses c INNER JOIN Student_Course_Registrations scr ON c.course_id = scr.course_id GROUP BY c.course_id ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "db_id": "movie_1",
+    "question": "For all directors who directed more than one movie, return the titles of all movies directed by them, along with the director name. Sort by director name, then movie title.",
+    "failed_sql": "SELECT t2.title ,  t1.director FROM Movie AS t1 JOIN Rating AS t2 ON t1.mID  =  t2.mID JOIN Reviewer AS t3 ON t2.rID  =  t3.rID WHERE t1.director  =  t3.name GROUP BY t1.director ORDER BY t1.director ,  t2.title",
+    "tool_feedback": "no such column: t2.title",
+    "target_sql": "SELECT m.title, m.director FROM Movie m WHERE m.director IN (SELECT director FROM Movie GROUP BY director HAVING COUNT(*) > 1) ORDER BY m.director, m.title"
+  },
+  {
+    "db_id": "cre_Doc_Tracking_DB",
+    "question": "Show the employee ids for all employees with role name \"Human Resource\" or \"Manager\".",
+    "failed_sql": "SELECT employee_id FROM employees WHERE role_name  =  \"Human Resource\" OR role_name  =  \"Manager\"",
+    "tool_feedback": "no such column: role_name",
+    "target_sql": "SELECT e.Employee_ID FROM Employees e JOIN Roles r ON e.Role_Code = r.Role_Code WHERE r.Role_Name IN ('Human Resource', 'Manager');"
+  },
+  {
+    "db_id": "insurance_and_eClaims",
+    "question": "Find the customer who started a policy most recently.",
+    "failed_sql": "SELECT T1.customer_details FROM Policies AS T1 JOIN Customers AS T2 ON T1.customer_id  =  T2.customer_id ORDER BY T1.start_date DESC LIMIT 1",
+    "tool_feedback": "no such column: T1.customer_details",
+    "target_sql": "SELECT T2.customer_details FROM Policies AS T1 JOIN Customers AS T2 ON T1.customer_id = T2.customer_id ORDER BY T1.start_date DESC LIMIT 1"
+  },
+  {
+    "db_id": "cre_Doc_Tracking_DB",
+    "question": "What are each document's location code, and starting date and ending data in that location?",
+    "failed_sql": "SELECT T1.location_code ,  T1.date_in_location_from ,  T1.date_in_location_to FROM document_locations AS T1 JOIN ref_calendar AS T2 ON T1.date_in_location_from  =  T2.calendar_date JOIN ref_calendar AS T3 ON T1.date_in_location_to  =  T3.calendar_date",
+    "tool_feedback": "no such column: T1.date_in_location_to",
+    "target_sql": "SELECT T1.Location_Code, T1.Date_in_Location_From, T1.Date_in_Locaton_To FROM Document_Locations AS T1 JOIN Ref_Calendar AS T2 ON T1.Date_in_Location_From = T2.Calendar_Date JOIN Ref_Calendar AS T3 ON T1.Date_in_Locaton_To = T3.Calendar_Date"
+  },
+  {
+    "db_id": "debate",
+    "question": "Show the names of people and the number of times they have been on the affirmative side of debates.",
+    "failed_sql": "SELECT Name ,  count(*) FROM debate_people GROUP BY Name",
+    "tool_feedback": "no such column: Name",
+    "target_sql": "SELECT P.Name, COUNT(*) FROM people P JOIN debate_people DP ON P.People_ID = DP.Affirmative GROUP BY P.Name"
+  },
+  {
+    "db_id": "soccer_2",
+    "question": "What are the names of all the players who received a yes during tryouts, and also what are the names of their colleges?",
+    "failed_sql": "SELECT pName ,  cName FROM Tryout WHERE decision  =  'yes'",
+    "tool_feedback": "no such column: pName",
+    "target_sql": "SELECT Player.pName, Tryout.cName FROM Tryout JOIN Player ON Tryout.pID = Player.pID WHERE Tryout.decision = 'yes'"
+  }
+]

@@ -17,12 +17,11 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 MODEL_ID = "Qwen/Qwen3-0.6B"
 ADAPTER_PATH = "adapters/sql_lora_v4"
-
-DATASET_PATH = Path("data/distill/train.json")
+DATASET_PATH = Path("data/distill/e46_fresh_train_2.json")
 DATABASE_ROOT = Path("data/spider_data/database")
 
 RESULTS_DIR = Path("results")
-FAILURES_PATH = Path("data/distill/student_failures.json")
+FAILURES_PATH = Path("data/distill/e46_new_failures_2.json")
 
 VARIANT = os.environ.get("MODEL_VARIANT", "lora")
 
@@ -31,7 +30,7 @@ if VARIANT not in {"base", "lora"}:
 
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-OUTPUT_PATH = RESULTS_DIR / f"distill_train_{VARIANT}_baseline.json"
+OUTPUT_PATH = RESULTS_DIR / "e46_collection_results_2.json"
 
 
 # ============================================================
@@ -40,8 +39,8 @@ OUTPUT_PATH = RESULTS_DIR / f"distill_train_{VARIANT}_baseline.json"
 
 examples = json.loads(DATASET_PATH.read_text())
 
-assert len(examples) == 100, (
-    f"Expected 100 training questions, got {len(examples)}"
+assert len(examples) == 200, (
+    f"Expected 200 training questions, got {len(examples)}"
 )
 
 print(f"Dataset: {DATASET_PATH}")

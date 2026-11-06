@@ -1,0 +1,3200 @@
+{
+  "tasks": [
+    {
+      "db_id": "hospital_1",
+      "question": "How many patients do each physician take care of? List their names and number of patients they take care of.",
+      "reference_sql": "SELECT T1.name ,  count(*) FROM physician AS T1 JOIN patient AS T2 ON T1.employeeid  =  T2.PCP GROUP BY T1.employeeid",
+      "schema": "CREATE TABLE Physician (\n  EmployeeID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  SSN INTEGER NOT NULL,\n  CONSTRAINT pk_physician PRIMARY KEY(EmployeeID)\n)\nCREATE TABLE Department (\n  DepartmentID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Head INTEGER NOT NULL,\n  CONSTRAINT pk_Department PRIMARY KEY(DepartmentID),\n  CONSTRAINT fk_Department_Physician_EmployeeID FOREIGN KEY(Head) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Affiliated_With (\n  Physician INTEGER NOT NULL,\n  Department INTEGER NOT NULL,\n  PrimaryAffiliation BOOLEAN NOT NULL,\n  CONSTRAINT fk_Affiliated_With_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Affiliated_With_Department_DepartmentID FOREIGN KEY(Department) REFERENCES Department(DepartmentID),\n  PRIMARY KEY(Physician, Department)\n)\nCREATE TABLE Procedures (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Cost REAL NOT NULL\n)\nCREATE TABLE Trained_In (\n  Physician INTEGER NOT NULL,\n  Treatment INTEGER NOT NULL,\n  CertificationDate DATETIME NOT NULL,\n  CertificationExpires DATETIME NOT NULL,\n  CONSTRAINT fk_Trained_In_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Trained_In_Procedures_Code FOREIGN KEY(Treatment) REFERENCES Procedures(Code),\n  PRIMARY KEY(Physician, Treatment)\n)\nCREATE TABLE Patient (\n  SSN INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Address VARCHAR(30) NOT NULL,\n  Phone VARCHAR(30) NOT NULL,\n  InsuranceID INTEGER NOT NULL,\n  PCP INTEGER NOT NULL,\n  CONSTRAINT fk_Patient_Physician_EmployeeID FOREIGN KEY(PCP) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Nurse (\n  EmployeeID INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  Registered BOOLEAN NOT NULL,\n  SSN INTEGER NOT NULL\n)\nCREATE TABLE Appointment (\n  AppointmentID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,    \n  PrepNurse INTEGER,\n  Physician INTEGER NOT NULL,\n  Start DATETIME NOT NULL,\n  End DATETIME NOT NULL,\n  ExaminationRoom TEXT NOT NULL,\n  CONSTRAINT fk_Appointment_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Appointment_Nurse_EmployeeID FOREIGN KEY(PrepNurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_Appointment_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Medication (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Brand VARCHAR(30) NOT NULL,\n  Description VARCHAR(30) NOT NULL\n)\nCREATE TABLE Prescribes (\n  Physician INTEGER NOT NULL,\n  Patient INTEGER NOT NULL, \n  Medication INTEGER NOT NULL, \n  Date DATETIME NOT NULL,\n  Appointment INTEGER,  \n  Dose VARCHAR(30) NOT NULL,\n  PRIMARY KEY(Physician, Patient, Medication, Date),\n  CONSTRAINT fk_Prescribes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Prescribes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Prescribes_Medication_Code FOREIGN KEY(Medication) REFERENCES Medication(Code),\n  CONSTRAINT fk_Prescribes_Appointment_AppointmentID FOREIGN KEY(Appointment) REFERENCES Appointment(AppointmentID)\n)\nCREATE TABLE Block (\n  BlockFloor INTEGER NOT NULL,\n  BlockCode INTEGER NOT NULL,\n  PRIMARY KEY(BlockFloor, BlockCode)\n)\nCREATE TABLE Room (\n  RoomNumber INTEGER PRIMARY KEY NOT NULL,\n  RoomType VARCHAR(30) NOT NULL,\n  BlockFloor INTEGER NOT NULL,  \n  BlockCode INTEGER NOT NULL,  \n  Unavailable BOOLEAN NOT NULL,\n  CONSTRAINT fk_Room_Block_PK FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode)\n)\nCREATE TABLE On_Call (\n  Nurse INTEGER NOT NULL,\n  BlockFloor INTEGER NOT NULL, \n  BlockCode INTEGER NOT NULL,\n  OnCallStart DATETIME NOT NULL,\n  OnCallEnd DATETIME NOT NULL,\n  PRIMARY KEY(Nurse, BlockFloor, BlockCode, OnCallStart, OnCallEnd),\n  CONSTRAINT fk_OnCall_Nurse_EmployeeID FOREIGN KEY(Nurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_OnCall_Block_Floor FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode) \n)\nCREATE TABLE Stay (\n  StayID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,\n  Room INTEGER NOT NULL,\n  StayStart DATETIME NOT NULL,\n  StayEnd DATETIME NOT NULL,\n  CONSTRAINT fk_Stay_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Stay_Room_Number FOREIGN KEY(Room) REFERENCES Room(RoomNumber)\n)\nCREATE TABLE Undergoes (\n  Patient INTEGER NOT NULL,\n  Procedures INTEGER NOT NULL,\n  Stay INTEGER NOT NULL,\n  DateUndergoes DATETIME NOT NULL,\n  Physician INTEGER NOT NULL,\n  AssistingNurse INTEGER,\n  PRIMARY KEY(Patient, Procedures, Stay, DateUndergoes),\n  CONSTRAINT fk_Undergoes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Undergoes_Procedures_Code FOREIGN KEY(Procedures) REFERENCES Procedures(Code),\n  CONSTRAINT fk_Undergoes_Stay_StayID FOREIGN KEY(Stay) REFERENCES Stay(StayID),\n  CONSTRAINT fk_Undergoes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Undergoes_Nurse_EmployeeID FOREIGN KEY(AssistingNurse) REFERENCES Nurse(EmployeeID)\n)",
+      "expected": [
+        [
+          "John Dorian",
+          1
+        ],
+        [
+          "Elliot Reid",
+          2
+        ],
+        [
+          "Christopher Turk",
+          1
+        ]
+      ]
+    },
+    {
+      "db_id": "hr_1",
+      "question": "Give the first name and job id for all employees in the Finance department.",
+      "reference_sql": "SELECT T1.first_name ,  T1.job_id FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T2.department_name  =  'Finance'",
+      "schema": "CREATE TABLE `regions` (\n  `REGION_ID` decimal(5,0) NOT NULL,\n  `REGION_NAME` varchar(25) DEFAULT NULL,\n  PRIMARY KEY (`REGION_ID`)\n)\nCREATE TABLE `countries` (\n  `COUNTRY_ID` varchar(2) NOT NULL,\n  `COUNTRY_NAME` varchar(40) DEFAULT NULL,\n  `REGION_ID` decimal(10,0) DEFAULT NULL,\n  PRIMARY KEY (`COUNTRY_ID`),\n  FOREIGN KEY (`REGION_ID`) REFERENCES regions (`REGION_ID`)\n)\nCREATE TABLE `departments` (\n  `DEPARTMENT_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `DEPARTMENT_NAME` varchar(30) NOT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `LOCATION_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`DEPARTMENT_ID`)\n)\nCREATE TABLE `jobs` (\n  `JOB_ID` varchar(10) NOT NULL DEFAULT '',\n  `JOB_TITLE` varchar(35) NOT NULL,\n  `MIN_SALARY` decimal(6,0) DEFAULT NULL,\n  `MAX_SALARY` decimal(6,0) DEFAULT NULL,\n  PRIMARY KEY (`JOB_ID`)\n)\nCREATE TABLE `employees` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL DEFAULT '0',\n  `FIRST_NAME` varchar(20) DEFAULT NULL,\n  `LAST_NAME` varchar(25) NOT NULL,\n  `EMAIL` varchar(25) NOT NULL,\n  `PHONE_NUMBER` varchar(20) DEFAULT NULL,\n  `HIRE_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `SALARY` decimal(8,2) DEFAULT NULL,\n  `COMMISSION_PCT` decimal(2,2) DEFAULT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `job_history` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL,\n  `START_DATE` date NOT NULL,\n  `END_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`,`START_DATE`),\n  FOREIGN KEY (`EMPLOYEE_ID`) REFERENCES employees(`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `locations` (\n  `LOCATION_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `STREET_ADDRESS` varchar(40) DEFAULT NULL,\n  `POSTAL_CODE` varchar(12) DEFAULT NULL,\n  `CITY` varchar(30) NOT NULL,\n  `STATE_PROVINCE` varchar(25) DEFAULT NULL,\n  `COUNTRY_ID` varchar(2) DEFAULT NULL,\n  PRIMARY KEY (`LOCATION_ID`),\n  FOREIGN KEY (`COUNTRY_ID`) REFERENCES countries(`COUNTRY_ID`)\n)",
+      "expected": [
+        [
+          "Nancy",
+          "FI_MGR"
+        ],
+        [
+          "Daniel",
+          "FI_ACCOUNT"
+        ],
+        [
+          "John",
+          "FI_ACCOUNT"
+        ],
+        [
+          "Ismael",
+          "FI_ACCOUNT"
+        ],
+        [
+          "Jose Manuel",
+          "FI_ACCOUNT"
+        ],
+        [
+          "Luis",
+          "FI_ACCOUNT"
+        ]
+      ]
+    },
+    {
+      "db_id": "hr_1",
+      "question": "What is all the information regarding employees who are managers?",
+      "reference_sql": "SELECT DISTINCT * FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T1.employee_id  =  T2.manager_id",
+      "schema": "CREATE TABLE `regions` (\n  `REGION_ID` decimal(5,0) NOT NULL,\n  `REGION_NAME` varchar(25) DEFAULT NULL,\n  PRIMARY KEY (`REGION_ID`)\n)\nCREATE TABLE `countries` (\n  `COUNTRY_ID` varchar(2) NOT NULL,\n  `COUNTRY_NAME` varchar(40) DEFAULT NULL,\n  `REGION_ID` decimal(10,0) DEFAULT NULL,\n  PRIMARY KEY (`COUNTRY_ID`),\n  FOREIGN KEY (`REGION_ID`) REFERENCES regions (`REGION_ID`)\n)\nCREATE TABLE `departments` (\n  `DEPARTMENT_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `DEPARTMENT_NAME` varchar(30) NOT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `LOCATION_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`DEPARTMENT_ID`)\n)\nCREATE TABLE `jobs` (\n  `JOB_ID` varchar(10) NOT NULL DEFAULT '',\n  `JOB_TITLE` varchar(35) NOT NULL,\n  `MIN_SALARY` decimal(6,0) DEFAULT NULL,\n  `MAX_SALARY` decimal(6,0) DEFAULT NULL,\n  PRIMARY KEY (`JOB_ID`)\n)\nCREATE TABLE `employees` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL DEFAULT '0',\n  `FIRST_NAME` varchar(20) DEFAULT NULL,\n  `LAST_NAME` varchar(25) NOT NULL,\n  `EMAIL` varchar(25) NOT NULL,\n  `PHONE_NUMBER` varchar(20) DEFAULT NULL,\n  `HIRE_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `SALARY` decimal(8,2) DEFAULT NULL,\n  `COMMISSION_PCT` decimal(2,2) DEFAULT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `job_history` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL,\n  `START_DATE` date NOT NULL,\n  `END_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`,`START_DATE`),\n  FOREIGN KEY (`EMPLOYEE_ID`) REFERENCES employees(`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `locations` (\n  `LOCATION_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `STREET_ADDRESS` varchar(40) DEFAULT NULL,\n  `POSTAL_CODE` varchar(12) DEFAULT NULL,\n  `CITY` varchar(30) NOT NULL,\n  `STATE_PROVINCE` varchar(25) DEFAULT NULL,\n  `COUNTRY_ID` varchar(2) DEFAULT NULL,\n  PRIMARY KEY (`LOCATION_ID`),\n  FOREIGN KEY (`COUNTRY_ID`) REFERENCES countries(`COUNTRY_ID`)\n)",
+      "expected": [
+        [
+          100,
+          "Steven",
+          "King",
+          "SKING",
+          "515.123.4567",
+          "1987-06-17",
+          "AD_PRES",
+          24000,
+          0,
+          0,
+          90,
+          90,
+          "Executive",
+          100,
+          1700
+        ],
+        [
+          103,
+          "Alexander",
+          "Hunold",
+          "AHUNOLD",
+          "590.423.4567",
+          "1987-06-20",
+          "IT_PROG",
+          9000,
+          0,
+          102,
+          60,
+          60,
+          "IT",
+          103,
+          1400
+        ],
+        [
+          108,
+          "Nancy",
+          "Greenberg",
+          "NGREENBE",
+          "515.124.4569",
+          "1987-06-25",
+          "FI_MGR",
+          12000,
+          0,
+          101,
+          100,
+          100,
+          "Finance",
+          108,
+          1700
+        ],
+        [
+          114,
+          "Den",
+          "Raphaely",
+          "DRAPHEAL",
+          "515.127.4561",
+          "1987-07-01",
+          "PU_MAN",
+          11000,
+          0,
+          100,
+          30,
+          30,
+          "Purchasing",
+          114,
+          1700
+        ],
+        [
+          121,
+          "Adam",
+          "Fripp",
+          "AFRIPP",
+          "650.123.2234",
+          "1987-07-08",
+          "ST_MAN",
+          8200,
+          0,
+          100,
+          50,
+          50,
+          "Shipping",
+          121,
+          1500
+        ],
+        [
+          145,
+          "John",
+          "Russell",
+          "JRUSSEL",
+          "011.44.1344.429268",
+          "1987-08-01",
+          "SA_MAN",
+          14000,
+          0.4,
+          100,
+          80,
+          80,
+          "Sales",
+          145,
+          2500
+        ],
+        [
+          200,
+          "Jennifer",
+          "Whalen",
+          "JWHALEN",
+          "515.123.4444",
+          "1987-09-25",
+          "AD_ASST",
+          4400,
+          0,
+          101,
+          10,
+          10,
+          "Administration",
+          200,
+          1700
+        ],
+        [
+          201,
+          "Michael",
+          "Hartstein",
+          "MHARTSTE",
+          "515.123.5555",
+          "1987-09-26",
+          "MK_MAN",
+          13000,
+          0,
+          100,
+          20,
+          20,
+          "Marketing",
+          201,
+          1800
+        ],
+        [
+          203,
+          "Susan",
+          "Mavris",
+          "SMAVRIS",
+          "515.123.7777",
+          "1987-09-28",
+          "HR_REP",
+          6500,
+          0,
+          101,
+          40,
+          40,
+          "Human Resources",
+          203,
+          2400
+        ],
+        [
+          204,
+          "Hermann",
+          "Baer",
+          "HBAER",
+          "515.123.8888",
+          "1987-09-29",
+          "PR_REP",
+          10000,
+          0,
+          101,
+          70,
+          70,
+          "Public Relations",
+          204,
+          2700
+        ],
+        [
+          205,
+          "Shelley",
+          "Higgins",
+          "SHIGGINS",
+          "515.123.8080",
+          "1987-09-30",
+          "AC_MGR",
+          12000,
+          0,
+          101,
+          110,
+          110,
+          "Accounting",
+          205,
+          1700
+        ]
+      ]
+    },
+    {
+      "db_id": "hr_1",
+      "question": "display all the information for all employees who have the letters D or S in their first name and also arrange the result in descending order by salary.",
+      "reference_sql": "SELECT * FROM employees WHERE first_name LIKE '%D%' OR first_name LIKE '%S%' ORDER BY salary DESC",
+      "schema": "CREATE TABLE `regions` (\n  `REGION_ID` decimal(5,0) NOT NULL,\n  `REGION_NAME` varchar(25) DEFAULT NULL,\n  PRIMARY KEY (`REGION_ID`)\n)\nCREATE TABLE `countries` (\n  `COUNTRY_ID` varchar(2) NOT NULL,\n  `COUNTRY_NAME` varchar(40) DEFAULT NULL,\n  `REGION_ID` decimal(10,0) DEFAULT NULL,\n  PRIMARY KEY (`COUNTRY_ID`),\n  FOREIGN KEY (`REGION_ID`) REFERENCES regions (`REGION_ID`)\n)\nCREATE TABLE `departments` (\n  `DEPARTMENT_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `DEPARTMENT_NAME` varchar(30) NOT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `LOCATION_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`DEPARTMENT_ID`)\n)\nCREATE TABLE `jobs` (\n  `JOB_ID` varchar(10) NOT NULL DEFAULT '',\n  `JOB_TITLE` varchar(35) NOT NULL,\n  `MIN_SALARY` decimal(6,0) DEFAULT NULL,\n  `MAX_SALARY` decimal(6,0) DEFAULT NULL,\n  PRIMARY KEY (`JOB_ID`)\n)\nCREATE TABLE `employees` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL DEFAULT '0',\n  `FIRST_NAME` varchar(20) DEFAULT NULL,\n  `LAST_NAME` varchar(25) NOT NULL,\n  `EMAIL` varchar(25) NOT NULL,\n  `PHONE_NUMBER` varchar(20) DEFAULT NULL,\n  `HIRE_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `SALARY` decimal(8,2) DEFAULT NULL,\n  `COMMISSION_PCT` decimal(2,2) DEFAULT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `job_history` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL,\n  `START_DATE` date NOT NULL,\n  `END_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`,`START_DATE`),\n  FOREIGN KEY (`EMPLOYEE_ID`) REFERENCES employees(`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `locations` (\n  `LOCATION_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `STREET_ADDRESS` varchar(40) DEFAULT NULL,\n  `POSTAL_CODE` varchar(12) DEFAULT NULL,\n  `CITY` varchar(30) NOT NULL,\n  `STATE_PROVINCE` varchar(25) DEFAULT NULL,\n  `COUNTRY_ID` varchar(2) DEFAULT NULL,\n  PRIMARY KEY (`LOCATION_ID`),\n  FOREIGN KEY (`COUNTRY_ID`) REFERENCES countries(`COUNTRY_ID`)\n)",
+      "expected": [
+        [
+          100,
+          "Steven",
+          "King",
+          "SKING",
+          "515.123.4567",
+          "1987-06-17",
+          "AD_PRES",
+          24000,
+          0,
+          0,
+          90
+        ],
+        [
+          205,
+          "Shelley",
+          "Higgins",
+          "SHIGGINS",
+          "515.123.8080",
+          "1987-09-30",
+          "AC_MGR",
+          12000,
+          0,
+          101,
+          110
+        ],
+        [
+          168,
+          "Lisa",
+          "Ozer",
+          "LOZER",
+          "011.44.1343.929268",
+          "1987-08-24",
+          "SA_REP",
+          11500,
+          0.25,
+          148,
+          80
+        ],
+        [
+          114,
+          "Den",
+          "Raphaely",
+          "DRAPHEAL",
+          "515.127.4561",
+          "1987-07-01",
+          "PU_MAN",
+          11000,
+          0,
+          100,
+          30
+        ],
+        [
+          148,
+          "Gerald",
+          "Cambrault",
+          "GCAMBRAU",
+          "011.44.1344.619268",
+          "1987-08-04",
+          "SA_MAN",
+          11000,
+          0.3,
+          100,
+          80
+        ],
+        [
+          169,
+          "Harrison",
+          "Bloom",
+          "HBLOOM",
+          "011.44.1343.829268",
+          "1987-08-25",
+          "SA_REP",
+          10000,
+          0.2,
+          148,
+          80
+        ],
+        [
+          151,
+          "David",
+          "Bernstein",
+          "DBERNSTE",
+          "011.44.1344.345268",
+          "1987-08-07",
+          "SA_REP",
+          9500,
+          0.25,
+          145,
+          80
+        ],
+        [
+          163,
+          "Danielle",
+          "Greene",
+          "DGREENE",
+          "011.44.1346.229268",
+          "1987-08-19",
+          "SA_REP",
+          9500,
+          0.15,
+          147,
+          80
+        ],
+        [
+          103,
+          "Alexander",
+          "Hunold",
+          "AHUNOLD",
+          "590.423.4567",
+          "1987-06-20",
+          "IT_PROG",
+          9000,
+          0,
+          102,
+          60
+        ],
+        [
+          109,
+          "Daniel",
+          "Faviet",
+          "DFAVIET",
+          "515.124.4169",
+          "1987-06-26",
+          "FI_ACCOUNT",
+          9000,
+          0,
+          108,
+          100
+        ],
+        [
+          175,
+          "Alyssa",
+          "Hutton",
+          "AHUTTON",
+          "011.44.1644.429266",
+          "1987-08-31",
+          "SA_REP",
+          8800,
+          0.25,
+          149,
+          80
+        ],
+        [
+          121,
+          "Adam",
+          "Fripp",
+          "AFRIPP",
+          "650.123.2234",
+          "1987-07-08",
+          "ST_MAN",
+          8200,
+          0,
+          100,
+          50
+        ],
+        [
+          153,
+          "Christopher",
+          "Olsen",
+          "COLSEN",
+          "011.44.1344.498718",
+          "1987-08-09",
+          "SA_REP",
+          8000,
+          0.2,
+          145,
+          80
+        ],
+        [
+          159,
+          "Lindsey",
+          "Smith",
+          "LSMITH",
+          "011.44.1345.729268",
+          "1987-08-15",
+          "SA_REP",
+          8000,
+          0.3,
+          146,
+          80
+        ],
+        [
+          112,
+          "Jose Manuel",
+          "Urman",
+          "JMURMAN",
+          "515.124.4469",
+          "1987-06-29",
+          "FI_ACCOUNT",
+          7800,
+          0,
+          108,
+          100
+        ],
+        [
+          111,
+          "Ismael",
+          "Sciarra",
+          "ISCIARRA",
+          "515.124.4369",
+          "1987-06-28",
+          "FI_ACCOUNT",
+          7700,
+          0,
+          108,
+          100
+        ],
+        [
+          160,
+          "Louise",
+          "Doran",
+          "LDORAN",
+          "011.44.1345.629268",
+          "1987-08-16",
+          "SA_REP",
+          7500,
+          0.3,
+          146,
+          80
+        ],
+        [
+          161,
+          "Sarath",
+          "Sewall",
+          "SSEWALL",
+          "011.44.1345.529268",
+          "1987-08-17",
+          "SA_REP",
+          7000,
+          0.25,
+          146,
+          80
+        ],
+        [
+          113,
+          "Luis",
+          "Popp",
+          "LPOPP",
+          "515.124.4567",
+          "1987-06-30",
+          "FI_ACCOUNT",
+          6900,
+          0,
+          108,
+          100
+        ],
+        [
+          165,
+          "David",
+          "Lee",
+          "DLEE",
+          "011.44.1346.529268",
+          "1987-08-21",
+          "SA_REP",
+          6800,
+          0.1,
+          147,
+          80
+        ],
+        [
+          123,
+          "Shanta",
+          "Vollman",
+          "SVOLLMAN",
+          "650.123.4234",
+          "1987-07-10",
+          "ST_MAN",
+          6500,
+          0,
+          100,
+          50
+        ],
+        [
+          203,
+          "Susan",
+          "Mavris",
+          "SMAVRIS",
+          "515.123.7777",
+          "1987-09-28",
+          "HR_REP",
+          6500,
+          0,
+          101,
+          40
+        ],
+        [
+          166,
+          "Sundar",
+          "Ande",
+          "SANDE",
+          "011.44.1346.629268",
+          "1987-08-22",
+          "SA_REP",
+          6400,
+          0.1,
+          147,
+          80
+        ],
+        [
+          179,
+          "Charles",
+          "Johnson",
+          "CJOHNSON",
+          "011.44.1644.429262",
+          "1987-09-04",
+          "SA_REP",
+          6200,
+          0.1,
+          149,
+          80
+        ],
+        [
+          173,
+          "Sundita",
+          "Kumar",
+          "SKUMAR",
+          "011.44.1343.329268",
+          "1987-08-29",
+          "SA_REP",
+          6100,
+          0.1,
+          148,
+          80
+        ],
+        [
+          105,
+          "David",
+          "Austin",
+          "DAUSTIN",
+          "590.423.4569",
+          "1987-06-22",
+          "IT_PROG",
+          4800,
+          0,
+          103,
+          60
+        ],
+        [
+          107,
+          "Diana",
+          "Lorentz",
+          "DLORENTZ",
+          "590.423.5567",
+          "1987-06-24",
+          "IT_PROG",
+          4200,
+          0,
+          103,
+          60
+        ],
+        [
+          184,
+          "Nandita",
+          "Sarchand",
+          "NSARCHAN",
+          "650.509.1876",
+          "1987-09-09",
+          "SH_CLERK",
+          4200,
+          0,
+          121,
+          50
+        ],
+        [
+          185,
+          "Alexis",
+          "Bull",
+          "ABULL",
+          "650.509.2876",
+          "1987-09-10",
+          "SH_CLERK",
+          4100,
+          0,
+          121,
+          50
+        ],
+        [
+          192,
+          "Sarah",
+          "Bell",
+          "SBELL",
+          "650.501.1876",
+          "1987-09-17",
+          "SH_CLERK",
+          4000,
+          0,
+          123,
+          50
+        ],
+        [
+          137,
+          "Renske",
+          "Ladwig",
+          "RLADWIG",
+          "650.121.1234",
+          "1987-07-24",
+          "ST_CLERK",
+          3600,
+          0,
+          123,
+          50
+        ],
+        [
+          133,
+          "Jason",
+          "Mallin",
+          "JMALLIN",
+          "650.127.1934",
+          "1987-07-20",
+          "ST_CLERK",
+          3300,
+          0,
+          122,
+          50
+        ],
+        [
+          138,
+          "Stephen",
+          "Stiles",
+          "SSTILES",
+          "650.121.2034",
+          "1987-07-25",
+          "ST_CLERK",
+          3200,
+          0,
+          123,
+          50
+        ],
+        [
+          180,
+          "Winston",
+          "Taylor",
+          "WTAYLOR",
+          "650.507.9876",
+          "1987-09-05",
+          "SH_CLERK",
+          3200,
+          0,
+          120,
+          50
+        ],
+        [
+          194,
+          "Samuel",
+          "McCain",
+          "SMCCAIN",
+          "650.501.3876",
+          "1987-09-19",
+          "SH_CLERK",
+          3200,
+          0,
+          123,
+          50
+        ],
+        [
+          115,
+          "Alexander",
+          "Khoo",
+          "AKHOO",
+          "515.127.4562",
+          "1987-07-02",
+          "PU_CLERK",
+          3100,
+          0,
+          114,
+          30
+        ],
+        [
+          142,
+          "Curtis",
+          "Davies",
+          "CDAVIES",
+          "650.121.2994",
+          "1987-07-29",
+          "ST_CLERK",
+          3100,
+          0,
+          124,
+          50
+        ],
+        [
+          116,
+          "Shelli",
+          "Baida",
+          "SBAIDA",
+          "515.127.4563",
+          "1987-07-03",
+          "PU_CLERK",
+          2900,
+          0,
+          114,
+          30
+        ],
+        [
+          117,
+          "Sigal",
+          "Tobias",
+          "STOBIAS",
+          "515.127.4564",
+          "1987-07-04",
+          "PU_CLERK",
+          2800,
+          0,
+          114,
+          30
+        ],
+        [
+          183,
+          "Girard",
+          "Geoni",
+          "GGEONI",
+          "650.507.9879",
+          "1987-09-08",
+          "SH_CLERK",
+          2800,
+          0,
+          120,
+          50
+        ],
+        [
+          143,
+          "Randall",
+          "Matos",
+          "RMATOS",
+          "650.121.2874",
+          "1987-07-30",
+          "ST_CLERK",
+          2600,
+          0,
+          124,
+          50
+        ],
+        [
+          198,
+          "Donald",
+          "OConnell",
+          "DOCONNEL",
+          "650.507.9833",
+          "1987-09-23",
+          "SH_CLERK",
+          2600,
+          0,
+          124,
+          50
+        ],
+        [
+          199,
+          "Douglas",
+          "Grant",
+          "DGRANT",
+          "650.507.9844",
+          "1987-09-24",
+          "SH_CLERK",
+          2600,
+          0,
+          124,
+          50
+        ],
+        [
+          131,
+          "James",
+          "Marlow",
+          "JAMRLOW",
+          "650.124.7234",
+          "1987-07-18",
+          "ST_CLERK",
+          2500,
+          0,
+          121,
+          50
+        ],
+        [
+          140,
+          "Joshua",
+          "Patel",
+          "JPATEL",
+          "650.121.1834",
+          "1987-07-27",
+          "ST_CLERK",
+          2500,
+          0,
+          123,
+          50
+        ],
+        [
+          191,
+          "Randall",
+          "Perkins",
+          "RPERKINS",
+          "650.505.4876",
+          "1987-09-16",
+          "SH_CLERK",
+          2500,
+          0,
+          122,
+          50
+        ],
+        [
+          127,
+          "James",
+          "Landry",
+          "JLANDRY",
+          "650.124.1334",
+          "1987-07-14",
+          "ST_CLERK",
+          2400,
+          0,
+          120,
+          50
+        ],
+        [
+          128,
+          "Steven",
+          "Markle",
+          "SMARKLE",
+          "650.124.1434",
+          "1987-07-15",
+          "ST_CLERK",
+          2200,
+          0,
+          120,
+          50
+        ]
+      ]
+    },
+    {
+      "db_id": "hospital_1",
+      "question": "What is the average cost of procedures that physician John Wen was trained in?",
+      "reference_sql": "SELECT avg(T3.cost) FROM physician AS T1 JOIN trained_in AS T2 ON T1.employeeid  =  T2.physician JOIN procedures AS T3 ON T3.code  =  T2.treatment WHERE T1.name  =  \"John Wen\"",
+      "schema": "CREATE TABLE Physician (\n  EmployeeID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  SSN INTEGER NOT NULL,\n  CONSTRAINT pk_physician PRIMARY KEY(EmployeeID)\n)\nCREATE TABLE Department (\n  DepartmentID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Head INTEGER NOT NULL,\n  CONSTRAINT pk_Department PRIMARY KEY(DepartmentID),\n  CONSTRAINT fk_Department_Physician_EmployeeID FOREIGN KEY(Head) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Affiliated_With (\n  Physician INTEGER NOT NULL,\n  Department INTEGER NOT NULL,\n  PrimaryAffiliation BOOLEAN NOT NULL,\n  CONSTRAINT fk_Affiliated_With_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Affiliated_With_Department_DepartmentID FOREIGN KEY(Department) REFERENCES Department(DepartmentID),\n  PRIMARY KEY(Physician, Department)\n)\nCREATE TABLE Procedures (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Cost REAL NOT NULL\n)\nCREATE TABLE Trained_In (\n  Physician INTEGER NOT NULL,\n  Treatment INTEGER NOT NULL,\n  CertificationDate DATETIME NOT NULL,\n  CertificationExpires DATETIME NOT NULL,\n  CONSTRAINT fk_Trained_In_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Trained_In_Procedures_Code FOREIGN KEY(Treatment) REFERENCES Procedures(Code),\n  PRIMARY KEY(Physician, Treatment)\n)\nCREATE TABLE Patient (\n  SSN INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Address VARCHAR(30) NOT NULL,\n  Phone VARCHAR(30) NOT NULL,\n  InsuranceID INTEGER NOT NULL,\n  PCP INTEGER NOT NULL,\n  CONSTRAINT fk_Patient_Physician_EmployeeID FOREIGN KEY(PCP) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Nurse (\n  EmployeeID INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  Registered BOOLEAN NOT NULL,\n  SSN INTEGER NOT NULL\n)\nCREATE TABLE Appointment (\n  AppointmentID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,    \n  PrepNurse INTEGER,\n  Physician INTEGER NOT NULL,\n  Start DATETIME NOT NULL,\n  End DATETIME NOT NULL,\n  ExaminationRoom TEXT NOT NULL,\n  CONSTRAINT fk_Appointment_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Appointment_Nurse_EmployeeID FOREIGN KEY(PrepNurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_Appointment_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Medication (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Brand VARCHAR(30) NOT NULL,\n  Description VARCHAR(30) NOT NULL\n)\nCREATE TABLE Prescribes (\n  Physician INTEGER NOT NULL,\n  Patient INTEGER NOT NULL, \n  Medication INTEGER NOT NULL, \n  Date DATETIME NOT NULL,\n  Appointment INTEGER,  \n  Dose VARCHAR(30) NOT NULL,\n  PRIMARY KEY(Physician, Patient, Medication, Date),\n  CONSTRAINT fk_Prescribes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Prescribes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Prescribes_Medication_Code FOREIGN KEY(Medication) REFERENCES Medication(Code),\n  CONSTRAINT fk_Prescribes_Appointment_AppointmentID FOREIGN KEY(Appointment) REFERENCES Appointment(AppointmentID)\n)\nCREATE TABLE Block (\n  BlockFloor INTEGER NOT NULL,\n  BlockCode INTEGER NOT NULL,\n  PRIMARY KEY(BlockFloor, BlockCode)\n)\nCREATE TABLE Room (\n  RoomNumber INTEGER PRIMARY KEY NOT NULL,\n  RoomType VARCHAR(30) NOT NULL,\n  BlockFloor INTEGER NOT NULL,  \n  BlockCode INTEGER NOT NULL,  \n  Unavailable BOOLEAN NOT NULL,\n  CONSTRAINT fk_Room_Block_PK FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode)\n)\nCREATE TABLE On_Call (\n  Nurse INTEGER NOT NULL,\n  BlockFloor INTEGER NOT NULL, \n  BlockCode INTEGER NOT NULL,\n  OnCallStart DATETIME NOT NULL,\n  OnCallEnd DATETIME NOT NULL,\n  PRIMARY KEY(Nurse, BlockFloor, BlockCode, OnCallStart, OnCallEnd),\n  CONSTRAINT fk_OnCall_Nurse_EmployeeID FOREIGN KEY(Nurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_OnCall_Block_Floor FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode) \n)\nCREATE TABLE Stay (\n  StayID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,\n  Room INTEGER NOT NULL,\n  StayStart DATETIME NOT NULL,\n  StayEnd DATETIME NOT NULL,\n  CONSTRAINT fk_Stay_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Stay_Room_Number FOREIGN KEY(Room) REFERENCES Room(RoomNumber)\n)\nCREATE TABLE Undergoes (\n  Patient INTEGER NOT NULL,\n  Procedures INTEGER NOT NULL,\n  Stay INTEGER NOT NULL,\n  DateUndergoes DATETIME NOT NULL,\n  Physician INTEGER NOT NULL,\n  AssistingNurse INTEGER,\n  PRIMARY KEY(Patient, Procedures, Stay, DateUndergoes),\n  CONSTRAINT fk_Undergoes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Undergoes_Procedures_Code FOREIGN KEY(Procedures) REFERENCES Procedures(Code),\n  CONSTRAINT fk_Undergoes_Stay_StayID FOREIGN KEY(Stay) REFERENCES Stay(StayID),\n  CONSTRAINT fk_Undergoes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Undergoes_Nurse_EmployeeID FOREIGN KEY(AssistingNurse) REFERENCES Nurse(EmployeeID)\n)",
+      "expected": [
+        [
+          4324.857142857143
+        ]
+      ]
+    },
+    {
+      "db_id": "customers_and_addresses",
+      "question": "What are the details of all products?",
+      "reference_sql": "SELECT DISTINCT product_details FROM products",
+      "schema": "CREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`address_content` VARCHAR(80),\n`city` VARCHAR(50),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(50),\n`country` VARCHAR(50),\n`other_address_details` VARCHAR(255)\n)\nCREATE TABLE `Products` (\n`product_id` INTEGER PRIMARY KEY,\n`product_details` VARCHAR(255)\n)\nCREATE TABLE `Customers` (\n`customer_id` INTEGER PRIMARY KEY,\n`payment_method` VARCHAR(15) NOT NULL,\n`customer_name` VARCHAR(80),\n`date_became_customer` DATETIME,\n`other_customer_details` VARCHAR(255)\n)\nCREATE TABLE `Customer_Addresses` (\n`customer_id` INTEGER NOT NULL,\n`address_id` INTEGER NOT NULL,\n`date_address_from` DATETIME NOT NULL,\n`address_type` VARCHAR(15) NOT NULL,\n`date_address_to` DATETIME,\nFOREIGN KEY (`address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Contact_Channels` (\n`customer_id` INTEGER NOT NULL,\n`channel_code` VARCHAR(15) NOT NULL,\n`active_from_date` DATETIME NOT NULL,\n`active_to_date` DATETIME,\n`contact_number` VARCHAR(50) NOT NULL,\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Orders` (\n`order_id` INTEGER PRIMARY KEY,\n`customer_id` INTEGER NOT NULL,\n`order_status` VARCHAR(15) NOT NULL,\n`order_date` DATETIME,\n`order_details` VARCHAR(255),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Order_Items` (\n`order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\n`order_quantity` VARCHAR(15),\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`order_id` ) REFERENCES `Customer_Orders`(`order_id` )\n)",
+      "expected": [
+        [
+          "Americano"
+        ],
+        [
+          "Dove Chocolate"
+        ],
+        [
+          "Latte"
+        ]
+      ]
+    },
+    {
+      "db_id": "customers_and_addresses",
+      "question": "Return all the distinct payment methods used by customers.",
+      "reference_sql": "SELECT DISTINCT payment_method FROM customers",
+      "schema": "CREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`address_content` VARCHAR(80),\n`city` VARCHAR(50),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(50),\n`country` VARCHAR(50),\n`other_address_details` VARCHAR(255)\n)\nCREATE TABLE `Products` (\n`product_id` INTEGER PRIMARY KEY,\n`product_details` VARCHAR(255)\n)\nCREATE TABLE `Customers` (\n`customer_id` INTEGER PRIMARY KEY,\n`payment_method` VARCHAR(15) NOT NULL,\n`customer_name` VARCHAR(80),\n`date_became_customer` DATETIME,\n`other_customer_details` VARCHAR(255)\n)\nCREATE TABLE `Customer_Addresses` (\n`customer_id` INTEGER NOT NULL,\n`address_id` INTEGER NOT NULL,\n`date_address_from` DATETIME NOT NULL,\n`address_type` VARCHAR(15) NOT NULL,\n`date_address_to` DATETIME,\nFOREIGN KEY (`address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Contact_Channels` (\n`customer_id` INTEGER NOT NULL,\n`channel_code` VARCHAR(15) NOT NULL,\n`active_from_date` DATETIME NOT NULL,\n`active_to_date` DATETIME,\n`contact_number` VARCHAR(50) NOT NULL,\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Orders` (\n`order_id` INTEGER PRIMARY KEY,\n`customer_id` INTEGER NOT NULL,\n`order_status` VARCHAR(15) NOT NULL,\n`order_date` DATETIME,\n`order_details` VARCHAR(255),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Order_Items` (\n`order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\n`order_quantity` VARCHAR(15),\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`order_id` ) REFERENCES `Customer_Orders`(`order_id` )\n)",
+      "expected": [
+        [
+          "Cash"
+        ],
+        [
+          "Cheque"
+        ],
+        [
+          "Credit Card"
+        ]
+      ]
+    },
+    {
+      "db_id": "hr_1",
+      "question": "What are the first names and department numbers for employees with last name McEwen?",
+      "reference_sql": "SELECT first_name ,  department_id FROM employees WHERE last_name  =  'McEwen'",
+      "schema": "CREATE TABLE `regions` (\n  `REGION_ID` decimal(5,0) NOT NULL,\n  `REGION_NAME` varchar(25) DEFAULT NULL,\n  PRIMARY KEY (`REGION_ID`)\n)\nCREATE TABLE `countries` (\n  `COUNTRY_ID` varchar(2) NOT NULL,\n  `COUNTRY_NAME` varchar(40) DEFAULT NULL,\n  `REGION_ID` decimal(10,0) DEFAULT NULL,\n  PRIMARY KEY (`COUNTRY_ID`),\n  FOREIGN KEY (`REGION_ID`) REFERENCES regions (`REGION_ID`)\n)\nCREATE TABLE `departments` (\n  `DEPARTMENT_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `DEPARTMENT_NAME` varchar(30) NOT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `LOCATION_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`DEPARTMENT_ID`)\n)\nCREATE TABLE `jobs` (\n  `JOB_ID` varchar(10) NOT NULL DEFAULT '',\n  `JOB_TITLE` varchar(35) NOT NULL,\n  `MIN_SALARY` decimal(6,0) DEFAULT NULL,\n  `MAX_SALARY` decimal(6,0) DEFAULT NULL,\n  PRIMARY KEY (`JOB_ID`)\n)\nCREATE TABLE `employees` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL DEFAULT '0',\n  `FIRST_NAME` varchar(20) DEFAULT NULL,\n  `LAST_NAME` varchar(25) NOT NULL,\n  `EMAIL` varchar(25) NOT NULL,\n  `PHONE_NUMBER` varchar(20) DEFAULT NULL,\n  `HIRE_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `SALARY` decimal(8,2) DEFAULT NULL,\n  `COMMISSION_PCT` decimal(2,2) DEFAULT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `job_history` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL,\n  `START_DATE` date NOT NULL,\n  `END_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`,`START_DATE`),\n  FOREIGN KEY (`EMPLOYEE_ID`) REFERENCES employees(`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `locations` (\n  `LOCATION_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `STREET_ADDRESS` varchar(40) DEFAULT NULL,\n  `POSTAL_CODE` varchar(12) DEFAULT NULL,\n  `CITY` varchar(30) NOT NULL,\n  `STATE_PROVINCE` varchar(25) DEFAULT NULL,\n  `COUNTRY_ID` varchar(2) DEFAULT NULL,\n  PRIMARY KEY (`LOCATION_ID`),\n  FOREIGN KEY (`COUNTRY_ID`) REFERENCES countries(`COUNTRY_ID`)\n)",
+      "expected": [
+        [
+          "Allan",
+          80
+        ]
+      ]
+    },
+    {
+      "db_id": "customers_and_addresses",
+      "question": "What are names of customers who never ordered product Latte.",
+      "reference_sql": "SELECT customer_name FROM customers EXCEPT SELECT t1.customer_name FROM customers AS t1 JOIN customer_orders AS t2 ON t1.customer_id  =  t2.customer_id JOIN order_items AS t3 ON t2.order_id  =  t3.order_id JOIN products AS t4 ON t3.product_id  =  t4.product_id WHERE t4.product_details  =  'Latte'",
+      "schema": "CREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`address_content` VARCHAR(80),\n`city` VARCHAR(50),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(50),\n`country` VARCHAR(50),\n`other_address_details` VARCHAR(255)\n)\nCREATE TABLE `Products` (\n`product_id` INTEGER PRIMARY KEY,\n`product_details` VARCHAR(255)\n)\nCREATE TABLE `Customers` (\n`customer_id` INTEGER PRIMARY KEY,\n`payment_method` VARCHAR(15) NOT NULL,\n`customer_name` VARCHAR(80),\n`date_became_customer` DATETIME,\n`other_customer_details` VARCHAR(255)\n)\nCREATE TABLE `Customer_Addresses` (\n`customer_id` INTEGER NOT NULL,\n`address_id` INTEGER NOT NULL,\n`date_address_from` DATETIME NOT NULL,\n`address_type` VARCHAR(15) NOT NULL,\n`date_address_to` DATETIME,\nFOREIGN KEY (`address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Contact_Channels` (\n`customer_id` INTEGER NOT NULL,\n`channel_code` VARCHAR(15) NOT NULL,\n`active_from_date` DATETIME NOT NULL,\n`active_to_date` DATETIME,\n`contact_number` VARCHAR(50) NOT NULL,\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Orders` (\n`order_id` INTEGER PRIMARY KEY,\n`customer_id` INTEGER NOT NULL,\n`order_status` VARCHAR(15) NOT NULL,\n`order_date` DATETIME,\n`order_details` VARCHAR(255),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Order_Items` (\n`order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\n`order_quantity` VARCHAR(15),\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`order_id` ) REFERENCES `Customer_Orders`(`order_id` )\n)",
+      "expected": [
+        [
+          "Alexane Kilback"
+        ],
+        [
+          "Devin Mills"
+        ],
+        [
+          "Dr. Julia Wuckert MD"
+        ],
+        [
+          "Eunice Morar"
+        ],
+        [
+          "Kitty Padberg III"
+        ],
+        [
+          "Maudie Kertzmann"
+        ],
+        [
+          "Miss Aliyah Witting"
+        ],
+        [
+          "Mozell Morissette"
+        ],
+        [
+          "Prof. Alexzander Hamill"
+        ],
+        [
+          "Prof. Ibrahim Bashirian"
+        ],
+        [
+          "Prof. Reyes Berge II"
+        ],
+        [
+          "Rodrick Heaney"
+        ],
+        [
+          "Tillman Ernser"
+        ]
+      ]
+    },
+    {
+      "db_id": "hospital_1",
+      "question": "List the names of all the physicians who prescribe Thesisin as medication.",
+      "reference_sql": "SELECT DISTINCT T1.name FROM physician AS T1 JOIN prescribes AS T2 ON T1.employeeid = T2.physician JOIN medication AS T3 ON T3.code = T2.medication WHERE T3.name  =  \"Thesisin\"",
+      "schema": "CREATE TABLE Physician (\n  EmployeeID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  SSN INTEGER NOT NULL,\n  CONSTRAINT pk_physician PRIMARY KEY(EmployeeID)\n)\nCREATE TABLE Department (\n  DepartmentID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Head INTEGER NOT NULL,\n  CONSTRAINT pk_Department PRIMARY KEY(DepartmentID),\n  CONSTRAINT fk_Department_Physician_EmployeeID FOREIGN KEY(Head) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Affiliated_With (\n  Physician INTEGER NOT NULL,\n  Department INTEGER NOT NULL,\n  PrimaryAffiliation BOOLEAN NOT NULL,\n  CONSTRAINT fk_Affiliated_With_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Affiliated_With_Department_DepartmentID FOREIGN KEY(Department) REFERENCES Department(DepartmentID),\n  PRIMARY KEY(Physician, Department)\n)\nCREATE TABLE Procedures (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Cost REAL NOT NULL\n)\nCREATE TABLE Trained_In (\n  Physician INTEGER NOT NULL,\n  Treatment INTEGER NOT NULL,\n  CertificationDate DATETIME NOT NULL,\n  CertificationExpires DATETIME NOT NULL,\n  CONSTRAINT fk_Trained_In_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Trained_In_Procedures_Code FOREIGN KEY(Treatment) REFERENCES Procedures(Code),\n  PRIMARY KEY(Physician, Treatment)\n)\nCREATE TABLE Patient (\n  SSN INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Address VARCHAR(30) NOT NULL,\n  Phone VARCHAR(30) NOT NULL,\n  InsuranceID INTEGER NOT NULL,\n  PCP INTEGER NOT NULL,\n  CONSTRAINT fk_Patient_Physician_EmployeeID FOREIGN KEY(PCP) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Nurse (\n  EmployeeID INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  Registered BOOLEAN NOT NULL,\n  SSN INTEGER NOT NULL\n)\nCREATE TABLE Appointment (\n  AppointmentID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,    \n  PrepNurse INTEGER,\n  Physician INTEGER NOT NULL,\n  Start DATETIME NOT NULL,\n  End DATETIME NOT NULL,\n  ExaminationRoom TEXT NOT NULL,\n  CONSTRAINT fk_Appointment_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Appointment_Nurse_EmployeeID FOREIGN KEY(PrepNurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_Appointment_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Medication (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Brand VARCHAR(30) NOT NULL,\n  Description VARCHAR(30) NOT NULL\n)\nCREATE TABLE Prescribes (\n  Physician INTEGER NOT NULL,\n  Patient INTEGER NOT NULL, \n  Medication INTEGER NOT NULL, \n  Date DATETIME NOT NULL,\n  Appointment INTEGER,  \n  Dose VARCHAR(30) NOT NULL,\n  PRIMARY KEY(Physician, Patient, Medication, Date),\n  CONSTRAINT fk_Prescribes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Prescribes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Prescribes_Medication_Code FOREIGN KEY(Medication) REFERENCES Medication(Code),\n  CONSTRAINT fk_Prescribes_Appointment_AppointmentID FOREIGN KEY(Appointment) REFERENCES Appointment(AppointmentID)\n)\nCREATE TABLE Block (\n  BlockFloor INTEGER NOT NULL,\n  BlockCode INTEGER NOT NULL,\n  PRIMARY KEY(BlockFloor, BlockCode)\n)\nCREATE TABLE Room (\n  RoomNumber INTEGER PRIMARY KEY NOT NULL,\n  RoomType VARCHAR(30) NOT NULL,\n  BlockFloor INTEGER NOT NULL,  \n  BlockCode INTEGER NOT NULL,  \n  Unavailable BOOLEAN NOT NULL,\n  CONSTRAINT fk_Room_Block_PK FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode)\n)\nCREATE TABLE On_Call (\n  Nurse INTEGER NOT NULL,\n  BlockFloor INTEGER NOT NULL, \n  BlockCode INTEGER NOT NULL,\n  OnCallStart DATETIME NOT NULL,\n  OnCallEnd DATETIME NOT NULL,\n  PRIMARY KEY(Nurse, BlockFloor, BlockCode, OnCallStart, OnCallEnd),\n  CONSTRAINT fk_OnCall_Nurse_EmployeeID FOREIGN KEY(Nurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_OnCall_Block_Floor FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode) \n)\nCREATE TABLE Stay (\n  StayID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,\n  Room INTEGER NOT NULL,\n  StayStart DATETIME NOT NULL,\n  StayEnd DATETIME NOT NULL,\n  CONSTRAINT fk_Stay_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Stay_Room_Number FOREIGN KEY(Room) REFERENCES Room(RoomNumber)\n)\nCREATE TABLE Undergoes (\n  Patient INTEGER NOT NULL,\n  Procedures INTEGER NOT NULL,\n  Stay INTEGER NOT NULL,\n  DateUndergoes DATETIME NOT NULL,\n  Physician INTEGER NOT NULL,\n  AssistingNurse INTEGER,\n  PRIMARY KEY(Patient, Procedures, Stay, DateUndergoes),\n  CONSTRAINT fk_Undergoes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Undergoes_Procedures_Code FOREIGN KEY(Procedures) REFERENCES Procedures(Code),\n  CONSTRAINT fk_Undergoes_Stay_StayID FOREIGN KEY(Stay) REFERENCES Stay(StayID),\n  CONSTRAINT fk_Undergoes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Undergoes_Nurse_EmployeeID FOREIGN KEY(AssistingNurse) REFERENCES Nurse(EmployeeID)\n)",
+      "expected": [
+        [
+          "Molly Clock"
+        ]
+      ]
+    },
+    {
+      "db_id": "hr_1",
+      "question": "display the employee name ( first name and last name ) and hire date for all employees in the same department as Clara.",
+      "reference_sql": "SELECT first_name ,  last_name ,  hire_date FROM employees WHERE department_id  =  (SELECT department_id FROM employees WHERE first_name  =  \"Clara\")",
+      "schema": "CREATE TABLE `regions` (\n  `REGION_ID` decimal(5,0) NOT NULL,\n  `REGION_NAME` varchar(25) DEFAULT NULL,\n  PRIMARY KEY (`REGION_ID`)\n)\nCREATE TABLE `countries` (\n  `COUNTRY_ID` varchar(2) NOT NULL,\n  `COUNTRY_NAME` varchar(40) DEFAULT NULL,\n  `REGION_ID` decimal(10,0) DEFAULT NULL,\n  PRIMARY KEY (`COUNTRY_ID`),\n  FOREIGN KEY (`REGION_ID`) REFERENCES regions (`REGION_ID`)\n)\nCREATE TABLE `departments` (\n  `DEPARTMENT_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `DEPARTMENT_NAME` varchar(30) NOT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `LOCATION_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`DEPARTMENT_ID`)\n)\nCREATE TABLE `jobs` (\n  `JOB_ID` varchar(10) NOT NULL DEFAULT '',\n  `JOB_TITLE` varchar(35) NOT NULL,\n  `MIN_SALARY` decimal(6,0) DEFAULT NULL,\n  `MAX_SALARY` decimal(6,0) DEFAULT NULL,\n  PRIMARY KEY (`JOB_ID`)\n)\nCREATE TABLE `employees` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL DEFAULT '0',\n  `FIRST_NAME` varchar(20) DEFAULT NULL,\n  `LAST_NAME` varchar(25) NOT NULL,\n  `EMAIL` varchar(25) NOT NULL,\n  `PHONE_NUMBER` varchar(20) DEFAULT NULL,\n  `HIRE_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `SALARY` decimal(8,2) DEFAULT NULL,\n  `COMMISSION_PCT` decimal(2,2) DEFAULT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `job_history` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL,\n  `START_DATE` date NOT NULL,\n  `END_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`,`START_DATE`),\n  FOREIGN KEY (`EMPLOYEE_ID`) REFERENCES employees(`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `locations` (\n  `LOCATION_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `STREET_ADDRESS` varchar(40) DEFAULT NULL,\n  `POSTAL_CODE` varchar(12) DEFAULT NULL,\n  `CITY` varchar(30) NOT NULL,\n  `STATE_PROVINCE` varchar(25) DEFAULT NULL,\n  `COUNTRY_ID` varchar(2) DEFAULT NULL,\n  PRIMARY KEY (`LOCATION_ID`),\n  FOREIGN KEY (`COUNTRY_ID`) REFERENCES countries(`COUNTRY_ID`)\n)",
+      "expected": [
+        [
+          "John",
+          "Russell",
+          "1987-08-01"
+        ],
+        [
+          "Karen",
+          "Partners",
+          "1987-08-02"
+        ],
+        [
+          "Alberto",
+          "Errazuriz",
+          "1987-08-03"
+        ],
+        [
+          "Gerald",
+          "Cambrault",
+          "1987-08-04"
+        ],
+        [
+          "Eleni",
+          "Zlotkey",
+          "1987-08-05"
+        ],
+        [
+          "Peter",
+          "Tucker",
+          "1987-08-06"
+        ],
+        [
+          "David",
+          "Bernstein",
+          "1987-08-07"
+        ],
+        [
+          "Peter",
+          "Hall",
+          "1987-08-08"
+        ],
+        [
+          "Christopher",
+          "Olsen",
+          "1987-08-09"
+        ],
+        [
+          "Nanette",
+          "Cambrault",
+          "1987-08-10"
+        ],
+        [
+          "Oliver",
+          "Tuvault",
+          "1987-08-11"
+        ],
+        [
+          "Janette",
+          "King",
+          "1987-08-12"
+        ],
+        [
+          "Patrick",
+          "Sully",
+          "1987-08-13"
+        ],
+        [
+          "Allan",
+          "McEwen",
+          "1987-08-14"
+        ],
+        [
+          "Lindsey",
+          "Smith",
+          "1987-08-15"
+        ],
+        [
+          "Louise",
+          "Doran",
+          "1987-08-16"
+        ],
+        [
+          "Sarath",
+          "Sewall",
+          "1987-08-17"
+        ],
+        [
+          "Clara",
+          "Vishney",
+          "1987-08-18"
+        ],
+        [
+          "Danielle",
+          "Greene",
+          "1987-08-19"
+        ],
+        [
+          "Mattea",
+          "Marvins",
+          "1987-08-20"
+        ],
+        [
+          "David",
+          "Lee",
+          "1987-08-21"
+        ],
+        [
+          "Sundar",
+          "Ande",
+          "1987-08-22"
+        ],
+        [
+          "Amit",
+          "Banda",
+          "1987-08-23"
+        ],
+        [
+          "Lisa",
+          "Ozer",
+          "1987-08-24"
+        ],
+        [
+          "Harrison",
+          "Bloom",
+          "1987-08-25"
+        ],
+        [
+          "Tayler",
+          "Fox",
+          "1987-08-26"
+        ],
+        [
+          "William",
+          "Smith",
+          "1987-08-27"
+        ],
+        [
+          "Elizabeth",
+          "Bates",
+          "1987-08-28"
+        ],
+        [
+          "Sundita",
+          "Kumar",
+          "1987-08-29"
+        ],
+        [
+          "Ellen",
+          "Abel",
+          "1987-08-30"
+        ],
+        [
+          "Alyssa",
+          "Hutton",
+          "1987-08-31"
+        ],
+        [
+          "Jonathon",
+          "Taylor",
+          "1987-09-01"
+        ],
+        [
+          "Jack",
+          "Livingston",
+          "1987-09-02"
+        ],
+        [
+          "Charles",
+          "Johnson",
+          "1987-09-04"
+        ]
+      ]
+    },
+    {
+      "db_id": "customers_and_addresses",
+      "question": "Which contact channel has been used by the customer with name \"Tillman Ernser\"?",
+      "reference_sql": "SELECT DISTINCT channel_code FROM customers AS t1 JOIN customer_contact_channels AS t2 ON t1.customer_id  =  t2.customer_id WHERE t1.customer_name  =  \"Tillman Ernser\"",
+      "schema": "CREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`address_content` VARCHAR(80),\n`city` VARCHAR(50),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(50),\n`country` VARCHAR(50),\n`other_address_details` VARCHAR(255)\n)\nCREATE TABLE `Products` (\n`product_id` INTEGER PRIMARY KEY,\n`product_details` VARCHAR(255)\n)\nCREATE TABLE `Customers` (\n`customer_id` INTEGER PRIMARY KEY,\n`payment_method` VARCHAR(15) NOT NULL,\n`customer_name` VARCHAR(80),\n`date_became_customer` DATETIME,\n`other_customer_details` VARCHAR(255)\n)\nCREATE TABLE `Customer_Addresses` (\n`customer_id` INTEGER NOT NULL,\n`address_id` INTEGER NOT NULL,\n`date_address_from` DATETIME NOT NULL,\n`address_type` VARCHAR(15) NOT NULL,\n`date_address_to` DATETIME,\nFOREIGN KEY (`address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Contact_Channels` (\n`customer_id` INTEGER NOT NULL,\n`channel_code` VARCHAR(15) NOT NULL,\n`active_from_date` DATETIME NOT NULL,\n`active_to_date` DATETIME,\n`contact_number` VARCHAR(50) NOT NULL,\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Orders` (\n`order_id` INTEGER PRIMARY KEY,\n`customer_id` INTEGER NOT NULL,\n`order_status` VARCHAR(15) NOT NULL,\n`order_date` DATETIME,\n`order_details` VARCHAR(255),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Order_Items` (\n`order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\n`order_quantity` VARCHAR(15),\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`order_id` ) REFERENCES `Customer_Orders`(`order_id` )\n)",
+      "expected": [
+        [
+          "Email"
+        ],
+        [
+          "Cell"
+        ],
+        [
+          "Handheld"
+        ]
+      ]
+    },
+    {
+      "db_id": "customers_and_addresses",
+      "question": "Find the name and ID of the product whose total order quantity is the largest.",
+      "reference_sql": "SELECT t2.product_details ,  t2.product_id FROM order_items AS t1 JOIN products AS t2 ON t1.product_id  =  t2.product_id GROUP BY t1.product_id ORDER BY sum(t1.order_quantity) LIMIT 1",
+      "schema": "CREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`address_content` VARCHAR(80),\n`city` VARCHAR(50),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(50),\n`country` VARCHAR(50),\n`other_address_details` VARCHAR(255)\n)\nCREATE TABLE `Products` (\n`product_id` INTEGER PRIMARY KEY,\n`product_details` VARCHAR(255)\n)\nCREATE TABLE `Customers` (\n`customer_id` INTEGER PRIMARY KEY,\n`payment_method` VARCHAR(15) NOT NULL,\n`customer_name` VARCHAR(80),\n`date_became_customer` DATETIME,\n`other_customer_details` VARCHAR(255)\n)\nCREATE TABLE `Customer_Addresses` (\n`customer_id` INTEGER NOT NULL,\n`address_id` INTEGER NOT NULL,\n`date_address_from` DATETIME NOT NULL,\n`address_type` VARCHAR(15) NOT NULL,\n`date_address_to` DATETIME,\nFOREIGN KEY (`address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Contact_Channels` (\n`customer_id` INTEGER NOT NULL,\n`channel_code` VARCHAR(15) NOT NULL,\n`active_from_date` DATETIME NOT NULL,\n`active_to_date` DATETIME,\n`contact_number` VARCHAR(50) NOT NULL,\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Orders` (\n`order_id` INTEGER PRIMARY KEY,\n`customer_id` INTEGER NOT NULL,\n`order_status` VARCHAR(15) NOT NULL,\n`order_date` DATETIME,\n`order_details` VARCHAR(255),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Order_Items` (\n`order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\n`order_quantity` VARCHAR(15),\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`order_id` ) REFERENCES `Customer_Orders`(`order_id` )\n)",
+      "expected": [
+        [
+          "Americano",
+          1
+        ]
+      ]
+    },
+    {
+      "db_id": "customer_deliveries",
+      "question": "Show the details of all trucks in the order of their license number.",
+      "reference_sql": "SELECT truck_details FROM trucks ORDER BY truck_licence_number",
+      "schema": "CREATE TABLE `Products` (\n`product_id` INTEGER PRIMARY KEY,\n`product_name` VARCHAR(20),\n`product_price` DECIMAL(19,4),\n`product_description` VARCHAR(255)\n)\nCREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`address_details` VARCHAR(80),\n`city` VARCHAR(50),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(50),\n`country` VARCHAR(50)\n)\nCREATE TABLE `Customers` (\n`customer_id` INTEGER PRIMARY KEY,\n`payment_method` VARCHAR(10) NOT NULL,\n`customer_name` VARCHAR(80),\n`customer_phone` VARCHAR(80),\n`customer_email` VARCHAR(80),\n`date_became_customer` DATETIME\n)\nCREATE TABLE `Regular_Orders` (\n`regular_order_id` INTEGER PRIMARY KEY,\n`distributer_id` INTEGER NOT NULL,\nFOREIGN KEY (`distributer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Regular_Order_Products` (\n`regular_order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`regular_order_id` ) REFERENCES `Regular_Orders`(`regular_order_id` )\n)\nCREATE TABLE `Actual_Orders` (\n`actual_order_id` INTEGER PRIMARY KEY,\n`order_status_code` VARCHAR(10) NOT NULL,\n`regular_order_id` INTEGER NOT NULL,\n`actual_order_date` DATETIME,\nFOREIGN KEY (`regular_order_id` ) REFERENCES `Regular_Orders`(`regular_order_id` )\n)\nCREATE TABLE `Actual_Order_Products` (\n`actual_order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`actual_order_id` ) REFERENCES `Actual_Orders`(`actual_order_id` )\n)\nCREATE TABLE `Customer_Addresses` (\n`customer_id` INTEGER NOT NULL,\n`address_id` INTEGER NOT NULL,\n`date_from` DATETIME NOT NULL,\n`address_type` VARCHAR(10) NOT NULL,\n`date_to` DATETIME,\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` ),\nFOREIGN KEY (`address_id` ) REFERENCES `Addresses`(`address_id` )\n)\nCREATE TABLE `Delivery_Routes` (\n`route_id` INTEGER PRIMARY KEY,\n`route_name` VARCHAR(50),\n`other_route_details` VARCHAR(255)\n)\nCREATE TABLE `Delivery_Route_Locations` (\n`location_code` VARCHAR(10) PRIMARY KEY,\n`route_id` INTEGER NOT NULL,\n`location_address_id` INTEGER NOT NULL,\n`location_name` VARCHAR(50),\nFOREIGN KEY (`location_address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`route_id` ) REFERENCES `Delivery_Routes`(`route_id` )\n)\nCREATE TABLE `Trucks` (\n`truck_id` INTEGER PRIMARY KEY,\n`truck_licence_number` VARCHAR(20),\n`truck_details` VARCHAR(255)\n)\nCREATE TABLE `Employees` (\n`employee_id` INTEGER PRIMARY KEY,\n`employee_address_id` INTEGER NOT NULL,\n`employee_name` VARCHAR(80),\n`employee_phone` VARCHAR(80),\nFOREIGN KEY (`employee_address_id` ) REFERENCES `Addresses`(`address_id` )\n)\nCREATE TABLE `Order_Deliveries` (\n`location_code` VARCHAR(10) NOT NULL,\n`actual_order_id` INTEGER NOT NULL,\n`delivery_status_code` VARCHAR(10) NOT NULL,\n`driver_employee_id` INTEGER NOT NULL,\n`truck_id` INTEGER NOT NULL,\n`delivery_date` DATETIME,\nFOREIGN KEY (`truck_id` ) REFERENCES `Trucks`(`truck_id` ),\nFOREIGN KEY (`actual_order_id` ) REFERENCES `Actual_Orders`(`actual_order_id` ),\nFOREIGN KEY (`location_code` ) REFERENCES `Delivery_Route_Locations`(`location_code` ),\nFOREIGN KEY (`driver_employee_id` ) REFERENCES `Employees`(`employee_id` )\n)",
+      "expected": [
+        [
+          "Laverna"
+        ],
+        [
+          "Kaya"
+        ],
+        [
+          "Deon"
+        ],
+        [
+          "Ricky"
+        ],
+        [
+          "Randy"
+        ],
+        [
+          "Holly"
+        ],
+        [
+          "Rosamond"
+        ],
+        [
+          "Frida"
+        ],
+        [
+          "Queen"
+        ],
+        [
+          "Rebeka"
+        ],
+        [
+          "Luisa"
+        ],
+        [
+          "Bud"
+        ],
+        [
+          "Joanny"
+        ],
+        [
+          "Efren"
+        ],
+        [
+          "Stacy"
+        ]
+      ]
+    },
+    {
+      "db_id": "customers_and_addresses",
+      "question": "Retrieve the list of all cities.",
+      "reference_sql": "SELECT DISTINCT city FROM addresses",
+      "schema": "CREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`address_content` VARCHAR(80),\n`city` VARCHAR(50),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(50),\n`country` VARCHAR(50),\n`other_address_details` VARCHAR(255)\n)\nCREATE TABLE `Products` (\n`product_id` INTEGER PRIMARY KEY,\n`product_details` VARCHAR(255)\n)\nCREATE TABLE `Customers` (\n`customer_id` INTEGER PRIMARY KEY,\n`payment_method` VARCHAR(15) NOT NULL,\n`customer_name` VARCHAR(80),\n`date_became_customer` DATETIME,\n`other_customer_details` VARCHAR(255)\n)\nCREATE TABLE `Customer_Addresses` (\n`customer_id` INTEGER NOT NULL,\n`address_id` INTEGER NOT NULL,\n`date_address_from` DATETIME NOT NULL,\n`address_type` VARCHAR(15) NOT NULL,\n`date_address_to` DATETIME,\nFOREIGN KEY (`address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Contact_Channels` (\n`customer_id` INTEGER NOT NULL,\n`channel_code` VARCHAR(15) NOT NULL,\n`active_from_date` DATETIME NOT NULL,\n`active_to_date` DATETIME,\n`contact_number` VARCHAR(50) NOT NULL,\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Orders` (\n`order_id` INTEGER PRIMARY KEY,\n`customer_id` INTEGER NOT NULL,\n`order_status` VARCHAR(15) NOT NULL,\n`order_date` DATETIME,\n`order_details` VARCHAR(255),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Order_Items` (\n`order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\n`order_quantity` VARCHAR(15),\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`order_id` ) REFERENCES `Customer_Orders`(`order_id` )\n)",
+      "expected": [
+        [
+          "Lucasville"
+        ],
+        [
+          "New Sabryna"
+        ],
+        [
+          "Reingertown"
+        ],
+        [
+          "Gleasonmouth"
+        ],
+        [
+          "Stantonville"
+        ],
+        [
+          "South Meghanview"
+        ],
+        [
+          "Lake Walterton"
+        ],
+        [
+          "South Bellaland"
+        ],
+        [
+          "Felicityfort"
+        ],
+        [
+          "East Julianaside"
+        ],
+        [
+          "Lake Geovannyton"
+        ],
+        [
+          "New Terrillport"
+        ],
+        [
+          "Port Lilyan"
+        ],
+        [
+          "Lake Ryann"
+        ],
+        [
+          "East Pascale"
+        ]
+      ]
+    },
+    {
+      "db_id": "hospital_1",
+      "question": "What is the id of the appointment that started most recently?",
+      "reference_sql": "SELECT appointmentid FROM appointment ORDER BY START DESC LIMIT 1",
+      "schema": "CREATE TABLE Physician (\n  EmployeeID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  SSN INTEGER NOT NULL,\n  CONSTRAINT pk_physician PRIMARY KEY(EmployeeID)\n)\nCREATE TABLE Department (\n  DepartmentID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Head INTEGER NOT NULL,\n  CONSTRAINT pk_Department PRIMARY KEY(DepartmentID),\n  CONSTRAINT fk_Department_Physician_EmployeeID FOREIGN KEY(Head) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Affiliated_With (\n  Physician INTEGER NOT NULL,\n  Department INTEGER NOT NULL,\n  PrimaryAffiliation BOOLEAN NOT NULL,\n  CONSTRAINT fk_Affiliated_With_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Affiliated_With_Department_DepartmentID FOREIGN KEY(Department) REFERENCES Department(DepartmentID),\n  PRIMARY KEY(Physician, Department)\n)\nCREATE TABLE Procedures (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Cost REAL NOT NULL\n)\nCREATE TABLE Trained_In (\n  Physician INTEGER NOT NULL,\n  Treatment INTEGER NOT NULL,\n  CertificationDate DATETIME NOT NULL,\n  CertificationExpires DATETIME NOT NULL,\n  CONSTRAINT fk_Trained_In_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Trained_In_Procedures_Code FOREIGN KEY(Treatment) REFERENCES Procedures(Code),\n  PRIMARY KEY(Physician, Treatment)\n)\nCREATE TABLE Patient (\n  SSN INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Address VARCHAR(30) NOT NULL,\n  Phone VARCHAR(30) NOT NULL,\n  InsuranceID INTEGER NOT NULL,\n  PCP INTEGER NOT NULL,\n  CONSTRAINT fk_Patient_Physician_EmployeeID FOREIGN KEY(PCP) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Nurse (\n  EmployeeID INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  Registered BOOLEAN NOT NULL,\n  SSN INTEGER NOT NULL\n)\nCREATE TABLE Appointment (\n  AppointmentID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,    \n  PrepNurse INTEGER,\n  Physician INTEGER NOT NULL,\n  Start DATETIME NOT NULL,\n  End DATETIME NOT NULL,\n  ExaminationRoom TEXT NOT NULL,\n  CONSTRAINT fk_Appointment_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Appointment_Nurse_EmployeeID FOREIGN KEY(PrepNurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_Appointment_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Medication (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Brand VARCHAR(30) NOT NULL,\n  Description VARCHAR(30) NOT NULL\n)\nCREATE TABLE Prescribes (\n  Physician INTEGER NOT NULL,\n  Patient INTEGER NOT NULL, \n  Medication INTEGER NOT NULL, \n  Date DATETIME NOT NULL,\n  Appointment INTEGER,  \n  Dose VARCHAR(30) NOT NULL,\n  PRIMARY KEY(Physician, Patient, Medication, Date),\n  CONSTRAINT fk_Prescribes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Prescribes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Prescribes_Medication_Code FOREIGN KEY(Medication) REFERENCES Medication(Code),\n  CONSTRAINT fk_Prescribes_Appointment_AppointmentID FOREIGN KEY(Appointment) REFERENCES Appointment(AppointmentID)\n)\nCREATE TABLE Block (\n  BlockFloor INTEGER NOT NULL,\n  BlockCode INTEGER NOT NULL,\n  PRIMARY KEY(BlockFloor, BlockCode)\n)\nCREATE TABLE Room (\n  RoomNumber INTEGER PRIMARY KEY NOT NULL,\n  RoomType VARCHAR(30) NOT NULL,\n  BlockFloor INTEGER NOT NULL,  \n  BlockCode INTEGER NOT NULL,  \n  Unavailable BOOLEAN NOT NULL,\n  CONSTRAINT fk_Room_Block_PK FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode)\n)\nCREATE TABLE On_Call (\n  Nurse INTEGER NOT NULL,\n  BlockFloor INTEGER NOT NULL, \n  BlockCode INTEGER NOT NULL,\n  OnCallStart DATETIME NOT NULL,\n  OnCallEnd DATETIME NOT NULL,\n  PRIMARY KEY(Nurse, BlockFloor, BlockCode, OnCallStart, OnCallEnd),\n  CONSTRAINT fk_OnCall_Nurse_EmployeeID FOREIGN KEY(Nurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_OnCall_Block_Floor FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode) \n)\nCREATE TABLE Stay (\n  StayID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,\n  Room INTEGER NOT NULL,\n  StayStart DATETIME NOT NULL,\n  StayEnd DATETIME NOT NULL,\n  CONSTRAINT fk_Stay_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Stay_Room_Number FOREIGN KEY(Room) REFERENCES Room(RoomNumber)\n)\nCREATE TABLE Undergoes (\n  Patient INTEGER NOT NULL,\n  Procedures INTEGER NOT NULL,\n  Stay INTEGER NOT NULL,\n  DateUndergoes DATETIME NOT NULL,\n  Physician INTEGER NOT NULL,\n  AssistingNurse INTEGER,\n  PRIMARY KEY(Patient, Procedures, Stay, DateUndergoes),\n  CONSTRAINT fk_Undergoes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Undergoes_Procedures_Code FOREIGN KEY(Procedures) REFERENCES Procedures(Code),\n  CONSTRAINT fk_Undergoes_Stay_StayID FOREIGN KEY(Stay) REFERENCES Stay(StayID),\n  CONSTRAINT fk_Undergoes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Undergoes_Nurse_EmployeeID FOREIGN KEY(AssistingNurse) REFERENCES Nurse(EmployeeID)\n)",
+      "expected": [
+        [
+          86213939
+        ]
+      ]
+    },
+    {
+      "db_id": "hr_1",
+      "question": "display the employee number and name( first name and last name ) for all employees who work in a department with any employee whose name contains a \u2019T\u2019.",
+      "reference_sql": "SELECT employee_id ,  first_name ,  last_name FROM employees WHERE department_id IN ( SELECT department_id FROM employees WHERE first_name LIKE '%T%' )",
+      "schema": "CREATE TABLE `regions` (\n  `REGION_ID` decimal(5,0) NOT NULL,\n  `REGION_NAME` varchar(25) DEFAULT NULL,\n  PRIMARY KEY (`REGION_ID`)\n)\nCREATE TABLE `countries` (\n  `COUNTRY_ID` varchar(2) NOT NULL,\n  `COUNTRY_NAME` varchar(40) DEFAULT NULL,\n  `REGION_ID` decimal(10,0) DEFAULT NULL,\n  PRIMARY KEY (`COUNTRY_ID`),\n  FOREIGN KEY (`REGION_ID`) REFERENCES regions (`REGION_ID`)\n)\nCREATE TABLE `departments` (\n  `DEPARTMENT_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `DEPARTMENT_NAME` varchar(30) NOT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `LOCATION_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`DEPARTMENT_ID`)\n)\nCREATE TABLE `jobs` (\n  `JOB_ID` varchar(10) NOT NULL DEFAULT '',\n  `JOB_TITLE` varchar(35) NOT NULL,\n  `MIN_SALARY` decimal(6,0) DEFAULT NULL,\n  `MAX_SALARY` decimal(6,0) DEFAULT NULL,\n  PRIMARY KEY (`JOB_ID`)\n)\nCREATE TABLE `employees` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL DEFAULT '0',\n  `FIRST_NAME` varchar(20) DEFAULT NULL,\n  `LAST_NAME` varchar(25) NOT NULL,\n  `EMAIL` varchar(25) NOT NULL,\n  `PHONE_NUMBER` varchar(20) DEFAULT NULL,\n  `HIRE_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `SALARY` decimal(8,2) DEFAULT NULL,\n  `COMMISSION_PCT` decimal(2,2) DEFAULT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `job_history` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL,\n  `START_DATE` date NOT NULL,\n  `END_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`,`START_DATE`),\n  FOREIGN KEY (`EMPLOYEE_ID`) REFERENCES employees(`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `locations` (\n  `LOCATION_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `STREET_ADDRESS` varchar(40) DEFAULT NULL,\n  `POSTAL_CODE` varchar(12) DEFAULT NULL,\n  `CITY` varchar(30) NOT NULL,\n  `STATE_PROVINCE` varchar(25) DEFAULT NULL,\n  `COUNTRY_ID` varchar(2) DEFAULT NULL,\n  PRIMARY KEY (`LOCATION_ID`),\n  FOREIGN KEY (`COUNTRY_ID`) REFERENCES countries(`COUNTRY_ID`)\n)",
+      "expected": [
+        [
+          100,
+          "Steven",
+          "King"
+        ],
+        [
+          101,
+          "Neena",
+          "Kochhar"
+        ],
+        [
+          102,
+          "Lex",
+          "De Haan"
+        ],
+        [
+          120,
+          "Matthew",
+          "Weiss"
+        ],
+        [
+          121,
+          "Adam",
+          "Fripp"
+        ],
+        [
+          122,
+          "Payam",
+          "Kaufling"
+        ],
+        [
+          123,
+          "Shanta",
+          "Vollman"
+        ],
+        [
+          124,
+          "Kevin",
+          "Mourgos"
+        ],
+        [
+          125,
+          "Julia",
+          "Nayer"
+        ],
+        [
+          126,
+          "Irene",
+          "Mikkilineni"
+        ],
+        [
+          127,
+          "James",
+          "Landry"
+        ],
+        [
+          128,
+          "Steven",
+          "Markle"
+        ],
+        [
+          129,
+          "Laura",
+          "Bissot"
+        ],
+        [
+          130,
+          "Mozhe",
+          "Atkinson"
+        ],
+        [
+          131,
+          "James",
+          "Marlow"
+        ],
+        [
+          132,
+          "TJ",
+          "Olson"
+        ],
+        [
+          133,
+          "Jason",
+          "Mallin"
+        ],
+        [
+          134,
+          "Michael",
+          "Rogers"
+        ],
+        [
+          135,
+          "Ki",
+          "Gee"
+        ],
+        [
+          136,
+          "Hazel",
+          "Philtanker"
+        ],
+        [
+          137,
+          "Renske",
+          "Ladwig"
+        ],
+        [
+          138,
+          "Stephen",
+          "Stiles"
+        ],
+        [
+          139,
+          "John",
+          "Seo"
+        ],
+        [
+          140,
+          "Joshua",
+          "Patel"
+        ],
+        [
+          141,
+          "Trenna",
+          "Rajs"
+        ],
+        [
+          142,
+          "Curtis",
+          "Davies"
+        ],
+        [
+          143,
+          "Randall",
+          "Matos"
+        ],
+        [
+          144,
+          "Peter",
+          "Vargas"
+        ],
+        [
+          145,
+          "John",
+          "Russell"
+        ],
+        [
+          146,
+          "Karen",
+          "Partners"
+        ],
+        [
+          147,
+          "Alberto",
+          "Errazuriz"
+        ],
+        [
+          148,
+          "Gerald",
+          "Cambrault"
+        ],
+        [
+          149,
+          "Eleni",
+          "Zlotkey"
+        ],
+        [
+          150,
+          "Peter",
+          "Tucker"
+        ],
+        [
+          151,
+          "David",
+          "Bernstein"
+        ],
+        [
+          152,
+          "Peter",
+          "Hall"
+        ],
+        [
+          153,
+          "Christopher",
+          "Olsen"
+        ],
+        [
+          154,
+          "Nanette",
+          "Cambrault"
+        ],
+        [
+          155,
+          "Oliver",
+          "Tuvault"
+        ],
+        [
+          156,
+          "Janette",
+          "King"
+        ],
+        [
+          157,
+          "Patrick",
+          "Sully"
+        ],
+        [
+          158,
+          "Allan",
+          "McEwen"
+        ],
+        [
+          159,
+          "Lindsey",
+          "Smith"
+        ],
+        [
+          160,
+          "Louise",
+          "Doran"
+        ],
+        [
+          161,
+          "Sarath",
+          "Sewall"
+        ],
+        [
+          162,
+          "Clara",
+          "Vishney"
+        ],
+        [
+          163,
+          "Danielle",
+          "Greene"
+        ],
+        [
+          164,
+          "Mattea",
+          "Marvins"
+        ],
+        [
+          165,
+          "David",
+          "Lee"
+        ],
+        [
+          166,
+          "Sundar",
+          "Ande"
+        ],
+        [
+          167,
+          "Amit",
+          "Banda"
+        ],
+        [
+          168,
+          "Lisa",
+          "Ozer"
+        ],
+        [
+          169,
+          "Harrison",
+          "Bloom"
+        ],
+        [
+          170,
+          "Tayler",
+          "Fox"
+        ],
+        [
+          171,
+          "William",
+          "Smith"
+        ],
+        [
+          172,
+          "Elizabeth",
+          "Bates"
+        ],
+        [
+          173,
+          "Sundita",
+          "Kumar"
+        ],
+        [
+          174,
+          "Ellen",
+          "Abel"
+        ],
+        [
+          175,
+          "Alyssa",
+          "Hutton"
+        ],
+        [
+          176,
+          "Jonathon",
+          "Taylor"
+        ],
+        [
+          177,
+          "Jack",
+          "Livingston"
+        ],
+        [
+          179,
+          "Charles",
+          "Johnson"
+        ],
+        [
+          180,
+          "Winston",
+          "Taylor"
+        ],
+        [
+          181,
+          "Jean",
+          "Fleaur"
+        ],
+        [
+          182,
+          "Martha",
+          "Sullivan"
+        ],
+        [
+          183,
+          "Girard",
+          "Geoni"
+        ],
+        [
+          184,
+          "Nandita",
+          "Sarchand"
+        ],
+        [
+          185,
+          "Alexis",
+          "Bull"
+        ],
+        [
+          186,
+          "Julia",
+          "Dellinger"
+        ],
+        [
+          187,
+          "Anthony",
+          "Cabrio"
+        ],
+        [
+          188,
+          "Kelly",
+          "Chung"
+        ],
+        [
+          189,
+          "Jennifer",
+          "Dilly"
+        ],
+        [
+          190,
+          "Timothy",
+          "Gates"
+        ],
+        [
+          191,
+          "Randall",
+          "Perkins"
+        ],
+        [
+          192,
+          "Sarah",
+          "Bell"
+        ],
+        [
+          193,
+          "Britney",
+          "Everett"
+        ],
+        [
+          194,
+          "Samuel",
+          "McCain"
+        ],
+        [
+          195,
+          "Vance",
+          "Jones"
+        ],
+        [
+          196,
+          "Alana",
+          "Walsh"
+        ],
+        [
+          197,
+          "Kevin",
+          "Feeney"
+        ],
+        [
+          198,
+          "Donald",
+          "OConnell"
+        ],
+        [
+          199,
+          "Douglas",
+          "Grant"
+        ],
+        [
+          201,
+          "Michael",
+          "Hartstein"
+        ],
+        [
+          202,
+          "Pat",
+          "Fay"
+        ]
+      ]
+    },
+    {
+      "db_id": "local_govt_and_lot",
+      "question": "What are the id and details of the customers who have at least 3 events?",
+      "reference_sql": "SELECT T1.customer_id ,  T1.customer_details FROM Customers AS T1 JOIN Customer_Events AS T2 ON T1.customer_id  =  T2.customer_id GROUP BY T1.customer_id HAVING count(*)  >=  3",
+      "schema": "CREATE TABLE Customers (\ncustomer_id INTEGER NOT NULL,\ncustomer_details VARCHAR(255),\nPRIMARY KEY (customer_id)\n)\nCREATE TABLE Properties (\nproperty_id INTEGER NOT NULL,\nproperty_type_code CHAR(15) NOT NULL,\nproperty_address VARCHAR(255),\nother_details VARCHAR(255),\nPRIMARY KEY (property_id)\n)\nCREATE TABLE Residents (\nresident_id INTEGER NOT NULL,\nproperty_id INTEGER NOT NULL,\ndate_moved_in DATETIME NOT NULL,\ndate_moved_out DATETIME NOT NULL,\nother_details VARCHAR(255),\nPRIMARY KEY (resident_id, property_id, date_moved_in),\nFOREIGN KEY (property_id) REFERENCES Properties (property_id)\n)\nCREATE TABLE Organizations (\norganization_id INTEGER NOT NULL,\nparent_organization_id INTEGER,\norganization_details VARCHAR(255),\nPRIMARY KEY (organization_id)\n)\nCREATE TABLE Services (\nservice_id INTEGER NOT NULL,\norganization_id INTEGER NOT NULL,\nservice_type_code CHAR(15) NOT NULL,\nservice_details VARCHAR(255),\nPRIMARY KEY (service_id),\nFOREIGN KEY (organization_id) REFERENCES Organizations (organization_id)\n)\nCREATE TABLE Residents_Services (\nresident_id INTEGER NOT NULL,\nservice_id INTEGER NOT NULL,\ndate_moved_in DATETIME,\nproperty_id INTEGER,\ndate_requested DATETIME,\ndate_provided DATETIME,\nother_details VARCHAR(255),\nPRIMARY KEY (resident_id, service_id),\nFOREIGN KEY (service_id) REFERENCES Services (service_id),\nFOREIGN KEY (resident_id, property_id, date_moved_in) REFERENCES Residents (resident_id,property_id,date_moved_in)\n)\nCREATE TABLE Things (\nthing_id INTEGER NOT NULL,\norganization_id INTEGER NOT NULL,\nType_of_Thing_Code CHAR(15) NOT NULL,\nservice_type_code CHAR(10) NOT NULL,\nservice_details VARCHAR(255),\nPRIMARY KEY (thing_id),\nFOREIGN KEY (organization_id) REFERENCES Organizations (organization_id)\n)\nCREATE TABLE Customer_Events (\nCustomer_Event_ID INTEGER NOT NULL,\ncustomer_id INTEGER,\ndate_moved_in DATETIME,\nproperty_id INTEGER,\nresident_id INTEGER,\nthing_id INTEGER NOT NULL,\nPRIMARY KEY (Customer_Event_ID),\nFOREIGN KEY (thing_id) REFERENCES Things (thing_id),\nFOREIGN KEY (customer_id) REFERENCES Customers (customer_id),\nFOREIGN KEY (resident_id, property_id, date_moved_in) REFERENCES Residents (resident_id,property_id,date_moved_in)\n)\nCREATE TABLE Customer_Event_Notes (\nCustomer_Event_Note_ID INTEGER NOT NULL,\nCustomer_Event_ID INTEGER NOT NULL,\nservice_type_code CHAR(15) NOT NULL,\nresident_id INTEGER NOT NULL,\nproperty_id INTEGER NOT NULL,\ndate_moved_in DATETIME NOT NULL,\nPRIMARY KEY (Customer_Event_Note_ID),\nFOREIGN KEY (Customer_Event_ID) REFERENCES Customer_Events (Customer_Event_ID)\n)\nCREATE TABLE Timed_Status_of_Things (\nthing_id INTEGER NOT NULL,\nDate_and_Date DATETIME NOT NULL,\nStatus_of_Thing_Code CHAR(15) NOT NULL,\nPRIMARY KEY (thing_id, Date_and_Date, Status_of_Thing_Code),\nFOREIGN KEY (thing_id) REFERENCES Things (thing_id)\n)\nCREATE TABLE Timed_Locations_of_Things (\nthing_id INTEGER NOT NULL,\nDate_and_Time DATETIME NOT NULL,\nLocation_Code CHAR(15) NOT NULL,\nPRIMARY KEY (thing_id, Date_and_Time, Location_Code),\nFOREIGN KEY (thing_id) REFERENCES Things (thing_id))",
+      "expected": [
+        [
+          19,
+          "Sabryna Moore PhD"
+        ]
+      ]
+    },
+    {
+      "db_id": "customers_and_addresses",
+      "question": "What are all the addresses in East Julianaside, Texas or in Gleasonmouth, Arizona.",
+      "reference_sql": "SELECT address_content FROM addresses WHERE city  =  \"East Julianaside\" AND state_province_county  =  \"Texas\" UNION SELECT address_content FROM addresses WHERE city  =  \"Gleasonmouth\" AND state_province_county  =  \"Arizona\"",
+      "schema": "CREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`address_content` VARCHAR(80),\n`city` VARCHAR(50),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(50),\n`country` VARCHAR(50),\n`other_address_details` VARCHAR(255)\n)\nCREATE TABLE `Products` (\n`product_id` INTEGER PRIMARY KEY,\n`product_details` VARCHAR(255)\n)\nCREATE TABLE `Customers` (\n`customer_id` INTEGER PRIMARY KEY,\n`payment_method` VARCHAR(15) NOT NULL,\n`customer_name` VARCHAR(80),\n`date_became_customer` DATETIME,\n`other_customer_details` VARCHAR(255)\n)\nCREATE TABLE `Customer_Addresses` (\n`customer_id` INTEGER NOT NULL,\n`address_id` INTEGER NOT NULL,\n`date_address_from` DATETIME NOT NULL,\n`address_type` VARCHAR(15) NOT NULL,\n`date_address_to` DATETIME,\nFOREIGN KEY (`address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Contact_Channels` (\n`customer_id` INTEGER NOT NULL,\n`channel_code` VARCHAR(15) NOT NULL,\n`active_from_date` DATETIME NOT NULL,\n`active_to_date` DATETIME,\n`contact_number` VARCHAR(50) NOT NULL,\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Orders` (\n`order_id` INTEGER PRIMARY KEY,\n`customer_id` INTEGER NOT NULL,\n`order_status` VARCHAR(15) NOT NULL,\n`order_date` DATETIME,\n`order_details` VARCHAR(255),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Order_Items` (\n`order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\n`order_quantity` VARCHAR(15),\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`order_id` ) REFERENCES `Customer_Orders`(`order_id` )\n)",
+      "expected": [
+        [
+          "120 Noble Radial"
+        ],
+        [
+          "92865 Margaretta Streets Suite 467"
+        ]
+      ]
+    },
+    {
+      "db_id": "hospital_1",
+      "question": "Tell me the employee id of the head of the department with the least employees.",
+      "reference_sql": "SELECT head FROM department GROUP BY departmentID ORDER BY count(departmentID) LIMIT 1;",
+      "schema": "CREATE TABLE Physician (\n  EmployeeID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  SSN INTEGER NOT NULL,\n  CONSTRAINT pk_physician PRIMARY KEY(EmployeeID)\n)\nCREATE TABLE Department (\n  DepartmentID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Head INTEGER NOT NULL,\n  CONSTRAINT pk_Department PRIMARY KEY(DepartmentID),\n  CONSTRAINT fk_Department_Physician_EmployeeID FOREIGN KEY(Head) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Affiliated_With (\n  Physician INTEGER NOT NULL,\n  Department INTEGER NOT NULL,\n  PrimaryAffiliation BOOLEAN NOT NULL,\n  CONSTRAINT fk_Affiliated_With_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Affiliated_With_Department_DepartmentID FOREIGN KEY(Department) REFERENCES Department(DepartmentID),\n  PRIMARY KEY(Physician, Department)\n)\nCREATE TABLE Procedures (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Cost REAL NOT NULL\n)\nCREATE TABLE Trained_In (\n  Physician INTEGER NOT NULL,\n  Treatment INTEGER NOT NULL,\n  CertificationDate DATETIME NOT NULL,\n  CertificationExpires DATETIME NOT NULL,\n  CONSTRAINT fk_Trained_In_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Trained_In_Procedures_Code FOREIGN KEY(Treatment) REFERENCES Procedures(Code),\n  PRIMARY KEY(Physician, Treatment)\n)\nCREATE TABLE Patient (\n  SSN INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Address VARCHAR(30) NOT NULL,\n  Phone VARCHAR(30) NOT NULL,\n  InsuranceID INTEGER NOT NULL,\n  PCP INTEGER NOT NULL,\n  CONSTRAINT fk_Patient_Physician_EmployeeID FOREIGN KEY(PCP) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Nurse (\n  EmployeeID INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  Registered BOOLEAN NOT NULL,\n  SSN INTEGER NOT NULL\n)\nCREATE TABLE Appointment (\n  AppointmentID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,    \n  PrepNurse INTEGER,\n  Physician INTEGER NOT NULL,\n  Start DATETIME NOT NULL,\n  End DATETIME NOT NULL,\n  ExaminationRoom TEXT NOT NULL,\n  CONSTRAINT fk_Appointment_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Appointment_Nurse_EmployeeID FOREIGN KEY(PrepNurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_Appointment_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Medication (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Brand VARCHAR(30) NOT NULL,\n  Description VARCHAR(30) NOT NULL\n)\nCREATE TABLE Prescribes (\n  Physician INTEGER NOT NULL,\n  Patient INTEGER NOT NULL, \n  Medication INTEGER NOT NULL, \n  Date DATETIME NOT NULL,\n  Appointment INTEGER,  \n  Dose VARCHAR(30) NOT NULL,\n  PRIMARY KEY(Physician, Patient, Medication, Date),\n  CONSTRAINT fk_Prescribes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Prescribes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Prescribes_Medication_Code FOREIGN KEY(Medication) REFERENCES Medication(Code),\n  CONSTRAINT fk_Prescribes_Appointment_AppointmentID FOREIGN KEY(Appointment) REFERENCES Appointment(AppointmentID)\n)\nCREATE TABLE Block (\n  BlockFloor INTEGER NOT NULL,\n  BlockCode INTEGER NOT NULL,\n  PRIMARY KEY(BlockFloor, BlockCode)\n)\nCREATE TABLE Room (\n  RoomNumber INTEGER PRIMARY KEY NOT NULL,\n  RoomType VARCHAR(30) NOT NULL,\n  BlockFloor INTEGER NOT NULL,  \n  BlockCode INTEGER NOT NULL,  \n  Unavailable BOOLEAN NOT NULL,\n  CONSTRAINT fk_Room_Block_PK FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode)\n)\nCREATE TABLE On_Call (\n  Nurse INTEGER NOT NULL,\n  BlockFloor INTEGER NOT NULL, \n  BlockCode INTEGER NOT NULL,\n  OnCallStart DATETIME NOT NULL,\n  OnCallEnd DATETIME NOT NULL,\n  PRIMARY KEY(Nurse, BlockFloor, BlockCode, OnCallStart, OnCallEnd),\n  CONSTRAINT fk_OnCall_Nurse_EmployeeID FOREIGN KEY(Nurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_OnCall_Block_Floor FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode) \n)\nCREATE TABLE Stay (\n  StayID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,\n  Room INTEGER NOT NULL,\n  StayStart DATETIME NOT NULL,\n  StayEnd DATETIME NOT NULL,\n  CONSTRAINT fk_Stay_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Stay_Room_Number FOREIGN KEY(Room) REFERENCES Room(RoomNumber)\n)\nCREATE TABLE Undergoes (\n  Patient INTEGER NOT NULL,\n  Procedures INTEGER NOT NULL,\n  Stay INTEGER NOT NULL,\n  DateUndergoes DATETIME NOT NULL,\n  Physician INTEGER NOT NULL,\n  AssistingNurse INTEGER,\n  PRIMARY KEY(Patient, Procedures, Stay, DateUndergoes),\n  CONSTRAINT fk_Undergoes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Undergoes_Procedures_Code FOREIGN KEY(Procedures) REFERENCES Procedures(Code),\n  CONSTRAINT fk_Undergoes_Stay_StayID FOREIGN KEY(Stay) REFERENCES Stay(StayID),\n  CONSTRAINT fk_Undergoes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Undergoes_Nurse_EmployeeID FOREIGN KEY(AssistingNurse) REFERENCES Nurse(EmployeeID)\n)",
+      "expected": [
+        [
+          4
+        ]
+      ]
+    },
+    {
+      "db_id": "hospital_1",
+      "question": "What is the names of the physicians who prescribe medication Thesisin?",
+      "reference_sql": "SELECT DISTINCT T1.name FROM physician AS T1 JOIN prescribes AS T2 ON T1.employeeid = T2.physician JOIN medication AS T3 ON T3.code = T2.medication WHERE T3.name  =  \"Thesisin\"",
+      "schema": "CREATE TABLE Physician (\n  EmployeeID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  SSN INTEGER NOT NULL,\n  CONSTRAINT pk_physician PRIMARY KEY(EmployeeID)\n)\nCREATE TABLE Department (\n  DepartmentID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Head INTEGER NOT NULL,\n  CONSTRAINT pk_Department PRIMARY KEY(DepartmentID),\n  CONSTRAINT fk_Department_Physician_EmployeeID FOREIGN KEY(Head) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Affiliated_With (\n  Physician INTEGER NOT NULL,\n  Department INTEGER NOT NULL,\n  PrimaryAffiliation BOOLEAN NOT NULL,\n  CONSTRAINT fk_Affiliated_With_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Affiliated_With_Department_DepartmentID FOREIGN KEY(Department) REFERENCES Department(DepartmentID),\n  PRIMARY KEY(Physician, Department)\n)\nCREATE TABLE Procedures (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Cost REAL NOT NULL\n)\nCREATE TABLE Trained_In (\n  Physician INTEGER NOT NULL,\n  Treatment INTEGER NOT NULL,\n  CertificationDate DATETIME NOT NULL,\n  CertificationExpires DATETIME NOT NULL,\n  CONSTRAINT fk_Trained_In_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Trained_In_Procedures_Code FOREIGN KEY(Treatment) REFERENCES Procedures(Code),\n  PRIMARY KEY(Physician, Treatment)\n)\nCREATE TABLE Patient (\n  SSN INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Address VARCHAR(30) NOT NULL,\n  Phone VARCHAR(30) NOT NULL,\n  InsuranceID INTEGER NOT NULL,\n  PCP INTEGER NOT NULL,\n  CONSTRAINT fk_Patient_Physician_EmployeeID FOREIGN KEY(PCP) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Nurse (\n  EmployeeID INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  Registered BOOLEAN NOT NULL,\n  SSN INTEGER NOT NULL\n)\nCREATE TABLE Appointment (\n  AppointmentID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,    \n  PrepNurse INTEGER,\n  Physician INTEGER NOT NULL,\n  Start DATETIME NOT NULL,\n  End DATETIME NOT NULL,\n  ExaminationRoom TEXT NOT NULL,\n  CONSTRAINT fk_Appointment_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Appointment_Nurse_EmployeeID FOREIGN KEY(PrepNurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_Appointment_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Medication (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Brand VARCHAR(30) NOT NULL,\n  Description VARCHAR(30) NOT NULL\n)\nCREATE TABLE Prescribes (\n  Physician INTEGER NOT NULL,\n  Patient INTEGER NOT NULL, \n  Medication INTEGER NOT NULL, \n  Date DATETIME NOT NULL,\n  Appointment INTEGER,  \n  Dose VARCHAR(30) NOT NULL,\n  PRIMARY KEY(Physician, Patient, Medication, Date),\n  CONSTRAINT fk_Prescribes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Prescribes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Prescribes_Medication_Code FOREIGN KEY(Medication) REFERENCES Medication(Code),\n  CONSTRAINT fk_Prescribes_Appointment_AppointmentID FOREIGN KEY(Appointment) REFERENCES Appointment(AppointmentID)\n)\nCREATE TABLE Block (\n  BlockFloor INTEGER NOT NULL,\n  BlockCode INTEGER NOT NULL,\n  PRIMARY KEY(BlockFloor, BlockCode)\n)\nCREATE TABLE Room (\n  RoomNumber INTEGER PRIMARY KEY NOT NULL,\n  RoomType VARCHAR(30) NOT NULL,\n  BlockFloor INTEGER NOT NULL,  \n  BlockCode INTEGER NOT NULL,  \n  Unavailable BOOLEAN NOT NULL,\n  CONSTRAINT fk_Room_Block_PK FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode)\n)\nCREATE TABLE On_Call (\n  Nurse INTEGER NOT NULL,\n  BlockFloor INTEGER NOT NULL, \n  BlockCode INTEGER NOT NULL,\n  OnCallStart DATETIME NOT NULL,\n  OnCallEnd DATETIME NOT NULL,\n  PRIMARY KEY(Nurse, BlockFloor, BlockCode, OnCallStart, OnCallEnd),\n  CONSTRAINT fk_OnCall_Nurse_EmployeeID FOREIGN KEY(Nurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_OnCall_Block_Floor FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode) \n)\nCREATE TABLE Stay (\n  StayID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,\n  Room INTEGER NOT NULL,\n  StayStart DATETIME NOT NULL,\n  StayEnd DATETIME NOT NULL,\n  CONSTRAINT fk_Stay_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Stay_Room_Number FOREIGN KEY(Room) REFERENCES Room(RoomNumber)\n)\nCREATE TABLE Undergoes (\n  Patient INTEGER NOT NULL,\n  Procedures INTEGER NOT NULL,\n  Stay INTEGER NOT NULL,\n  DateUndergoes DATETIME NOT NULL,\n  Physician INTEGER NOT NULL,\n  AssistingNurse INTEGER,\n  PRIMARY KEY(Patient, Procedures, Stay, DateUndergoes),\n  CONSTRAINT fk_Undergoes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Undergoes_Procedures_Code FOREIGN KEY(Procedures) REFERENCES Procedures(Code),\n  CONSTRAINT fk_Undergoes_Stay_StayID FOREIGN KEY(Stay) REFERENCES Stay(StayID),\n  CONSTRAINT fk_Undergoes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Undergoes_Nurse_EmployeeID FOREIGN KEY(AssistingNurse) REFERENCES Nurse(EmployeeID)\n)",
+      "expected": [
+        [
+          "Molly Clock"
+        ]
+      ]
+    },
+    {
+      "db_id": "hr_1",
+      "question": "Find the first name and last name and department id for those employees who earn such amount of salary which is the smallest salary of any of the departments.",
+      "reference_sql": "SELECT first_name ,  last_name ,  department_id FROM employees WHERE salary IN (SELECT MIN(salary) FROM employees GROUP BY department_id)",
+      "schema": "CREATE TABLE `regions` (\n  `REGION_ID` decimal(5,0) NOT NULL,\n  `REGION_NAME` varchar(25) DEFAULT NULL,\n  PRIMARY KEY (`REGION_ID`)\n)\nCREATE TABLE `countries` (\n  `COUNTRY_ID` varchar(2) NOT NULL,\n  `COUNTRY_NAME` varchar(40) DEFAULT NULL,\n  `REGION_ID` decimal(10,0) DEFAULT NULL,\n  PRIMARY KEY (`COUNTRY_ID`),\n  FOREIGN KEY (`REGION_ID`) REFERENCES regions (`REGION_ID`)\n)\nCREATE TABLE `departments` (\n  `DEPARTMENT_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `DEPARTMENT_NAME` varchar(30) NOT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `LOCATION_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`DEPARTMENT_ID`)\n)\nCREATE TABLE `jobs` (\n  `JOB_ID` varchar(10) NOT NULL DEFAULT '',\n  `JOB_TITLE` varchar(35) NOT NULL,\n  `MIN_SALARY` decimal(6,0) DEFAULT NULL,\n  `MAX_SALARY` decimal(6,0) DEFAULT NULL,\n  PRIMARY KEY (`JOB_ID`)\n)\nCREATE TABLE `employees` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL DEFAULT '0',\n  `FIRST_NAME` varchar(20) DEFAULT NULL,\n  `LAST_NAME` varchar(25) NOT NULL,\n  `EMAIL` varchar(25) NOT NULL,\n  `PHONE_NUMBER` varchar(20) DEFAULT NULL,\n  `HIRE_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `SALARY` decimal(8,2) DEFAULT NULL,\n  `COMMISSION_PCT` decimal(2,2) DEFAULT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `job_history` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL,\n  `START_DATE` date NOT NULL,\n  `END_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`,`START_DATE`),\n  FOREIGN KEY (`EMPLOYEE_ID`) REFERENCES employees(`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `locations` (\n  `LOCATION_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `STREET_ADDRESS` varchar(40) DEFAULT NULL,\n  `POSTAL_CODE` varchar(12) DEFAULT NULL,\n  `CITY` varchar(30) NOT NULL,\n  `STATE_PROVINCE` varchar(25) DEFAULT NULL,\n  `COUNTRY_ID` varchar(2) DEFAULT NULL,\n  PRIMARY KEY (`LOCATION_ID`),\n  FOREIGN KEY (`COUNTRY_ID`) REFERENCES countries(`COUNTRY_ID`)\n)",
+      "expected": [
+        [
+          "Neena",
+          "Kochhar",
+          90
+        ],
+        [
+          "Lex",
+          "De Haan",
+          90
+        ],
+        [
+          "Bruce",
+          "Ernst",
+          60
+        ],
+        [
+          "Diana",
+          "Lorentz",
+          60
+        ],
+        [
+          "Luis",
+          "Popp",
+          100
+        ],
+        [
+          "Karen",
+          "Colmenares",
+          30
+        ],
+        [
+          "Shanta",
+          "Vollman",
+          50
+        ],
+        [
+          "James",
+          "Marlow",
+          50
+        ],
+        [
+          "TJ",
+          "Olson",
+          50
+        ],
+        [
+          "Joshua",
+          "Patel",
+          50
+        ],
+        [
+          "Peter",
+          "Vargas",
+          50
+        ],
+        [
+          "Peter",
+          "Tucker",
+          80
+        ],
+        [
+          "Oliver",
+          "Tuvault",
+          80
+        ],
+        [
+          "Janette",
+          "King",
+          80
+        ],
+        [
+          "Sarath",
+          "Sewall",
+          80
+        ],
+        [
+          "Harrison",
+          "Bloom",
+          80
+        ],
+        [
+          "Sundita",
+          "Kumar",
+          80
+        ],
+        [
+          "Kimberely",
+          "Grant",
+          0
+        ],
+        [
+          "Martha",
+          "Sullivan",
+          50
+        ],
+        [
+          "Nandita",
+          "Sarchand",
+          50
+        ],
+        [
+          "Randall",
+          "Perkins",
+          50
+        ],
+        [
+          "Jennifer",
+          "Whalen",
+          10
+        ],
+        [
+          "Pat",
+          "Fay",
+          20
+        ],
+        [
+          "Susan",
+          "Mavris",
+          40
+        ],
+        [
+          "Hermann",
+          "Baer",
+          70
+        ],
+        [
+          "William",
+          "Gietz",
+          110
+        ]
+      ]
+    },
+    {
+      "db_id": "hospital_1",
+      "question": "What are the names of the physician who prescribed the highest dose?",
+      "reference_sql": "SELECT T1.name FROM physician AS T1 JOIN prescribes AS T2 ON T1.employeeid = T2.physician ORDER BY T2.dose DESC LIMIT 1",
+      "schema": "CREATE TABLE Physician (\n  EmployeeID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  SSN INTEGER NOT NULL,\n  CONSTRAINT pk_physician PRIMARY KEY(EmployeeID)\n)\nCREATE TABLE Department (\n  DepartmentID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Head INTEGER NOT NULL,\n  CONSTRAINT pk_Department PRIMARY KEY(DepartmentID),\n  CONSTRAINT fk_Department_Physician_EmployeeID FOREIGN KEY(Head) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Affiliated_With (\n  Physician INTEGER NOT NULL,\n  Department INTEGER NOT NULL,\n  PrimaryAffiliation BOOLEAN NOT NULL,\n  CONSTRAINT fk_Affiliated_With_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Affiliated_With_Department_DepartmentID FOREIGN KEY(Department) REFERENCES Department(DepartmentID),\n  PRIMARY KEY(Physician, Department)\n)\nCREATE TABLE Procedures (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Cost REAL NOT NULL\n)\nCREATE TABLE Trained_In (\n  Physician INTEGER NOT NULL,\n  Treatment INTEGER NOT NULL,\n  CertificationDate DATETIME NOT NULL,\n  CertificationExpires DATETIME NOT NULL,\n  CONSTRAINT fk_Trained_In_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Trained_In_Procedures_Code FOREIGN KEY(Treatment) REFERENCES Procedures(Code),\n  PRIMARY KEY(Physician, Treatment)\n)\nCREATE TABLE Patient (\n  SSN INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Address VARCHAR(30) NOT NULL,\n  Phone VARCHAR(30) NOT NULL,\n  InsuranceID INTEGER NOT NULL,\n  PCP INTEGER NOT NULL,\n  CONSTRAINT fk_Patient_Physician_EmployeeID FOREIGN KEY(PCP) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Nurse (\n  EmployeeID INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  Registered BOOLEAN NOT NULL,\n  SSN INTEGER NOT NULL\n)\nCREATE TABLE Appointment (\n  AppointmentID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,    \n  PrepNurse INTEGER,\n  Physician INTEGER NOT NULL,\n  Start DATETIME NOT NULL,\n  End DATETIME NOT NULL,\n  ExaminationRoom TEXT NOT NULL,\n  CONSTRAINT fk_Appointment_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Appointment_Nurse_EmployeeID FOREIGN KEY(PrepNurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_Appointment_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Medication (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Brand VARCHAR(30) NOT NULL,\n  Description VARCHAR(30) NOT NULL\n)\nCREATE TABLE Prescribes (\n  Physician INTEGER NOT NULL,\n  Patient INTEGER NOT NULL, \n  Medication INTEGER NOT NULL, \n  Date DATETIME NOT NULL,\n  Appointment INTEGER,  \n  Dose VARCHAR(30) NOT NULL,\n  PRIMARY KEY(Physician, Patient, Medication, Date),\n  CONSTRAINT fk_Prescribes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Prescribes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Prescribes_Medication_Code FOREIGN KEY(Medication) REFERENCES Medication(Code),\n  CONSTRAINT fk_Prescribes_Appointment_AppointmentID FOREIGN KEY(Appointment) REFERENCES Appointment(AppointmentID)\n)\nCREATE TABLE Block (\n  BlockFloor INTEGER NOT NULL,\n  BlockCode INTEGER NOT NULL,\n  PRIMARY KEY(BlockFloor, BlockCode)\n)\nCREATE TABLE Room (\n  RoomNumber INTEGER PRIMARY KEY NOT NULL,\n  RoomType VARCHAR(30) NOT NULL,\n  BlockFloor INTEGER NOT NULL,  \n  BlockCode INTEGER NOT NULL,  \n  Unavailable BOOLEAN NOT NULL,\n  CONSTRAINT fk_Room_Block_PK FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode)\n)\nCREATE TABLE On_Call (\n  Nurse INTEGER NOT NULL,\n  BlockFloor INTEGER NOT NULL, \n  BlockCode INTEGER NOT NULL,\n  OnCallStart DATETIME NOT NULL,\n  OnCallEnd DATETIME NOT NULL,\n  PRIMARY KEY(Nurse, BlockFloor, BlockCode, OnCallStart, OnCallEnd),\n  CONSTRAINT fk_OnCall_Nurse_EmployeeID FOREIGN KEY(Nurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_OnCall_Block_Floor FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode) \n)\nCREATE TABLE Stay (\n  StayID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,\n  Room INTEGER NOT NULL,\n  StayStart DATETIME NOT NULL,\n  StayEnd DATETIME NOT NULL,\n  CONSTRAINT fk_Stay_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Stay_Room_Number FOREIGN KEY(Room) REFERENCES Room(RoomNumber)\n)\nCREATE TABLE Undergoes (\n  Patient INTEGER NOT NULL,\n  Procedures INTEGER NOT NULL,\n  Stay INTEGER NOT NULL,\n  DateUndergoes DATETIME NOT NULL,\n  Physician INTEGER NOT NULL,\n  AssistingNurse INTEGER,\n  PRIMARY KEY(Patient, Procedures, Stay, DateUndergoes),\n  CONSTRAINT fk_Undergoes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Undergoes_Procedures_Code FOREIGN KEY(Procedures) REFERENCES Procedures(Code),\n  CONSTRAINT fk_Undergoes_Stay_StayID FOREIGN KEY(Stay) REFERENCES Stay(StayID),\n  CONSTRAINT fk_Undergoes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Undergoes_Nurse_EmployeeID FOREIGN KEY(AssistingNurse) REFERENCES Nurse(EmployeeID)\n)",
+      "expected": [
+        [
+          "John Dorian"
+        ]
+      ]
+    },
+    {
+      "db_id": "customers_and_addresses",
+      "question": "How many orders have detail \"Second time\"?",
+      "reference_sql": "SELECT count(*) FROM customer_orders WHERE order_details  =  \"Second time\"",
+      "schema": "CREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`address_content` VARCHAR(80),\n`city` VARCHAR(50),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(50),\n`country` VARCHAR(50),\n`other_address_details` VARCHAR(255)\n)\nCREATE TABLE `Products` (\n`product_id` INTEGER PRIMARY KEY,\n`product_details` VARCHAR(255)\n)\nCREATE TABLE `Customers` (\n`customer_id` INTEGER PRIMARY KEY,\n`payment_method` VARCHAR(15) NOT NULL,\n`customer_name` VARCHAR(80),\n`date_became_customer` DATETIME,\n`other_customer_details` VARCHAR(255)\n)\nCREATE TABLE `Customer_Addresses` (\n`customer_id` INTEGER NOT NULL,\n`address_id` INTEGER NOT NULL,\n`date_address_from` DATETIME NOT NULL,\n`address_type` VARCHAR(15) NOT NULL,\n`date_address_to` DATETIME,\nFOREIGN KEY (`address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Contact_Channels` (\n`customer_id` INTEGER NOT NULL,\n`channel_code` VARCHAR(15) NOT NULL,\n`active_from_date` DATETIME NOT NULL,\n`active_to_date` DATETIME,\n`contact_number` VARCHAR(50) NOT NULL,\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Orders` (\n`order_id` INTEGER PRIMARY KEY,\n`customer_id` INTEGER NOT NULL,\n`order_status` VARCHAR(15) NOT NULL,\n`order_date` DATETIME,\n`order_details` VARCHAR(255),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Order_Items` (\n`order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\n`order_quantity` VARCHAR(15),\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`order_id` ) REFERENCES `Customer_Orders`(`order_id` )\n)",
+      "expected": [
+        [
+          5
+        ]
+      ]
+    },
+    {
+      "db_id": "hospital_1",
+      "question": "Find the physician who prescribed the highest dose. What is his or her name?",
+      "reference_sql": "SELECT T1.name FROM physician AS T1 JOIN prescribes AS T2 ON T1.employeeid = T2.physician ORDER BY T2.dose DESC LIMIT 1",
+      "schema": "CREATE TABLE Physician (\n  EmployeeID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  SSN INTEGER NOT NULL,\n  CONSTRAINT pk_physician PRIMARY KEY(EmployeeID)\n)\nCREATE TABLE Department (\n  DepartmentID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Head INTEGER NOT NULL,\n  CONSTRAINT pk_Department PRIMARY KEY(DepartmentID),\n  CONSTRAINT fk_Department_Physician_EmployeeID FOREIGN KEY(Head) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Affiliated_With (\n  Physician INTEGER NOT NULL,\n  Department INTEGER NOT NULL,\n  PrimaryAffiliation BOOLEAN NOT NULL,\n  CONSTRAINT fk_Affiliated_With_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Affiliated_With_Department_DepartmentID FOREIGN KEY(Department) REFERENCES Department(DepartmentID),\n  PRIMARY KEY(Physician, Department)\n)\nCREATE TABLE Procedures (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Cost REAL NOT NULL\n)\nCREATE TABLE Trained_In (\n  Physician INTEGER NOT NULL,\n  Treatment INTEGER NOT NULL,\n  CertificationDate DATETIME NOT NULL,\n  CertificationExpires DATETIME NOT NULL,\n  CONSTRAINT fk_Trained_In_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Trained_In_Procedures_Code FOREIGN KEY(Treatment) REFERENCES Procedures(Code),\n  PRIMARY KEY(Physician, Treatment)\n)\nCREATE TABLE Patient (\n  SSN INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Address VARCHAR(30) NOT NULL,\n  Phone VARCHAR(30) NOT NULL,\n  InsuranceID INTEGER NOT NULL,\n  PCP INTEGER NOT NULL,\n  CONSTRAINT fk_Patient_Physician_EmployeeID FOREIGN KEY(PCP) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Nurse (\n  EmployeeID INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  Registered BOOLEAN NOT NULL,\n  SSN INTEGER NOT NULL\n)\nCREATE TABLE Appointment (\n  AppointmentID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,    \n  PrepNurse INTEGER,\n  Physician INTEGER NOT NULL,\n  Start DATETIME NOT NULL,\n  End DATETIME NOT NULL,\n  ExaminationRoom TEXT NOT NULL,\n  CONSTRAINT fk_Appointment_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Appointment_Nurse_EmployeeID FOREIGN KEY(PrepNurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_Appointment_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Medication (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Brand VARCHAR(30) NOT NULL,\n  Description VARCHAR(30) NOT NULL\n)\nCREATE TABLE Prescribes (\n  Physician INTEGER NOT NULL,\n  Patient INTEGER NOT NULL, \n  Medication INTEGER NOT NULL, \n  Date DATETIME NOT NULL,\n  Appointment INTEGER,  \n  Dose VARCHAR(30) NOT NULL,\n  PRIMARY KEY(Physician, Patient, Medication, Date),\n  CONSTRAINT fk_Prescribes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Prescribes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Prescribes_Medication_Code FOREIGN KEY(Medication) REFERENCES Medication(Code),\n  CONSTRAINT fk_Prescribes_Appointment_AppointmentID FOREIGN KEY(Appointment) REFERENCES Appointment(AppointmentID)\n)\nCREATE TABLE Block (\n  BlockFloor INTEGER NOT NULL,\n  BlockCode INTEGER NOT NULL,\n  PRIMARY KEY(BlockFloor, BlockCode)\n)\nCREATE TABLE Room (\n  RoomNumber INTEGER PRIMARY KEY NOT NULL,\n  RoomType VARCHAR(30) NOT NULL,\n  BlockFloor INTEGER NOT NULL,  \n  BlockCode INTEGER NOT NULL,  \n  Unavailable BOOLEAN NOT NULL,\n  CONSTRAINT fk_Room_Block_PK FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode)\n)\nCREATE TABLE On_Call (\n  Nurse INTEGER NOT NULL,\n  BlockFloor INTEGER NOT NULL, \n  BlockCode INTEGER NOT NULL,\n  OnCallStart DATETIME NOT NULL,\n  OnCallEnd DATETIME NOT NULL,\n  PRIMARY KEY(Nurse, BlockFloor, BlockCode, OnCallStart, OnCallEnd),\n  CONSTRAINT fk_OnCall_Nurse_EmployeeID FOREIGN KEY(Nurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_OnCall_Block_Floor FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode) \n)\nCREATE TABLE Stay (\n  StayID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,\n  Room INTEGER NOT NULL,\n  StayStart DATETIME NOT NULL,\n  StayEnd DATETIME NOT NULL,\n  CONSTRAINT fk_Stay_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Stay_Room_Number FOREIGN KEY(Room) REFERENCES Room(RoomNumber)\n)\nCREATE TABLE Undergoes (\n  Patient INTEGER NOT NULL,\n  Procedures INTEGER NOT NULL,\n  Stay INTEGER NOT NULL,\n  DateUndergoes DATETIME NOT NULL,\n  Physician INTEGER NOT NULL,\n  AssistingNurse INTEGER,\n  PRIMARY KEY(Patient, Procedures, Stay, DateUndergoes),\n  CONSTRAINT fk_Undergoes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Undergoes_Procedures_Code FOREIGN KEY(Procedures) REFERENCES Procedures(Code),\n  CONSTRAINT fk_Undergoes_Stay_StayID FOREIGN KEY(Stay) REFERENCES Stay(StayID),\n  CONSTRAINT fk_Undergoes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Undergoes_Nurse_EmployeeID FOREIGN KEY(AssistingNurse) REFERENCES Nurse(EmployeeID)\n)",
+      "expected": [
+        [
+          "John Dorian"
+        ]
+      ]
+    },
+    {
+      "db_id": "hospital_1",
+      "question": "What are the names of the physicians who have 'senior' in their titles.",
+      "reference_sql": "SELECT name FROM physician WHERE POSITION LIKE '%senior%'",
+      "schema": "CREATE TABLE Physician (\n  EmployeeID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  SSN INTEGER NOT NULL,\n  CONSTRAINT pk_physician PRIMARY KEY(EmployeeID)\n)\nCREATE TABLE Department (\n  DepartmentID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Head INTEGER NOT NULL,\n  CONSTRAINT pk_Department PRIMARY KEY(DepartmentID),\n  CONSTRAINT fk_Department_Physician_EmployeeID FOREIGN KEY(Head) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Affiliated_With (\n  Physician INTEGER NOT NULL,\n  Department INTEGER NOT NULL,\n  PrimaryAffiliation BOOLEAN NOT NULL,\n  CONSTRAINT fk_Affiliated_With_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Affiliated_With_Department_DepartmentID FOREIGN KEY(Department) REFERENCES Department(DepartmentID),\n  PRIMARY KEY(Physician, Department)\n)\nCREATE TABLE Procedures (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Cost REAL NOT NULL\n)\nCREATE TABLE Trained_In (\n  Physician INTEGER NOT NULL,\n  Treatment INTEGER NOT NULL,\n  CertificationDate DATETIME NOT NULL,\n  CertificationExpires DATETIME NOT NULL,\n  CONSTRAINT fk_Trained_In_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Trained_In_Procedures_Code FOREIGN KEY(Treatment) REFERENCES Procedures(Code),\n  PRIMARY KEY(Physician, Treatment)\n)\nCREATE TABLE Patient (\n  SSN INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Address VARCHAR(30) NOT NULL,\n  Phone VARCHAR(30) NOT NULL,\n  InsuranceID INTEGER NOT NULL,\n  PCP INTEGER NOT NULL,\n  CONSTRAINT fk_Patient_Physician_EmployeeID FOREIGN KEY(PCP) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Nurse (\n  EmployeeID INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  Registered BOOLEAN NOT NULL,\n  SSN INTEGER NOT NULL\n)\nCREATE TABLE Appointment (\n  AppointmentID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,    \n  PrepNurse INTEGER,\n  Physician INTEGER NOT NULL,\n  Start DATETIME NOT NULL,\n  End DATETIME NOT NULL,\n  ExaminationRoom TEXT NOT NULL,\n  CONSTRAINT fk_Appointment_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Appointment_Nurse_EmployeeID FOREIGN KEY(PrepNurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_Appointment_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Medication (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Brand VARCHAR(30) NOT NULL,\n  Description VARCHAR(30) NOT NULL\n)\nCREATE TABLE Prescribes (\n  Physician INTEGER NOT NULL,\n  Patient INTEGER NOT NULL, \n  Medication INTEGER NOT NULL, \n  Date DATETIME NOT NULL,\n  Appointment INTEGER,  \n  Dose VARCHAR(30) NOT NULL,\n  PRIMARY KEY(Physician, Patient, Medication, Date),\n  CONSTRAINT fk_Prescribes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Prescribes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Prescribes_Medication_Code FOREIGN KEY(Medication) REFERENCES Medication(Code),\n  CONSTRAINT fk_Prescribes_Appointment_AppointmentID FOREIGN KEY(Appointment) REFERENCES Appointment(AppointmentID)\n)\nCREATE TABLE Block (\n  BlockFloor INTEGER NOT NULL,\n  BlockCode INTEGER NOT NULL,\n  PRIMARY KEY(BlockFloor, BlockCode)\n)\nCREATE TABLE Room (\n  RoomNumber INTEGER PRIMARY KEY NOT NULL,\n  RoomType VARCHAR(30) NOT NULL,\n  BlockFloor INTEGER NOT NULL,  \n  BlockCode INTEGER NOT NULL,  \n  Unavailable BOOLEAN NOT NULL,\n  CONSTRAINT fk_Room_Block_PK FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode)\n)\nCREATE TABLE On_Call (\n  Nurse INTEGER NOT NULL,\n  BlockFloor INTEGER NOT NULL, \n  BlockCode INTEGER NOT NULL,\n  OnCallStart DATETIME NOT NULL,\n  OnCallEnd DATETIME NOT NULL,\n  PRIMARY KEY(Nurse, BlockFloor, BlockCode, OnCallStart, OnCallEnd),\n  CONSTRAINT fk_OnCall_Nurse_EmployeeID FOREIGN KEY(Nurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_OnCall_Block_Floor FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode) \n)\nCREATE TABLE Stay (\n  StayID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,\n  Room INTEGER NOT NULL,\n  StayStart DATETIME NOT NULL,\n  StayEnd DATETIME NOT NULL,\n  CONSTRAINT fk_Stay_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Stay_Room_Number FOREIGN KEY(Room) REFERENCES Room(RoomNumber)\n)\nCREATE TABLE Undergoes (\n  Patient INTEGER NOT NULL,\n  Procedures INTEGER NOT NULL,\n  Stay INTEGER NOT NULL,\n  DateUndergoes DATETIME NOT NULL,\n  Physician INTEGER NOT NULL,\n  AssistingNurse INTEGER,\n  PRIMARY KEY(Patient, Procedures, Stay, DateUndergoes),\n  CONSTRAINT fk_Undergoes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Undergoes_Procedures_Code FOREIGN KEY(Procedures) REFERENCES Procedures(Code),\n  CONSTRAINT fk_Undergoes_Stay_StayID FOREIGN KEY(Stay) REFERENCES Stay(StayID),\n  CONSTRAINT fk_Undergoes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Undergoes_Nurse_EmployeeID FOREIGN KEY(AssistingNurse) REFERENCES Nurse(EmployeeID)\n)",
+      "expected": [
+        [
+          "Percival Cox"
+        ]
+      ]
+    },
+    {
+      "db_id": "customers_and_addresses",
+      "question": "Tell me the number of orders with \"Second time\" as order detail.",
+      "reference_sql": "SELECT count(*) FROM customer_orders WHERE order_details  =  \"Second time\"",
+      "schema": "CREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`address_content` VARCHAR(80),\n`city` VARCHAR(50),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(50),\n`country` VARCHAR(50),\n`other_address_details` VARCHAR(255)\n)\nCREATE TABLE `Products` (\n`product_id` INTEGER PRIMARY KEY,\n`product_details` VARCHAR(255)\n)\nCREATE TABLE `Customers` (\n`customer_id` INTEGER PRIMARY KEY,\n`payment_method` VARCHAR(15) NOT NULL,\n`customer_name` VARCHAR(80),\n`date_became_customer` DATETIME,\n`other_customer_details` VARCHAR(255)\n)\nCREATE TABLE `Customer_Addresses` (\n`customer_id` INTEGER NOT NULL,\n`address_id` INTEGER NOT NULL,\n`date_address_from` DATETIME NOT NULL,\n`address_type` VARCHAR(15) NOT NULL,\n`date_address_to` DATETIME,\nFOREIGN KEY (`address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Contact_Channels` (\n`customer_id` INTEGER NOT NULL,\n`channel_code` VARCHAR(15) NOT NULL,\n`active_from_date` DATETIME NOT NULL,\n`active_to_date` DATETIME,\n`contact_number` VARCHAR(50) NOT NULL,\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Customer_Orders` (\n`order_id` INTEGER PRIMARY KEY,\n`customer_id` INTEGER NOT NULL,\n`order_status` VARCHAR(15) NOT NULL,\n`order_date` DATETIME,\n`order_details` VARCHAR(255),\nFOREIGN KEY (`customer_id` ) REFERENCES `Customers`(`customer_id` )\n)\nCREATE TABLE `Order_Items` (\n`order_id` INTEGER NOT NULL,\n`product_id` INTEGER NOT NULL,\n`order_quantity` VARCHAR(15),\nFOREIGN KEY (`product_id` ) REFERENCES `Products`(`product_id` ),\nFOREIGN KEY (`order_id` ) REFERENCES `Customer_Orders`(`order_id` )\n)",
+      "expected": [
+        [
+          5
+        ]
+      ]
+    },
+    {
+      "db_id": "hospital_1",
+      "question": "What are the names of procedures physician John Wen was trained in?",
+      "reference_sql": "SELECT T3.name FROM physician AS T1 JOIN trained_in AS T2 ON T1.employeeid  =  T2.physician JOIN procedures AS T3 ON T3.code  =  T2.treatment WHERE T1.name  =  \"John Wen\"",
+      "schema": "CREATE TABLE Physician (\n  EmployeeID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  SSN INTEGER NOT NULL,\n  CONSTRAINT pk_physician PRIMARY KEY(EmployeeID)\n)\nCREATE TABLE Department (\n  DepartmentID INTEGER NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Head INTEGER NOT NULL,\n  CONSTRAINT pk_Department PRIMARY KEY(DepartmentID),\n  CONSTRAINT fk_Department_Physician_EmployeeID FOREIGN KEY(Head) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Affiliated_With (\n  Physician INTEGER NOT NULL,\n  Department INTEGER NOT NULL,\n  PrimaryAffiliation BOOLEAN NOT NULL,\n  CONSTRAINT fk_Affiliated_With_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Affiliated_With_Department_DepartmentID FOREIGN KEY(Department) REFERENCES Department(DepartmentID),\n  PRIMARY KEY(Physician, Department)\n)\nCREATE TABLE Procedures (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Cost REAL NOT NULL\n)\nCREATE TABLE Trained_In (\n  Physician INTEGER NOT NULL,\n  Treatment INTEGER NOT NULL,\n  CertificationDate DATETIME NOT NULL,\n  CertificationExpires DATETIME NOT NULL,\n  CONSTRAINT fk_Trained_In_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Trained_In_Procedures_Code FOREIGN KEY(Treatment) REFERENCES Procedures(Code),\n  PRIMARY KEY(Physician, Treatment)\n)\nCREATE TABLE Patient (\n  SSN INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Address VARCHAR(30) NOT NULL,\n  Phone VARCHAR(30) NOT NULL,\n  InsuranceID INTEGER NOT NULL,\n  PCP INTEGER NOT NULL,\n  CONSTRAINT fk_Patient_Physician_EmployeeID FOREIGN KEY(PCP) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Nurse (\n  EmployeeID INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Position VARCHAR(30) NOT NULL,\n  Registered BOOLEAN NOT NULL,\n  SSN INTEGER NOT NULL\n)\nCREATE TABLE Appointment (\n  AppointmentID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,    \n  PrepNurse INTEGER,\n  Physician INTEGER NOT NULL,\n  Start DATETIME NOT NULL,\n  End DATETIME NOT NULL,\n  ExaminationRoom TEXT NOT NULL,\n  CONSTRAINT fk_Appointment_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Appointment_Nurse_EmployeeID FOREIGN KEY(PrepNurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_Appointment_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID)\n)\nCREATE TABLE Medication (\n  Code INTEGER PRIMARY KEY NOT NULL,\n  Name VARCHAR(30) NOT NULL,\n  Brand VARCHAR(30) NOT NULL,\n  Description VARCHAR(30) NOT NULL\n)\nCREATE TABLE Prescribes (\n  Physician INTEGER NOT NULL,\n  Patient INTEGER NOT NULL, \n  Medication INTEGER NOT NULL, \n  Date DATETIME NOT NULL,\n  Appointment INTEGER,  \n  Dose VARCHAR(30) NOT NULL,\n  PRIMARY KEY(Physician, Patient, Medication, Date),\n  CONSTRAINT fk_Prescribes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Prescribes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Prescribes_Medication_Code FOREIGN KEY(Medication) REFERENCES Medication(Code),\n  CONSTRAINT fk_Prescribes_Appointment_AppointmentID FOREIGN KEY(Appointment) REFERENCES Appointment(AppointmentID)\n)\nCREATE TABLE Block (\n  BlockFloor INTEGER NOT NULL,\n  BlockCode INTEGER NOT NULL,\n  PRIMARY KEY(BlockFloor, BlockCode)\n)\nCREATE TABLE Room (\n  RoomNumber INTEGER PRIMARY KEY NOT NULL,\n  RoomType VARCHAR(30) NOT NULL,\n  BlockFloor INTEGER NOT NULL,  \n  BlockCode INTEGER NOT NULL,  \n  Unavailable BOOLEAN NOT NULL,\n  CONSTRAINT fk_Room_Block_PK FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode)\n)\nCREATE TABLE On_Call (\n  Nurse INTEGER NOT NULL,\n  BlockFloor INTEGER NOT NULL, \n  BlockCode INTEGER NOT NULL,\n  OnCallStart DATETIME NOT NULL,\n  OnCallEnd DATETIME NOT NULL,\n  PRIMARY KEY(Nurse, BlockFloor, BlockCode, OnCallStart, OnCallEnd),\n  CONSTRAINT fk_OnCall_Nurse_EmployeeID FOREIGN KEY(Nurse) REFERENCES Nurse(EmployeeID),\n  CONSTRAINT fk_OnCall_Block_Floor FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block(BlockFloor, BlockCode) \n)\nCREATE TABLE Stay (\n  StayID INTEGER PRIMARY KEY NOT NULL,\n  Patient INTEGER NOT NULL,\n  Room INTEGER NOT NULL,\n  StayStart DATETIME NOT NULL,\n  StayEnd DATETIME NOT NULL,\n  CONSTRAINT fk_Stay_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Stay_Room_Number FOREIGN KEY(Room) REFERENCES Room(RoomNumber)\n)\nCREATE TABLE Undergoes (\n  Patient INTEGER NOT NULL,\n  Procedures INTEGER NOT NULL,\n  Stay INTEGER NOT NULL,\n  DateUndergoes DATETIME NOT NULL,\n  Physician INTEGER NOT NULL,\n  AssistingNurse INTEGER,\n  PRIMARY KEY(Patient, Procedures, Stay, DateUndergoes),\n  CONSTRAINT fk_Undergoes_Patient_SSN FOREIGN KEY(Patient) REFERENCES Patient(SSN),\n  CONSTRAINT fk_Undergoes_Procedures_Code FOREIGN KEY(Procedures) REFERENCES Procedures(Code),\n  CONSTRAINT fk_Undergoes_Stay_StayID FOREIGN KEY(Stay) REFERENCES Stay(StayID),\n  CONSTRAINT fk_Undergoes_Physician_EmployeeID FOREIGN KEY(Physician) REFERENCES Physician(EmployeeID),\n  CONSTRAINT fk_Undergoes_Nurse_EmployeeID FOREIGN KEY(AssistingNurse) REFERENCES Nurse(EmployeeID)\n)",
+      "expected": [
+        [
+          "Reverse Rhinopodoplasty"
+        ],
+        [
+          "Obtuse Pyloric Recombobulation"
+        ],
+        [
+          "Folded Demiophtalmectomy"
+        ],
+        [
+          "Complete Walletectomy"
+        ],
+        [
+          "Obfuscated Dermogastrotomy"
+        ],
+        [
+          "Reversible Pancreomyoplasty"
+        ],
+        [
+          "Follicular Demiectomy"
+        ]
+      ]
+    },
+    {
+      "db_id": "hr_1",
+      "question": "What is the first name and job id for all employees in the Finance department?",
+      "reference_sql": "SELECT T1.first_name ,  T1.job_id FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T2.department_name  =  'Finance'",
+      "schema": "CREATE TABLE `regions` (\n  `REGION_ID` decimal(5,0) NOT NULL,\n  `REGION_NAME` varchar(25) DEFAULT NULL,\n  PRIMARY KEY (`REGION_ID`)\n)\nCREATE TABLE `countries` (\n  `COUNTRY_ID` varchar(2) NOT NULL,\n  `COUNTRY_NAME` varchar(40) DEFAULT NULL,\n  `REGION_ID` decimal(10,0) DEFAULT NULL,\n  PRIMARY KEY (`COUNTRY_ID`),\n  FOREIGN KEY (`REGION_ID`) REFERENCES regions (`REGION_ID`)\n)\nCREATE TABLE `departments` (\n  `DEPARTMENT_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `DEPARTMENT_NAME` varchar(30) NOT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `LOCATION_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`DEPARTMENT_ID`)\n)\nCREATE TABLE `jobs` (\n  `JOB_ID` varchar(10) NOT NULL DEFAULT '',\n  `JOB_TITLE` varchar(35) NOT NULL,\n  `MIN_SALARY` decimal(6,0) DEFAULT NULL,\n  `MAX_SALARY` decimal(6,0) DEFAULT NULL,\n  PRIMARY KEY (`JOB_ID`)\n)\nCREATE TABLE `employees` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL DEFAULT '0',\n  `FIRST_NAME` varchar(20) DEFAULT NULL,\n  `LAST_NAME` varchar(25) NOT NULL,\n  `EMAIL` varchar(25) NOT NULL,\n  `PHONE_NUMBER` varchar(20) DEFAULT NULL,\n  `HIRE_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `SALARY` decimal(8,2) DEFAULT NULL,\n  `COMMISSION_PCT` decimal(2,2) DEFAULT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `job_history` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL,\n  `START_DATE` date NOT NULL,\n  `END_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`,`START_DATE`),\n  FOREIGN KEY (`EMPLOYEE_ID`) REFERENCES employees(`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `locations` (\n  `LOCATION_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `STREET_ADDRESS` varchar(40) DEFAULT NULL,\n  `POSTAL_CODE` varchar(12) DEFAULT NULL,\n  `CITY` varchar(30) NOT NULL,\n  `STATE_PROVINCE` varchar(25) DEFAULT NULL,\n  `COUNTRY_ID` varchar(2) DEFAULT NULL,\n  PRIMARY KEY (`LOCATION_ID`),\n  FOREIGN KEY (`COUNTRY_ID`) REFERENCES countries(`COUNTRY_ID`)\n)",
+      "expected": [
+        [
+          "Nancy",
+          "FI_MGR"
+        ],
+        [
+          "Daniel",
+          "FI_ACCOUNT"
+        ],
+        [
+          "John",
+          "FI_ACCOUNT"
+        ],
+        [
+          "Ismael",
+          "FI_ACCOUNT"
+        ],
+        [
+          "Jose Manuel",
+          "FI_ACCOUNT"
+        ],
+        [
+          "Luis",
+          "FI_ACCOUNT"
+        ]
+      ]
+    },
+    {
+      "db_id": "hr_1",
+      "question": "What are the department names, cities, and state provinces for each department?",
+      "reference_sql": "SELECT T1.department_name ,  T2.city ,  T2.state_province FROM departments AS T1 JOIN locations AS T2 ON T2.location_id  =  T1.location_id",
+      "schema": "CREATE TABLE `regions` (\n  `REGION_ID` decimal(5,0) NOT NULL,\n  `REGION_NAME` varchar(25) DEFAULT NULL,\n  PRIMARY KEY (`REGION_ID`)\n)\nCREATE TABLE `countries` (\n  `COUNTRY_ID` varchar(2) NOT NULL,\n  `COUNTRY_NAME` varchar(40) DEFAULT NULL,\n  `REGION_ID` decimal(10,0) DEFAULT NULL,\n  PRIMARY KEY (`COUNTRY_ID`),\n  FOREIGN KEY (`REGION_ID`) REFERENCES regions (`REGION_ID`)\n)\nCREATE TABLE `departments` (\n  `DEPARTMENT_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `DEPARTMENT_NAME` varchar(30) NOT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `LOCATION_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`DEPARTMENT_ID`)\n)\nCREATE TABLE `jobs` (\n  `JOB_ID` varchar(10) NOT NULL DEFAULT '',\n  `JOB_TITLE` varchar(35) NOT NULL,\n  `MIN_SALARY` decimal(6,0) DEFAULT NULL,\n  `MAX_SALARY` decimal(6,0) DEFAULT NULL,\n  PRIMARY KEY (`JOB_ID`)\n)\nCREATE TABLE `employees` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL DEFAULT '0',\n  `FIRST_NAME` varchar(20) DEFAULT NULL,\n  `LAST_NAME` varchar(25) NOT NULL,\n  `EMAIL` varchar(25) NOT NULL,\n  `PHONE_NUMBER` varchar(20) DEFAULT NULL,\n  `HIRE_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `SALARY` decimal(8,2) DEFAULT NULL,\n  `COMMISSION_PCT` decimal(2,2) DEFAULT NULL,\n  `MANAGER_ID` decimal(6,0) DEFAULT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `job_history` (\n  `EMPLOYEE_ID` decimal(6,0) NOT NULL,\n  `START_DATE` date NOT NULL,\n  `END_DATE` date NOT NULL,\n  `JOB_ID` varchar(10) NOT NULL,\n  `DEPARTMENT_ID` decimal(4,0) DEFAULT NULL,\n  PRIMARY KEY (`EMPLOYEE_ID`,`START_DATE`),\n  FOREIGN KEY (`EMPLOYEE_ID`) REFERENCES employees(`EMPLOYEE_ID`),\n  FOREIGN KEY (`DEPARTMENT_ID`) REFERENCES departments(`DEPARTMENT_ID`),\n  FOREIGN KEY (`JOB_ID`) REFERENCES jobs(`JOB_ID`)\n)\nCREATE TABLE `locations` (\n  `LOCATION_ID` decimal(4,0) NOT NULL DEFAULT '0',\n  `STREET_ADDRESS` varchar(40) DEFAULT NULL,\n  `POSTAL_CODE` varchar(12) DEFAULT NULL,\n  `CITY` varchar(30) NOT NULL,\n  `STATE_PROVINCE` varchar(25) DEFAULT NULL,\n  `COUNTRY_ID` varchar(2) DEFAULT NULL,\n  PRIMARY KEY (`LOCATION_ID`),\n  FOREIGN KEY (`COUNTRY_ID`) REFERENCES countries(`COUNTRY_ID`)\n)",
+      "expected": [
+        [
+          "Administration",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Marketing",
+          "Toronto",
+          "Ontario"
+        ],
+        [
+          "Purchasing",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Human Resources",
+          "London",
+          ""
+        ],
+        [
+          "Shipping",
+          "South San Francisco",
+          "California"
+        ],
+        [
+          "IT",
+          "Southlake",
+          "Texas"
+        ],
+        [
+          "Public Relations",
+          "Munich",
+          "Bavaria"
+        ],
+        [
+          "Sales",
+          "OX9 9ZB",
+          "Oxford"
+        ],
+        [
+          "Executive",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Finance",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Accounting",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Treasury",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Corporate Tax",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Control And Credit",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Shareholder Services",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Benefits",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Manufacturing",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Construction",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Contracting",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Operations",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "IT Support",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "NOC",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "IT Helpdesk",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Government Sales",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Retail Sales",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Recruiting",
+          "Seattle",
+          "Washington"
+        ],
+        [
+          "Payroll",
+          "Seattle",
+          "Washington"
+        ]
+      ]
+    }
+  ],
+  "shared_failures": [
+    {
+      "index": 2,
+      "failed_sql": "SELECT T1.T1 ,  T2.T2 FROM employees AS T1 JOIN departments AS T2 ON T1.DEPARTMENT_ID  =  T2.DEPARTMENT_ID WHERE T2.MANAGER_ID  =  T1.MANAGER_ID",
+      "error": "no such column: T1.T1"
+    },
+    {
+      "index": 8,
+      "failed_sql": "SELECT customer_name FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM customer_orders WHERE product_details LIKE '%Latte%')",
+      "error": "no such column: product_details"
+    },
+    {
+      "index": 9,
+      "failed_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code  =  T2.code WHERE T2.name  =  \"Thesisin\"",
+      "error": "no such column: T1.name"
+    },
+    {
+      "index": 10,
+      "failed_sql": "SELECT T1.first_name ,  T1.last_name ,  T2.hire_date FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T2.department_name  =  \"Clara\"",
+      "error": "no such column: T2.hire_date"
+    },
+    {
+      "index": 12,
+      "failed_sql": "SELECT customer_name ,  customer_id FROM customer_orders GROUP BY customer_id ORDER BY sum(order_quantity) DESC LIMIT 1",
+      "error": "no such column: customer_name"
+    },
+    {
+      "index": 19,
+      "failed_sql": "SELECT head FROM department ORDER BY count(*) DESC LIMIT 1",
+      "error": "misuse of aggregate: count()"
+    },
+    {
+      "index": 20,
+      "failed_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code  =  T2.code WHERE T2.name  =  \"Thesisin\"",
+      "error": "no such column: T1.name"
+    },
+    {
+      "index": 21,
+      "failed_sql": "SELECT T1.first_name ,  T1.last_name ,  T1.department_id FROM employees AS T1 JOIN countries AS T2 ON T1.cOUNTRY_ID  =  T2.cOUNTRY_ID JOIN regions AS T3 ON T2.region_id  =  T3.region_id WHERE T1.salary  =  (SELECT min(T2.salary) FROM employees AS T2)",
+      "error": "no such column: T1.cOUNTRY_ID"
+    },
+    {
+      "index": 22,
+      "failed_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient  =  T2.patient JOIN Medication AS T3 ON T1.medication  =  T3.code GROUP BY T1.patient ORDER BY T1.dose DESC LIMIT 1",
+      "error": "no such column: T1.name"
+    },
+    {
+      "index": 23,
+      "failed_sql": "SELECT count(*) FROM order_items WHERE order_details LIKE \"%Second time%\"",
+      "error": "no such column: order_details"
+    },
+    {
+      "index": 24,
+      "failed_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient  =  T2.patient JOIN Nurse AS T3 ON T1.medication  =  T3.ssn GROUP BY T1.medication ORDER BY T1.dose DESC LIMIT 1",
+      "error": "no such column: T1.name"
+    },
+    {
+      "index": 26,
+      "failed_sql": "SELECT count(*) FROM order_items WHERE order_details LIKE \"%Second time%\"",
+      "error": "no such column: order_details"
+    },
+    {
+      "index": 29,
+      "failed_sql": "SELECT T2.T2.DEPARTMENT_NAME ,  T1.T1.CITY ,  T1.T1.STATE_PROVINCE FROM departments AS T1 JOIN locations AS T2 ON T1.T1.DEPARTMENT_ID  =  T2.T1.LOCATION_ID",
+      "error": "no such column: T2.T2.DEPARTMENT_NAME"
+    }
+  ],
+  "models": {
+    "v4": {
+      "first_attempts": [
+        {
+          "sql": "SELECT T1.name ,  count(*) FROM Physician AS T1 JOIN Appointment AS T2 ON T1.employeeid  =  T2.patient GROUP BY T1.name",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME ,  JOB_ID FROM EMPLOYEES WHERE DEPARTMENT_ID  =  1",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT T1.T1 ,  T2.T2 FROM employees AS T1 JOIN departments AS T2 ON T1.DEPARTMENT_ID  =  T2.DEPARTMENT_ID WHERE T2.MANAGER_ID  =  T1.MANAGER_ID",
+          "passed": false,
+          "error": "no such column: T1.T1"
+        },
+        {
+          "sql": "SELECT * FROM employees ORDER BY SALARY DESC",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT avg(cost) FROM Trained_in AS T1 JOIN Procedures AS T2 ON T1.Treatment  =  T2.code WHERE T1.Physician  =  1000",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT product_details FROM products",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT DISTINCT payment_method FROM customers",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME ,  DEPARTMENT_ID FROM employees WHERE LAST_NAME  =  'McEwen'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT customer_name FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM customer_orders WHERE product_details LIKE '%Latte%')",
+          "passed": false,
+          "error": "no such column: product_details"
+        },
+        {
+          "sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code  =  T2.code WHERE T2.name  =  \"Thesisin\"",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "sql": "SELECT T1.first_name ,  T1.last_name ,  T2.hire_date FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T2.department_name  =  \"Clara\"",
+          "passed": false,
+          "error": "no such column: T2.hire_date"
+        },
+        {
+          "sql": "SELECT channel_code FROM customer_contact_channels WHERE customer_id  =  (SELECT customer_id FROM customers WHERE customer_name  =  \"Tillman Ernser\")",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT customer_name ,  customer_id FROM customer_orders GROUP BY customer_id ORDER BY sum(order_quantity) DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: customer_name"
+        },
+        {
+          "sql": "SELECT truck_licence_number FROM Trucks ORDER BY truck_licence_number",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT city FROM addresses",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT appointmentid FROM appointment ORDER BY start DESC LIMIT 1",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT EMPLOYEE_ID ,  FIRST_NAME ,  LAST_NAME FROM employees WHERE FIRST_NAME LIKE 'T%' OR LAST_NAME LIKE 'T%'",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT customer_id ,  customer_details FROM customers WHERE customer_id  =  (SELECT customer_id FROM customers GROUP BY customer_id HAVING count(*)  >=  3)",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT address_content FROM Addresses WHERE city  =  \"East Julianaside, Texas\" OR city  =  \"Gleasonmouth, Arizona\"",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT head FROM department ORDER BY count(*) DESC LIMIT 1",
+          "passed": false,
+          "error": "misuse of aggregate: count()"
+        },
+        {
+          "sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code  =  T2.code WHERE T2.name  =  \"Thesisin\"",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "sql": "SELECT T1.first_name ,  T1.last_name ,  T1.department_id FROM employees AS T1 JOIN countries AS T2 ON T1.cOUNTRY_ID  =  T2.cOUNTRY_ID JOIN regions AS T3 ON T2.region_id  =  T3.region_id WHERE T1.salary  =  (SELECT min(T2.salary) FROM employees AS T2)",
+          "passed": false,
+          "error": "no such column: T1.cOUNTRY_ID"
+        },
+        {
+          "sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient  =  T2.patient JOIN Medication AS T3 ON T1.medication  =  T3.code GROUP BY T1.patient ORDER BY T1.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "sql": "SELECT count(*) FROM order_items WHERE order_details LIKE \"%Second time%\"",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient  =  T2.patient JOIN Nurse AS T3 ON T1.medication  =  T3.ssn GROUP BY T1.medication ORDER BY T1.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "sql": "SELECT Name FROM Physician WHERE Position LIKE '%senior%'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT count(*) FROM order_items WHERE order_details LIKE \"%Second time%\"",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "sql": "SELECT name FROM trained_in AS t1 JOIN procedures AS t2 ON t1.treatment  =  t2.code WHERE t1.physician  =  10000",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME ,  JOB_ID FROM EMPLOYEES WHERE DEPARTMENT_ID  =  1",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT T2.T2.DEPARTMENT_NAME ,  T1.T1.CITY ,  T1.T1.STATE_PROVINCE FROM departments AS T1 JOIN locations AS T2 ON T1.T1.DEPARTMENT_ID  =  T2.T1.LOCATION_ID",
+          "passed": false,
+          "error": "no such column: T2.T2.DEPARTMENT_NAME"
+        }
+      ],
+      "recoveries": [
+        {
+          "index": 2,
+          "corrected_sql": "SELECT T1.T1 ,  T2.T2 FROM employees AS T1 JOIN departments AS T2 ON T1.DEPARTMENT_ID  =  T2.DEPARTMENT_ID WHERE T2.MANAGER_ID  =  T1.MANAGER_ID",
+          "passed": false,
+          "error": "no such column: T1.T1"
+        },
+        {
+          "index": 8,
+          "corrected_sql": "SELECT customer_name FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM customer_orders WHERE product_details LIKE '%Latte%')",
+          "passed": false,
+          "error": "no such column: product_details"
+        },
+        {
+          "index": 9,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code  =  T2.code WHERE T2.name  =  \"Thesisin\"",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 10,
+          "corrected_sql": "SELECT T1.first_name ,  T1.last_name ,  T2.hire_date FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T2.department_name  =  \"Clara\"",
+          "passed": false,
+          "error": "no such column: T2.hire_date"
+        },
+        {
+          "index": 12,
+          "corrected_sql": "SELECT customer_id FROM customer_orders GROUP BY customer_id ORDER BY sum(order_quantity) DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: order_quantity"
+        },
+        {
+          "index": 19,
+          "corrected_sql": "SELECT head FROM department GROUP BY head ORDER BY count(*) DESC LIMIT 1",
+          "passed": false,
+          "error": null
+        },
+        {
+          "index": 20,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code  =  T2.code WHERE T2.name  =  \"Thesisin\"",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 21,
+          "corrected_sql": "SELECT T1.first_name ,  T1.last_name ,  T1.department_id FROM employees AS T1 JOIN countries AS T2 ON T1.cOUNTRY_ID  =  T2.cOUNTRY_ID JOIN regions AS T3 ON T2.region_id  =  T3.region_id WHERE T1.salary  =  (SELECT min(T2.salary) FROM employees AS T2)",
+          "passed": false,
+          "error": "no such column: T1.cOUNTRY_ID"
+        },
+        {
+          "index": 22,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient  =  T2.patient JOIN Medication AS T3 ON T1.medication  =  T3.code GROUP BY T1.patient ORDER BY T1.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 23,
+          "corrected_sql": "SELECT count(*) FROM order_items WHERE order_details LIKE \"%Second time%\"",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "index": 24,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient  =  T2.patient JOIN Nurse AS T3 ON T1.medication  =  T3.ssn GROUP BY T1.medication ORDER BY T1.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 26,
+          "corrected_sql": "SELECT count(*) FROM order_items WHERE order_details LIKE \"%Second time%\"",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "index": 29,
+          "corrected_sql": "SELECT T2.T2.DEPARTMENT_NAME ,  T1.T1.CITY ,  T1.T1.STATE_PROVINCE FROM departments AS T1 JOIN locations AS T2 ON T1.T1.DEPARTMENT_ID  =  T2.T1.LOCATION_ID",
+          "passed": false,
+          "error": "no such column: T2.T2.DEPARTMENT_NAME"
+        }
+      ]
+    },
+    "e32": {
+      "first_attempts": [
+        {
+          "sql": "SELECT N1.Name ,  COUNT(*) FROM Physician AS N1 JOIN Appointment AS N2 ON N1.EmployeeID = N2.Physician GROUP BY N1.Name",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME ,  JOB_ID FROM employees WHERE DEPARTMENT_ID = 10",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT e.first_name , e.last_name FROM employees AS e JOIN departments AS d ON e.department_id = d.department_id WHERE d.manager_id = 0",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT e.first_name , e.last_name , e.salary FROM employees AS e JOIN job_history AS j ON e.employee_id = j.employee_id ORDER BY e.salary DESC",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT avg(cost) FROM Trained_In AS T1 JOIN Procedures AS T2 ON T1.Treatment = T2.code WHERE T1.Physician = 10000",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT product_details FROM Products",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT payment_method FROM customers GROUP BY payment_method HAVING count(*) > 1",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME ,  DEPARTMENT_ID FROM employees WHERE LAST_NAME = 'McEwen'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT customer_name FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM customer_orders WHERE product_details = 'Latte')",
+          "passed": false,
+          "error": "no such column: product_details"
+        },
+        {
+          "sql": "SELECT T1.Name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.Medication = T2.Code WHERE T2.Description = 'Thesisin'",
+          "passed": false,
+          "error": "no such column: T1.Name"
+        },
+        {
+          "sql": "SELECT e.first_name , e.last_name , t.hire_date FROM employees AS e JOIN departments AS t ON e.department_id = t.department_id WHERE t.department_name = 'Clara'",
+          "passed": false,
+          "error": "no such column: t.hire_date"
+        },
+        {
+          "sql": "SELECT channel_code FROM customer_contact_channels WHERE customer_id = (SELECT customer_id FROM customers WHERE customer_name = \"Tillman Ernser\")",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT customer_name ,  customer_id FROM customer_orders GROUP BY customer_id ORDER BY sum(order_quantity) DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: customer_name"
+        },
+        {
+          "sql": "SELECT truck_licence_number FROM Trucks ORDER BY truck_licence_number",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT city FROM Addresses",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT appointmentid FROM appointment ORDER BY start DESC LIMIT 1",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT e.emp_no , e.first_name , e.last_name FROM employees AS e JOIN departments AS d ON e.department_id = d.department_id WHERE d.department_name LIKE '%T%'",
+          "passed": false,
+          "error": "no such column: e.emp_no"
+        },
+        {
+          "sql": "SELECT customer_id ,  customer_details FROM Customers WHERE customer_id IN (SELECT customer_id FROM Customers GROUP BY customer_id HAVING COUNT(*) >= 3)",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT * FROM Addresses WHERE city = 'East Julianaside, Texas' OR city = 'Gleasonmouth, Arizona'",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT T1.Head FROM Department AS T1 JOIN Physician AS T2 ON T1.Head = T2.EmployeeID ORDER BY T2.EmployeeID LIMIT 1",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT T1.Name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.Medication = T2.Code WHERE T2.Description = 'Thesisin'",
+          "passed": false,
+          "error": "no such column: T1.Name"
+        },
+        {
+          "sql": "SELECT t1.first_name , t1.last_name , t1.department_id FROM employees t1 JOIN countries t2 ON t1.cOUNTRY_ID = t2.cOUNTRY_ID JOIN regions t3 ON t2.region_id = t3.region_id WHERE t1.salary  =  (SELECT min(t1.salary) FROM employees t1)",
+          "passed": false,
+          "error": "no such column: t1.cOUNTRY_ID"
+        },
+        {
+          "sql": "SELECT n.name FROM prescribes AS p JOIN medication AS m ON p.medication = m.code JOIN patient AS t ON p.patient = t.patient JOIN nurse AS n ON p.nurse = n.employee WHERE p.dose = (SELECT max(dose) FROM prescribes)",
+          "passed": false,
+          "error": "no such column: t.patient"
+        },
+        {
+          "sql": "SELECT count(*) FROM Customer_Orders AS T1 JOIN Order_Items AS T2 ON T1.order_id = T2.order_id WHERE T2.order_details LIKE \"%Second time%\"",
+          "passed": false,
+          "error": "no such column: T2.order_details"
+        },
+        {
+          "sql": "SELECT p.name ,  m.dose FROM Prescribes AS p JOIN Medication AS m ON p.medication_code = m.code JOIN Physician AS p2 ON p.physician_id = p2.employee_id ORDER BY p.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: p.name"
+        },
+        {
+          "sql": "SELECT Name FROM Physician WHERE Position LIKE '%senior%'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT count(*) FROM Order_Items WHERE order_details = \"Second time\"",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "sql": "SELECT T1.name FROM Trained_In AS T1 JOIN Procedures AS T2 ON T1.Treatment = T2.code WHERE T1.Physician = 10000",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "sql": "SELECT FIRST_NAME ,  JOB_ID FROM employees WHERE DEPARTMENT_ID = 10",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT d.TITLE ,  t.TITLE ,  t.TITLE FROM departments AS t JOIN countries AS c ON t.DEPARTMENT_ID = c.TEMPLATE_ID JOIN jobs AS j ON t.DEPARTMENT_ID = j.TEMPLATE_ID JOIN regions AS r ON c.TEMPLATE_ID = r.TEMPLATE_ID JOIN countries AS c2 ON c.TEMPLATE_ID = c2.TEMPLATE_ID JOIN departments AS d ON c.TEMPLATE_ID = d.TEMPLATE_ID JOIN jobs AS j2 ON d.TEMPLATE_ID = j2.TEMPLATE_ID JOIN regions AS r2 ON c2.TEMPLATE_ID = r2.TEMPLATE_ID JOIN",
+          "passed": false,
+          "error": "incomplete input"
+        }
+      ],
+      "recoveries": [
+        {
+          "index": 2,
+          "corrected_sql": "SELECT T1.T1 ,  T2.T2 FROM employees AS T1 JOIN departments AS T2 ON T1.DEPARTMENT_ID  =  T2.DEPARTMENT_ID WHERE T2.MANAGER_ID  =  T1.MANAGER_ID",
+          "passed": false,
+          "error": "no such column: T1.T1"
+        },
+        {
+          "index": 8,
+          "corrected_sql": "SELECT customer_name FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM customer_orders WHERE product_details LIKE '%Latte%')",
+          "passed": false,
+          "error": "no such column: product_details"
+        },
+        {
+          "index": 9,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code  =  T2.code WHERE T2.name  =  \"Thesisin\"",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 10,
+          "corrected_sql": "SELECT T1.first_name ,  T1.last_name ,  T2.hire_date FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T2.department_name  =  \"Clara\"",
+          "passed": false,
+          "error": "no such column: T2.hire_date"
+        },
+        {
+          "index": 12,
+          "corrected_sql": "SELECT customer_name ,  customer_id FROM customer_orders GROUP BY customer_id ORDER BY sum(order_quantity) DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: customer_name"
+        },
+        {
+          "index": 19,
+          "corrected_sql": "SELECT head FROM department GROUP BY head ORDER BY count(*) DESC LIMIT 1",
+          "passed": false,
+          "error": null
+        },
+        {
+          "index": 20,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code  =  T2.code WHERE T2.name  =  \"Thesisin\"",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 21,
+          "corrected_sql": "SELECT T1.first_name ,  T1.last_name ,  T1.department_id FROM employees AS T1 JOIN countries AS T2 ON T1.cOUNTRY_ID  =  T2.cOUNTRY_ID JOIN regions AS T3 ON T2.region_id  =  T3.region_id WHERE T1.salary  =  (SELECT min(T2.salary) FROM employees AS T2)",
+          "passed": false,
+          "error": "no such column: T1.cOUNTRY_ID"
+        },
+        {
+          "index": 22,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient  =  T2.patient JOIN Medication AS T3 ON T1.medication  =  T3.code GROUP BY T1.patient ORDER BY T1.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 23,
+          "corrected_sql": "SELECT count(*) FROM order_items WHERE order_details LIKE \"%Second time%\"",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "index": 24,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient  =  T2.patient JOIN Nurse AS T3 ON T1.medication  =  T3.ssn GROUP BY T1.medication ORDER BY T1.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 26,
+          "corrected_sql": "SELECT count(*) FROM order_items WHERE order_details LIKE \"%Second time%\"",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "index": 29,
+          "corrected_sql": "SELECT T2.T2.DEPARTMENT_NAME ,  T1.T1.CITY ,  T1.T1.STATE_PROVINCE FROM departments AS T1 JOIN locations AS T2 ON T1.T1.DEPARTMENT_ID  =  T2.T1.LOCATION_ID",
+          "passed": false,
+          "error": "no such column: T2.T2.DEPARTMENT_NAME"
+        }
+      ]
+    },
+    "e36": {
+      "first_attempts": [
+        {
+          "sql": "SELECT N1.Name, COUNT(*) FROM Physician AS N1 JOIN Appointment AS N2 ON N1.EmployeeID = N2.Physician GROUP BY N1.Name",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME, JOB_ID FROM employees WHERE DEPARTMENT_ID = 'Finance'",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT e.first_name, e.last_name FROM employees AS e JOIN departments AS d ON e.department_id = d.department_id WHERE d.manager_id = 0",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT e.first_name, e.last_name, e.salary FROM employees e JOIN jobs j ON e.job_id = j.job_id ORDER BY e.salary DESC",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT avg(cost) FROM Trained_In AS T1 JOIN Procedures AS P ON T1.Treatment = P.code WHERE T1.Physician = 10000",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT product_details FROM Products",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT payment_method FROM Customers GROUP BY payment_method HAVING count(*) > 1",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME, DEPARTMENT_ID FROM employees WHERE LAST_NAME = 'McEwen'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT customer_name FROM Customers WHERE customer_id NOT IN (SELECT customer_id FROM Customer_Orders WHERE product_details = 'Latte')",
+          "passed": false,
+          "error": "no such column: product_details"
+        },
+        {
+          "sql": "SELECT n.name FROM Prescribes AS p JOIN Medication AS m ON p.medication = m.code JOIN Physician AS t ON p.physician = t.employeeid WHERE m.description = 'Thesisin'",
+          "passed": false,
+          "error": "no such column: n.name"
+        },
+        {
+          "sql": "SELECT e.first_name, e.last_name, e.hire_date FROM employees AS e JOIN departments AS d ON e.department_id = d.department_id WHERE d.department_name = 'Clara'",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT channel_code FROM Customer_Contact_Channels WHERE customer_id = (SELECT customer_id FROM Customers WHERE customer_name = \"Tillman Ernser\")",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT customer_name, customer_id FROM Customer_Orders GROUP BY customer_id ORDER BY sum(order_quantity) DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: customer_name"
+        },
+        {
+          "sql": "SELECT truck_licence_number FROM Trucks ORDER BY truck_licence_number",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT city FROM Addresses",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT appointmentid FROM appointment ORDER BY start DESC LIMIT 1",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT e.emp_no, e.first_name, e.last_name FROM employees AS e JOIN departments AS d ON e.department_id = d.department_id WHERE d.department_name LIKE '%T%'",
+          "passed": false,
+          "error": "no such column: e.emp_no"
+        },
+        {
+          "sql": "SELECT customer_id, customer_details FROM Customers WHERE customer_id IN (SELECT customer_id FROM Customers GROUP BY customer_id HAVING COUNT(*) >= 3)",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT address_content FROM Addresses WHERE city = 'East Julianaside, Texas' OR city = 'Gleasonmouth, Arizona'",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT head FROM Department ORDER BY count(*) DESC LIMIT 1",
+          "passed": false,
+          "error": "misuse of aggregate: count()"
+        },
+        {
+          "sql": "SELECT n.name FROM Prescribes AS p JOIN Medication AS m ON p.medication = m.code JOIN Patient AS t ON p.patient = t.patient JOIN Nurse AS n ON p.nurse = n.employee WHERE m.name = 'Thesisin'",
+          "passed": false,
+          "error": "no such column: t.patient"
+        },
+        {
+          "sql": "SELECT e.first_name, e.last_name, d.department_id FROM employees e JOIN departments d ON e.department_id = d.department_id WHERE e.salary = (SELECT min(salary) FROM employees)",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT n.name FROM Prescribes AS p JOIN Nurse AS n ON p.patient = n.employeeid JOIN Medication AS m ON p.medication = m.code WHERE p.dose = (SELECT max(dose) FROM Prescribes)",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT count(*) FROM Customer_Orders WHERE order_details LIKE \"%Second time%\"",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT p.name, max(dose) FROM Prescribes AS p JOIN Patient AS t ON p.patient = t.patient JOIN Medication AS m ON p.medication = m.code GROUP BY p.patient ORDER BY max(dose) DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: p.name"
+        },
+        {
+          "sql": "SELECT Name FROM Physician WHERE Position LIKE '%senior%'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT count(*) FROM Order_Items WHERE order_details = \"Second time\"",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "sql": "SELECT p.Name FROM Trained_In AS t1 JOIN Procedures AS p ON t1.Treatment = p.Code JOIN Physician AS j ON t1.Physician = j.EmployeeID WHERE j.Name = 'John Wen'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME, JOB_ID FROM employees WHERE DEPARTMENT_ID = 'Finance'",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT d.TITLE, t.CITY, t.STATE_PROVINCE FROM departments AS t JOIN countries AS c ON t.DEPARTMENT_ID = c.TEMPLATE_ID JOIN jobs AS j ON t.DEPARTMENT_ID = j.TEMPLATE_ID JOIN regions AS r ON c.TEMPLATE_ID = r.TEMPLATE_ID JOIN countries AS c2 ON c.TEMPLATE_ID = c2.TEMPLATE_ID JOIN regions AS r2 ON c2.TEMPLATE_ID = r2.TEMPLATE_ID JOIN jobs AS j2 ON c2.TEMPLATE_ID = j2.TEMPLATE_ID JOIN regions AS r3 ON c2.TEMPLATE_ID = r3",
+          "passed": false,
+          "error": "no such column: d.TITLE"
+        }
+      ],
+      "recoveries": [
+        {
+          "index": 2,
+          "corrected_sql": "SELECT T1.T1 ,  T2.T2 FROM employees AS T1 JOIN departments AS T2 ON T1.DEPARTMENT_ID  =  T2.DEPARTMENT_ID WHERE T2.MANAGER_ID  =  T1.MANAGER_ID",
+          "passed": false,
+          "error": "no such column: T1.T1"
+        },
+        {
+          "index": 8,
+          "corrected_sql": "SELECT customer_name FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM customer_orders WHERE product_details LIKE '%Latte%')",
+          "passed": false,
+          "error": "no such column: product_details"
+        },
+        {
+          "index": 9,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code  =  T2.code WHERE T2.name  =  \"Thesisin\"",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 10,
+          "corrected_sql": "SELECT T1.first_name ,  T1.last_name ,  T2.hire_date FROM employees AS T1 JOIN departments AS T2 ON T1.department_id  =  T2.department_id WHERE T2.department_name  =  \"Clara\"",
+          "passed": false,
+          "error": "no such column: T2.hire_date"
+        },
+        {
+          "index": 12,
+          "corrected_sql": "SELECT customer_name ,  customer_id FROM customer_orders GROUP BY customer_id ORDER BY sum(order_quantity) DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: customer_name"
+        },
+        {
+          "index": 19,
+          "corrected_sql": "SELECT head FROM department GROUP BY head ORDER BY count(*) DESC LIMIT 1",
+          "passed": false,
+          "error": null
+        },
+        {
+          "index": 20,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code  =  T2.code WHERE T2.name  =  \"Thesisin\"",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 21,
+          "corrected_sql": "SELECT T1.first_name ,  T1.last_name ,  T1.department_id FROM employees AS T1 JOIN countries AS T2 ON T1.cOUNTRY_ID  =  T2.cOUNTRY_ID JOIN regions AS T3 ON T2.region_id  =  T3.region_id WHERE T1.salary  =  (SELECT min(T2.salary) FROM employees AS T2)",
+          "passed": false,
+          "error": "no such column: T1.cOUNTRY_ID"
+        },
+        {
+          "index": 22,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient = T2.patient JOIN Medication AS T3 ON T1.medication = T3.code GROUP BY T1.patient ORDER BY T1.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 23,
+          "corrected_sql": "SELECT count(*) FROM order_items WHERE order_details = \"Second time\"",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "index": 24,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient = T2.patient JOIN Nurse AS T3 ON T1.medication = T3.ssn GROUP BY T1.medication ORDER BY T1.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 26,
+          "corrected_sql": "SELECT count(*) FROM order_items WHERE order_details LIKE \"%Second time%\"",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "index": 29,
+          "corrected_sql": "SELECT T2.T2.DEPARTMENT_NAME ,  T1.T1.CITY ,  T1.T1.STATE_PROVINCE FROM departments AS T1 JOIN locations AS T2 ON T1.T1.DEPARTMENT_ID  =  T2.T1.LOCATION_ID",
+          "passed": false,
+          "error": "no such column: T2.T2.DEPARTMENT_NAME"
+        }
+      ]
+    },
+    "e42": {
+      "first_attempts": [
+        {
+          "sql": "SELECT N1.Name, COUNT(*) FROM Physician N1 JOIN Appointment A ON N1.EmployeeID = A.Physician GROUP BY N1.EmployeeID",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME, JOB_ID FROM employees WHERE DEPARTMENT_ID = 'Finance'",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT e.* FROM employees e JOIN employees m ON e.MANAGER_ID = m.EMPLOYEE_ID WHERE e.MANAGER_ID IS NOT NULL",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT e.first_name, e.last_name, e.salary FROM employees e JOIN job_history j ON e.EMPLOYEE_ID = j.EMPLOYEE_ID ORDER BY e.salary DESC",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT AVG(Cost) FROM Trained_In JOIN Procedures ON Trained_In.Treatment = Procedures.Code JOIN Physician ON Trained_In.Physician = Physician.EmployeeID WHERE Physician.Name = 'John Wen'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT product_details FROM Products",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT DISTINCT payment_method FROM Customers",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME, DEPARTMENT_ID FROM employees WHERE LAST_NAME = 'McEwen'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT customer_name FROM Customers WHERE customer_id NOT IN (SELECT customer_id FROM Customer_Orders WHERE product_id = 'Latte')",
+          "passed": false,
+          "error": "no such column: product_id"
+        },
+        {
+          "sql": "SELECT p.Name FROM Prescribes p JOIN Medication m ON p.Medication = m.Code JOIN Patient ps ON p.Patient = ps.SSN WHERE m.Description = 'Thesisin'",
+          "passed": false,
+          "error": "no such column: p.Name"
+        },
+        {
+          "sql": "SELECT e.FIRST_NAME, e.LAST_NAME, e.HIRE_DATE FROM employees e JOIN departments d ON e.DEPARTMENT_ID = d.DEPARTMENT_ID WHERE d.DEPARTMENT_NAME = 'Clara'",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT channel_code FROM Customer_Contact_Channels WHERE customer_id = (SELECT customer_id FROM Customers WHERE customer_name = \"Tillman Ernser\")",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT customer_name, customer_id FROM Customer_Orders GROUP BY customer_id ORDER BY SUM(order_quantity) DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: customer_name"
+        },
+        {
+          "sql": "SELECT truck_licence_number FROM Trucks ORDER BY truck_licence_number",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT DISTINCT city FROM Addresses",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT AppointmentID FROM Appointment ORDER BY Start DESC LIMIT 1",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT e.emp_no, e.first_name, e.last_name FROM employees e JOIN employees m ON e.emp_no = m.emp_no WHERE m.first_name LIKE 'T%' OR e.first_name LIKE 'T%'",
+          "passed": false,
+          "error": "no such column: e.emp_no"
+        },
+        {
+          "sql": "SELECT customer_id, customer_details FROM Customers WHERE customer_id IN (SELECT customer_id FROM Customer_Events GROUP BY customer_id HAVING COUNT(*) >= 3)",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT * FROM Addresses WHERE city = 'East Julianaside, Texas' OR city = 'Gleasonmouth, Arizona'",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT Head FROM Department ORDER BY COUNT(*) ASC LIMIT 1",
+          "passed": false,
+          "error": "misuse of aggregate: COUNT()"
+        },
+        {
+          "sql": "SELECT N.Name FROM Prescribes P JOIN Medication M ON P.Medication = M.Code JOIN Patient SS ON P.Patient = SS.Patient JOIN Nurse N ON P.PrepNurse = N.EmployeeID WHERE M.Description = 'Thesisin'",
+          "passed": false,
+          "error": "no such column: SS.Patient"
+        },
+        {
+          "sql": "SELECT e.FIRST_NAME, e.LAST_NAME, d.DEPARTMENT_ID FROM employees e JOIN departments d ON e.DEPARTMENT_ID = d.DEPARTMENT_ID WHERE e.SALARY = (SELECT MIN(SALARY) FROM employees)",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT N.Name FROM Prescribes P JOIN Medication M ON P.Medication = M.Code JOIN Patient Q ON P.Patient = Q.SSN JOIN Nurse R ON P.Nurse = R.EmployeeID GROUP BY P.Physician ORDER BY Dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: N.Name"
+        },
+        {
+          "sql": "SELECT count(*) FROM Customer_Orders WHERE order_details LIKE '%Second time%'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT p.Name, MAX(Dose) FROM Prescribes p JOIN Prescribes q ON p.Physician = q.Physician GROUP BY p.Physician ORDER BY MAX(Dose) DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: p.Name"
+        },
+        {
+          "sql": "SELECT Name FROM Physician WHERE Position LIKE '%senior%'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT count(*) FROM Order_Items WHERE order_details = 'Second time'",
+          "passed": false,
+          "error": "no such column: order_details"
+        },
+        {
+          "sql": "SELECT p.Name FROM Trained_In t JOIN Procedures p ON t.Treatment = p.Code JOIN Physician j ON t.Physician = j.EmployeeID WHERE j.Name = 'John Wen'",
+          "passed": true,
+          "error": null
+        },
+        {
+          "sql": "SELECT FIRST_NAME, JOB_ID FROM employees WHERE DEPARTMENT_ID = 'Finance'",
+          "passed": false,
+          "error": null
+        },
+        {
+          "sql": "SELECT d.DEPARTMENT_NAME, l.CITY, l.STATE_PROVINCE FROM departments d JOIN locations l ON d.DEPARTMENT_ID = l.DEPARTMENT_ID",
+          "passed": false,
+          "error": "no such column: l.DEPARTMENT_ID"
+        }
+      ],
+      "recoveries": [
+        {
+          "index": 2,
+          "corrected_sql": "SELECT e.first_name, e.last_name FROM employees e JOIN employees m ON e.manager_id = m.employee_id WHERE m.department_id = e.department_id",
+          "passed": false,
+          "error": null
+        },
+        {
+          "index": 8,
+          "corrected_sql": "SELECT customer_name FROM Customers WHERE customer_id NOT IN (SELECT customer_id FROM Customer_Orders WHERE product_details LIKE '%Latte%')",
+          "passed": false,
+          "error": "no such column: product_details"
+        },
+        {
+          "index": 9,
+          "corrected_sql": "SELECT p.name FROM Prescribes AS p JOIN Medication AS m ON p.medication_code = m.code WHERE m.name = \"Thesisin\"",
+          "passed": false,
+          "error": "no such column: p.name"
+        },
+        {
+          "index": 10,
+          "corrected_sql": "SELECT T1.first_name, T1.last_name, T2.hire_date FROM employees AS T1 JOIN departments AS T2 ON T1.department_id = T2.department_id WHERE T2.department_name = 'Clara'",
+          "passed": false,
+          "error": "no such column: T2.hire_date"
+        },
+        {
+          "index": 12,
+          "corrected_sql": "SELECT c.customer_name, c.customer_id FROM Customer_Orders AS c1 JOIN Order_Items AS o1 ON c1.order_id = o1.order_id GROUP BY c1.customer_id ORDER BY SUM(o1.order_quantity) DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: c.customer_name"
+        },
+        {
+          "index": 19,
+          "corrected_sql": "SELECT d.Head FROM Department d JOIN Physician p ON d.DepartmentID = p.EmployeeID GROUP BY d.DepartmentID ORDER BY COUNT(*) ASC LIMIT 1",
+          "passed": true,
+          "error": null
+        },
+        {
+          "index": 20,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Medication AS T2 ON T1.medication_code = T2.code WHERE T2.name = \"Thesisin\"",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 21,
+          "corrected_sql": "SELECT e.first_name, e.last_name, d.department_id FROM employees e JOIN departments d ON e.department_id = d.department_id WHERE e.salary = (SELECT min(salary) FROM employees)",
+          "passed": false,
+          "error": null
+        },
+        {
+          "index": 22,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient = T2.patient JOIN Medication AS T3 ON T1.medication = T3.code GROUP BY T1.patient ORDER BY T1.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 23,
+          "corrected_sql": "SELECT count(*) FROM Customer_Orders WHERE order_details LIKE \"%Second time%\"",
+          "passed": true,
+          "error": null
+        },
+        {
+          "index": 24,
+          "corrected_sql": "SELECT T1.name FROM Prescribes AS T1 JOIN Patient AS T2 ON T1.patient = T2.patient JOIN Nurse AS T3 ON T1.medication = T3.ssn GROUP BY T1.medication ORDER BY T1.dose DESC LIMIT 1",
+          "passed": false,
+          "error": "no such column: T1.name"
+        },
+        {
+          "index": 26,
+          "corrected_sql": "SELECT count(*) FROM Customer_Orders WHERE order_details LIKE \"%Second time%\"",
+          "passed": true,
+          "error": null
+        },
+        {
+          "index": 29,
+          "corrected_sql": "SELECT T2.DEPARTMENT_NAME, T1.CITY, T1.STATE_PROVINCE FROM departments AS T1 JOIN locations AS T2 ON T1.DEPARTMENT_ID = T2.LOCATION_ID",
+          "passed": false,
+          "error": "no such column: T2.DEPARTMENT_NAME"
+        }
+      ]
+    }
+  }
+}

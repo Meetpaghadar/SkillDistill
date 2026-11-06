@@ -31,3 +31,22 @@ data/spider_data/
 data/spider.zip
 data/spider_data/
 *.zip
+
+# Extracted archive metadata
+__MACOSX/
+.DS_Store
+._*
+
+# Training logs
+*.log
+
+# Temporary terminal output
+/c
+
+# Empty temporary result
+/results/p
+
+# Local model checkpoints
+/adapters/sql_lora_e40_overfit/
+/adapters/sql_lora_e42_teacher/
+/adapters/sql_lora_e46_teacher/
